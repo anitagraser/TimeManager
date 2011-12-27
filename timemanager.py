@@ -13,8 +13,6 @@
 # *   (at your option) any later version.                                   *
 # *                                                                         *
 # ***************************************************************************
-#
-# $Id: timemanager.py 122 2011-11-20 12:59:18Z anita_ $
 
 """
 Time-Manager by Anita Graser and Volker Fröhlich
@@ -35,7 +33,7 @@ class timemanager:
     version = "Version 0.4"
     qgisMinimumVersion = '1.6.0' 
     author = "Anita Graser & Volker Fröhlich"
-    pluginUrl = "http://www.geofrogger.net/trac/"
+    pluginUrl = "https://github.com/anitagraser/TimeManager"
 
     def __init__( self, iface ):
         """initialize the plugin"""
