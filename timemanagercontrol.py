@@ -125,6 +125,8 @@ class TimeManagerControl(QObject):
             self.timer.start(self.animationFrameLength) 
             self.animationFrameCounter = 0
             expectedNumberOfFrames = self.timeLayerManager.getFrameCount()
+            if expectedNumberOfFrames == 0: # will be zero if no layer is time managed
+                self.timer.stop()
             self.exportNameDigits = len(str(expectedNumberOfFrames))
 
     def toggleOnOff(self,turnOn):
@@ -150,22 +152,25 @@ class TimeManagerControl(QObject):
             self.saveCurrentMap(fileName)
             self.animationFrameCounter += 1
         
-        if self.playBackwards:
-            if currentTime > projectTimeExtents[0]:
-                self.stepBackward()
-            else:
-                if self.loopAnimation:
-                    self.resetAnimation()
+        try:
+            if self.playBackwards:
+                if currentTime > projectTimeExtents[0]:
+                    self.stepBackward()
                 else:
-                    self.stopAnimation()
-        else:
-            if currentTime < projectTimeExtents[1]:
-                self.stepForward()
+                    if self.loopAnimation:
+                        self.resetAnimation()
+                    else:
+                        self.stopAnimation()
             else:
-                if self.loopAnimation:
-                    self.resetAnimation()
+                if currentTime < projectTimeExtents[1]:
+                    self.stepForward()
                 else:
-                    self.stopAnimation()
+                    if self.loopAnimation:
+                        self.resetAnimation()
+                    else:
+                        self.stopAnimation()
+        except TypeError:
+            self.stopAnimation()
 
     def saveCurrentMap(self,fileName):
         """saves the content of the map canvas to file"""

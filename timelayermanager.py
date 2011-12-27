@@ -47,6 +47,9 @@ class TimeLayerManager(QObject):
         
     def getFrameCount(self):
         """returns the number of frames that can be generated using the current settings"""
+        if len(self.getManagedLayers()) == 0:
+            return 0
+            
         td1 = self.projectTimeExtents[1]-self.projectTimeExtents[0]
         td2 = self.timeFrame()
         # this is how you can devide two timedeltas (not supported by default):
