@@ -1,0 +1,11 @@
+[general]
+name=TimeManagerPlugin
+description=Working with temporal data
+version=Version 0.4
+qgisMinimumVersion=1.6.0
+authorName=Anita Graser
+icon=icon.png
+experimental=True
+homepage=http://www.geofrogger.net/trac/
+tracker=http://www.geofrogger.net/trac/
+repository=http://plugins.qgis.org/plugins/

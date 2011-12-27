@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta name="qrichtext" content="1" />
+<title>Time Manager User Guide</title>
+<style type="text/css">
+* {
+	font-family: sans-serif;
+}
+p, li { 
+	white-space: pre-wrap; 
+}
+p.tip { 
+	color: #666; 
+	font-style: italic;
+	font-size: 80%;
+}
+.hidden { 
+	visibility: hidden;
+	font-weight: bold;
+	position:absolute;
+	left: -100px;
+}
+
+</style></head>
+<body>
+
+<h1>Time Manager - User guide</h1>
+
+<p class="tip">You can view this guide in your browser. It's located inside the plugin directory.</p>
+
+<p>The aim of Time Manager plugin for QGIS is to provide comfortable browsing through temporal geodata. A dock widget provides a time slider and a configuration dialog for your layers to manage.</p>
+
+<h2>The Time Manager dock</h2>
+
+<p>The dock was designed to attach to the bottom of the QGIS main window. It offers the following tools:</p>
+
+<ul>
+<li><img src="images/power_on.png" alt="power"/> ... On/Off switch, allows you to turn Time Manager's functionality on/off with the click of only one button</li>
+<li><span class="hidden">[Settings]</span><input type="button" value="Settings"/> ... opens the Settings dialog where you can manage your spatio-temporal layers</li>
+<li><span class="hidden">[Export Video]</span><input type="button" value="Export Video"/> ... exports an image series based on current settings (This button is only enabled if there are layers registered in Time Manager "Settings")</li>
+<li><b>Time frame start: <span class="hidden">[2000-01-01 00:00:00]</span></b><input type="text" value="2000-01-01 00:00:00"/> ... shows the start time of the currently active frame. Allows you to precisely specify your desired analysis time.</li>
+<li><b>Time frame size: </b><input type="text" value="1"/><span class="hidden">[x]</span> <select><option value="days">days</option></select> ... allow you to choose the size of the time frame</li>
+<li><img src="images/back.png" alt="back"/> ... go to the previous time frame</li>
+<li><img src="images/forward.png" alt="forward"/> ... go to the next time frame</li>
+<li><b>Slider</b> ... shows the position of current frame relative to the whole dataset and allows you to seamlessly scroll through the dataset</li>
+<li><img src="images/play.png" alt="play"/> ... start an automatic animation based on your current settings</li>
+</ul>
+
+<h2>The "Settings" dialog</h2>
+
+<p>The dialog has two areas: a <b>layer list</b> and <b>animation options</b>.</p>
+
+<h3>The layer list</h3>
+
+<p>This list contains all layers managed by Time Manager. To add a layer press <span class="hidden">[Add Layer]</span><input type="button" value="Add Layer"/>. Similarly, if you want to remove a layer from the list, select it and press <span class="hidden">[Remove Layer]</span><input type="button" value="Remove Layer"/>.</p>
+
+<h4>The "Add Layer" dialog</h4>
+
+<p>Here, you are asked to select the layer that should be added and specify the columns containing start and (optionally) end time. 
+You also have to tell the plugin which time format is used in those columns.</p>
+
+<p>The <b>offset</b> option allows you to further time the appearance of features. If you specify an offset of -1, the features will appear one second later than they would by default. </p>
+
+<h3>Animation options</h3>
+
+<p>Currently you'll find the following options:</p>
+
+<ul>
+<li><b>Show frame for </b><input type="text" value="2000"/><b> milliseconds</b> ... allows you to adjust for how long a frame will be visible during the animation</li>
+<li><span class="hidden">[x]</span><input type="checkbox"/> <b>play animation backwards</b> ... if checked, the animation will run in reverse direction</li>
+<li><span class="hidden">[x]</span><input type="checkbox"/> <b>display frame start time on map</b> ... if checked, displays the start time of the visible frame in the lower right corner of the map</li>
+</ul>
+
+</body></html>
