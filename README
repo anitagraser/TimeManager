@@ -3,7 +3,6 @@
 # a plugin for QGIS
 # --------------------------------------------------------------------------
 # by Anita Graser (anitagraser@gmx.at) 
-# and Volker Fröhlich (volker27@gmx.at)
 # --------------------------------------------------------------------------
 # project home and bug tracker: https://github.com/anitagraser/TimeManager
 # plugin repository: http://plugins.qgis.org/plugins/
@@ -16,7 +15,7 @@ MINIMUM QGIS VERSION
    QGIS 1.6 
 
 PYTHON VERSION
-   tested using Python 2.6 and 2.7
+   tested using Python 2.5
 
 KNOWN ISSUES
    The plug-in uses Python's datetime module for calculations. It is 
