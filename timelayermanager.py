@@ -50,7 +50,11 @@ class TimeLayerManager(QObject):
         if len(self.getManagedLayers()) == 0:
             return 0
             
-        td1 = self.projectTimeExtents[1]-self.projectTimeExtents[0]
+        try:
+            td1 = self.projectTimeExtents[1]-self.projectTimeExtents[0]
+        except TypeError: # hope this fixes #17 which I still cannot reproduce
+            return 0
+            
         td2 = self.timeFrame()
         # this is how you can devide two timedeltas (not supported by default):
         us1 = td1.microseconds + 1000000 * (td1.seconds + 86400 * td1.days)
