@@ -1,5 +1,5 @@
 [general]
-name=TimeManagerPlugin
+name=TimeManager
 description=Working with temporal data
 version=Version 0.4
 qgisMinimumVersion=1.6.0
@@ -8,4 +8,4 @@ icon=icon.png
 experimental=True
 homepage=https://github.com/anitagraser/TimeManager
 tracker=https://github.com/anitagraser/TimeManager
-repository=http://plugins.qgis.org/plugins/
+repository=http://plugins.qgis.org/plugins/plugins.xml
