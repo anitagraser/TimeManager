@@ -25,15 +25,21 @@ Time Manager 0.3 supports exporting image series based on the defined animation 
 
 ``mencoder "mf://*.PNG" -mf fps=10 -o output.avi -ovc lavc -lavcopts vcodec=mpeg4``
 
+## License
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
 ## Dependencies
 
 QGIS:
 
 * Requires QGIS >= 1.6.
-* Runs on a default QGIS installation
+* No other plugin dependencies: runs on a default QGIS installation
 
-
-PYTHON VERSION:
+Python:
 
 * Tested using Python 2.5
 
