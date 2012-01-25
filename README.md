@@ -15,9 +15,12 @@ The aim of '''Time Manager plugin for QGIS''' is to provide comfortable browsing
 
 Time Manager filters your vector datasets (It only works for vector data!) and displays only features with timestamps in the user specified time frame. Timestamps have to be in one of the following formats:
 
+* YYYY-MM-DD HH:MM:SS.ssssss
 * YYYY-MM-DD HH:MM:SS
 * YYYY-MM-DD HH:MM
 * YYYY-MM-DD
+
+The list of supported time formats can augmented by adding to `supportedFormats` in `timelayer.py`
 
 The biggest tested dataset was a Spatialite table with indexed timestamps containing approximately 400,000 points, covering a time span of 24 hours. Stepping through the data for example in 1-hour-sized steps works without problems.
 

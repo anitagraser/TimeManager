@@ -122,7 +122,7 @@
       <item>
        <widget class="QDateTimeEdit" name="dateTimeEditCurrentTime">
         <property name="displayFormat">
-         <string>yyyy-MM-dd HH:mm:ss</string>
+         <string>yyyy-MM-dd HH:mm:ss.zzz</string>
         </property>
        </widget>
       </item>
