@@ -187,7 +187,7 @@ class TimeLayerManager(QObject):
 	     # TODO: Test
         if type(timePosition) == QDateTime:
             # convert QDateTime to datetime
-            timePosition = datetime.strptime( str(timePosition.toString('yyyy-MM-dd hh:mm:ss')) ,"%Y-%m-%d %H:%M:%S")
+            timePosition = datetime.strptime( str(timePosition.toString('yyyy-MM-dd hh:mm:ss.zzz')) ,"%Y-%m-%d %H:%M:%S.%f")
         elif type(timePosition) == int or type(timePosition) == float:
             timePosition = datetime.fromordinal(int(timePosition))
         self.currentTimePosition = timePosition
@@ -231,28 +231,40 @@ class TimeLayerManager(QObject):
         
     def getSaveString(self):
         """create a save string that can be put into project file"""
+        tdfmt = "%Y-%m-%d %H:%M:%S.%f"
         saveString = ''
         saveListLayers = QStringList()
         
         if len(self.projectTimeExtents) > 0:
-            saveString = str(self.projectTimeExtents[0]) + ';' + str(self.projectTimeExtents[1]) + ';'
-            saveString += str(self.currentTimePosition) + ';'
+            saveString  = datetime.strftime(self.projectTimeExtents[0], tdfmt) + ';'
+            saveString += datetime.strftime(self.projectTimeExtents[1], tdfmt) + ';'
+            saveString += datetime.strftime(self.currentTimePosition, tdfmt) + ';'
             
             for timeLayer in self.timeLayerList:
                 saveListLayers.append(timeLayer.getSaveString())
         
         return (saveString,saveListLayers)
         
-    def restoreFromSaveString(self,saveString):
+    def restoreFromSaveString(self, saveString):
         """restore settings from loaded project file"""
+        tdfmt = "%Y-%m-%d %H:%M:%S.%f"
         if saveString:
             self.isFirstRun = False
-            saveString = str(saveString)
-            saveString = saveString.split(';')
+            saveString = str(saveString).split(';')
             try:
-                timeExtents = (datetime.strptime(saveString[0],"%Y-%m-%d %H:%M:%S"),datetime.strptime(saveString[1],"%Y-%m-%d %H:%M:%S"))
-            except ValueError: # avoid error message for projects without time-managed layers
-                return
+                timeExtents = (datetime.strptime(saveString[0], tdfmt),
+                               datetime.strptime(saveString[1], tdfmt))
+            except ValueError:
+                try:
+                    # Try converting without the fractional seconds for
+                    # backward compatibility.
+                    tdfmt = "%Y-%m-%d %H:%M:%S"
+                    timeExtents = (datetime.strptime(saveString[0], tdfmt),
+                                   datetime.strptime(saveString[1], tdfmt))
+                except ValueError:
+                    # avoid error message for projects without
+                    # time-managed layers
+                    return
             self.projectTimeExtents = timeExtents
-            self.setCurrentTimePosition(datetime.strptime(saveString[2],"%Y-%m-%d %H:%M:%S"))
+            self.setCurrentTimePosition(datetime.strptime(saveString[2], tdfmt))
             return saveString[3]

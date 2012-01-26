@@ -15,6 +15,13 @@ class TimeLayer:
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
         self.timeFormat = str(timeFormat) # cast in case timeFormat comes as a QString
+        self.supportedFormats = [
+             "%Y-%m-%d %H:%M:%S",
+             "%Y-%m-%d %H:%M:%S.%f",
+             "%Y-%m-%d %H:%M",
+             "%Y-%m-%d"]
+        if timeFormat not in self.supportedFormats:
+            self.supportedFormats.append(timeFormat)
         self.offset = int(offset)
         try:
             self.getTimeExtents()
@@ -52,6 +59,21 @@ class TimeLayer:
         """returns the layer's offset, integer in seconds"""
         return self.offset
 
+    def strToDatetime(self, dtStr):
+       """convert a date/time string into a Python datetime object"""
+       try:
+           # Try the last known format, if not, try all known formats.
+           return datetime.strptime(dtStr, self.timeFormat)
+       except:
+           for fmt in self.supportedFormats:
+               try:
+                   self.timeFormat = fmt
+                   return datetime.strptime(dtStr, self.timeFormat)
+               except:
+                   pass
+       # If all fail, re-raise the exception
+       raise
+
     def getTimeExtents( self ):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
         #In irgendeiner Weise sollte der Benutzer auch erahnen können, wenn er Datensätze hat, die kein gültiges Datum haben, und daher nie angezeigt würden.
@@ -61,11 +83,11 @@ class TimeLayer:
         startStr = str(provider.minimumValue(fromTimeAttributeIndex).toString())
         endStr = str(provider.maximumValue(toTimeAttributeIndex).toString())
         try:
-            startTime = datetime.strptime(startStr,self.timeFormat)
+            startTime = self.strToDatetime(startStr)
         except ValueError:
             raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data.')
         try:
-            endTime = datetime.strptime(endStr,self.timeFormat)
+            endTime = self.strToDatetime(endStr)
         except ValueError:
             raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data.')
         # apply offset

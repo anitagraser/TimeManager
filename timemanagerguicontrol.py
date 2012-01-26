@@ -36,10 +36,6 @@ class TimeManagerGuiControl(QObject):
         self.dock = uic.loadUi( os.path.join( path, "dockwidget2.ui" ) )
         self.iface.addDockWidget( Qt.BottomDockWidgetArea, self.dock )
         
-        # remove micro and milliseconds until supported
-        self.dock.comboBoxTimeExtent.removeItem(0) # microseconds
-        self.dock.comboBoxTimeExtent.removeItem(0) # milliseconds    
-        
         self.dock.pushButtonExportVideo.setEnabled(False) # only enabled if there are managed layers
         self.dock.comboBoxTimeExtent.setCurrentIndex(3) # should be 'days'
         
@@ -232,10 +228,6 @@ class TimeManagerGuiControl(QObject):
         # get attributes of the first layer for gui initialization
         self.getLayerAttributes(0)
 
-        # add additional supported time formats
-        supportedFormats=["%Y-%m-%d %H:%M","%Y-%m-%d"] # additional formats, the only default is %Y-%m-%d %H:%M:%S
-        self.addLayerDialog.comboBoxTimeFormat.addItems(supportedFormats)
-
         self.addLayerDialog.show()
 
         # establish connections
@@ -279,7 +271,7 @@ class TimeManagerGuiControl(QObject):
         endTime = self.addLayerDialog.comboBoxEnd.currentText()
         checkState = Qt.Checked
         layerId = self.layerIds[self.addLayerDialog.comboBoxLayers.currentIndex()]
-        timeFormat = self.addLayerDialog.comboBoxTimeFormat.currentText()
+        timeFormat = "%Y-%m-%d %H:%M:%S" # default
         offset = self.addLayerDialog.spinBoxOffset.value()
 
         self.addRowToOptionsTable(layerName,startTime,endTime,checkState,layerId,timeFormat,offset)
@@ -322,8 +314,8 @@ class TimeManagerGuiControl(QObject):
     def updateTimeExtents(self,timeExtents):
         """update time extents showing in labels and represented by horizontalTimeSlider"""
         if timeExtents != (None,None):
-            self.dock.labelStartTime.setText(str(timeExtents[0]))
-            self.dock.labelEndTime.setText(str(timeExtents[1]))
+            self.dock.labelStartTime.setText(str(timeExtents[0])[0:23])
+            self.dock.labelEndTime.setText(str(timeExtents[1])[0:23])
             self.dock.horizontalTimeSlider.setMinimum(mktime(timeExtents[0].timetuple())) 
             self.dock.horizontalTimeSlider.setMaximum(mktime(timeExtents[1].timetuple())) 
         else: # set to default values
@@ -382,7 +374,7 @@ class TimeManagerGuiControl(QObject):
             return
             
         self.font = QFont("Arial")         
-        self.labelString = str(self.dock.dateTimeEditCurrentTime.dateTime().toString("yyyy-MM-dd hh:mm:ss"))
+        self.labelString = str(self.dock.dateTimeEditCurrentTime.dateTime().toString("yyyy-MM-dd hh:mm:ss.zzz"))
         self.placementIndex = 3
         
         fm = QFontMetrics(self.font, painter.device())
