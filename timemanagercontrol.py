@@ -1,9 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Oct 29 10:10:27 2010
-
-@author: agraser
-"""
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
 
 from datetime import datetime
 
@@ -278,7 +274,7 @@ class TimeManagerControl(QObject):
                  'loopAnimation': (self.restoreSettingLoopAnimation,0),
                  'timeLayerManager': (self.restoreSettingTimeLayerManager,None),
                  'timeLayerList': (self.restoreTimeLayers,None),
-                 'timeFrameType': (self.restoreSettingTimeFrameType,'hours'),
+                 'timeFrameType': (self.restoreSettingTimeFrameType,'days'),
                  'timeFrameSize': (self.restoreSettingTimeFrameSize,1),
                  'active': (self.restoreSettingActive,1)
                  }

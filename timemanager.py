@@ -14,16 +14,10 @@
 # *                                                                         *
 # ***************************************************************************
 
-"""
-Time-Manager by Anita Graser and Volker Fröhlich
-"""
 
 from qgis.core import *
-
-import resources
-
 from timemanagercontrol import TimeManagerControl
-
+import resources # loads the icons
 
 class timemanager:
     """ plugin information """
@@ -32,7 +26,7 @@ class timemanager:
     description = "Working with temporal data"
     version = "Version 0.4"
     qgisMinimumVersion = '1.6.0' 
-    author = "Anita Graser & Volker Fröhlich"
+    author = "Anita Graser"
     pluginUrl = "https://github.com/anitagraser/TimeManager"
 
     def __init__( self, iface ):

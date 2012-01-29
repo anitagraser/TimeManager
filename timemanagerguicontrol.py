@@ -37,7 +37,7 @@ class TimeManagerGuiControl(QObject):
         self.iface.addDockWidget( Qt.BottomDockWidgetArea, self.dock )
         
         self.dock.pushButtonExportVideo.setEnabled(False) # only enabled if there are managed layers
-        self.dock.comboBoxTimeExtent.setCurrentIndex(3) # should be 'days'
+        self.setTimeFrameType('days') # should be 'days'
         
         QObject.connect(self.dock.pushButtonOptions, SIGNAL('clicked()'),self.optionsClicked) 
         QObject.connect(self.dock.pushButtonExportVideo, SIGNAL('clicked()'),self.exportVideoClicked)

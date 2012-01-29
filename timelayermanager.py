@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-# $Id: timelayermanager.py 119 2011-09-09 09:02:19Z anita_ $
-
 from datetime import datetime, timedelta
 from PyQt4.QtCore import *
 from qgis.core import *
