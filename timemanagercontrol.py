@@ -209,7 +209,7 @@ class TimeManagerControl(QObject):
         original = timePosition
         if type(timePosition) == QDateTime:
             # convert QDateTime to datetime :S
-            timePosition = datetime.strptime( str(timePosition.toString('yyyy-MM-dd hh:mm:ss')) ,"%Y-%m-%d %H:%M:%S")
+            timePosition = datetime.strptime( str(timePosition.toString('yyyy-MM-dd hh:mm:ss.zzz')) ,"%Y-%m-%d %H:%M:%S.%f")
         elif type(timePosition) == int or type(timePosition) == float:
             timePosition = datetime.fromtimestamp(timePosition)
         if timePosition == self.currentMapTimePosition:
