@@ -1,6 +1,6 @@
 # Welcome to TimeManager!
 
-A plugin for QGIS by Anita Graser (anitagraser@gmx.at) 
+A plugin for QGIS by Anita Graser 
 
 * project home and bug tracker: https://github.com/anitagraser/TimeManager
 * plugin repository: http://plugins.qgis.org/plugins/plugins.xml
