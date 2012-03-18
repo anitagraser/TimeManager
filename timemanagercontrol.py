@@ -239,8 +239,11 @@ class TimeManagerControl(QObject):
         
     def writeSettings(self):  
         """write all relevant settings to the project file """
-        (timeLayerManagerSettings,timeLayerList) = self.timeLayerManager.getSaveString()
-        
+        try:
+            (timeLayerManagerSettings,timeLayerList) = self.timeLayerManager.getSaveString()
+        except:
+            return
+            
         settings= { 'animationFrameLength': self.animationFrameLength,
                  'playBackwards': self.playBackwards,
                  'loopAnimation': self.loopAnimation,
