@@ -19,7 +19,8 @@ class TimeLayer:
              "%Y-%m-%d %H:%M:%S",
              "%Y-%m-%d %H:%M:%S.%f",
              "%Y-%m-%d %H:%M",
-             "%Y-%m-%d"]
+             "%Y-%m-%d",
+             "%Y/%m/%d %H:%M:%S"]
         if timeFormat not in self.supportedFormats:
             self.supportedFormats.append(timeFormat)
         self.offset = int(offset)
