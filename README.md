@@ -19,6 +19,7 @@ Time Manager filters your vector datasets (It only works for vector data!) and d
 * YYYY-MM-DD HH:MM:SS
 * YYYY-MM-DD HH:MM
 * YYYY-MM-DD
+* YYYY/MM/DD HH:MM:SS
 
 The list of supported time formats can augmented by adding to `supportedFormats` in `timelayer.py`
 
