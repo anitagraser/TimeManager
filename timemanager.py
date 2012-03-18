@@ -22,9 +22,9 @@ import resources # loads the icons
 class timemanager:
     """ plugin information """
     name = "TimeManagerPlugin"
-    longName = "Time Manager plugin"
-    description = "Working with temporal data"
-    version = "Version 0.4"
+    longName = "TimeManager Plugin for QGIS >= 1.6"
+    description = "Working with temporal vector data"
+    version = "Version 0.5"
     qgisMinimumVersion = '1.6.0' 
     author = "Anita Graser"
     pluginUrl = "https://github.com/anitagraser/TimeManager"
