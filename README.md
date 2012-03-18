@@ -21,7 +21,7 @@ Time Manager filters your vector datasets (It only works for vector data!) and d
 * YYYY-MM-DD
 * YYYY/MM/DD HH:MM:SS
 
-The list of supported time formats can augmented by adding to `supportedFormats` in `timelayer.py`
+Other formats can be added by appending to the `supportedFormats` list in `timelayer.py`.
 
 The biggest tested dataset was a Spatialite table with indexed timestamps containing approximately 400,000 points, covering a time span of 24 hours. Stepping through the data for example in 1-hour-sized steps works without problems.
 
