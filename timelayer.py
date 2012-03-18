@@ -77,7 +77,6 @@ class TimeLayer:
 
     def getTimeExtents( self ):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
-        #In irgendeiner Weise sollte der Benutzer auch erahnen können, wenn er Datensätze hat, die kein gültiges Datum haben, und daher nie angezeigt würden.
         provider=self.layer.dataProvider()
         fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
         toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
@@ -86,11 +85,11 @@ class TimeLayer:
         try:
             startTime = self.strToDatetime(startStr)
         except ValueError:
-            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data.')
+            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
         try:
             endTime = self.strToDatetime(endStr)
         except ValueError:
-            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data.')
+            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+endStr)
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
