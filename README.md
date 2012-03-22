@@ -45,7 +45,7 @@ QGIS:
 
 Python:
 
-* Tested using Python 2.5
+* Tested using Python 2.7
 
 ## What are the limitations?
 
