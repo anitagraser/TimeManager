@@ -7,6 +7,7 @@ from qgis.core import *
 
 from timemanagerguicontrol import *
 from timelayer import *
+from timevectorlayer import * 
 from timelayermanager import *
 from timemanagerprojecthandler import *
 
@@ -337,25 +338,40 @@ class TimeManagerControl(QObject):
                 layer = QgsMapLayerRegistry.instance().mapLayer(l[0]) # get the layer
                 if not layer:
                     break
-                layer.setSubsetString(l[1]) # restore the original subset string
-                fromTimeAttribute=l[2]
-                toTimeAttribute=l[3]
-                enabled=l[4]
+
+                # this should be a python class factory
+                if type(layer).__name__ == "QgsRasterLayer":
+                    timeLayerClass = TimeRasterLayer # get the correct class to use
+                elif type(layer).__name__ == "QgsVectorLayer":
+                    timeLayerClass = TimeVectorLayer
+
+                if timeLayerClass == TimeVectorLayer:
+                    layer.setSubsetString(l[1]) # restore the original subset string, only available for vector layers!
+                    
+                startTimeAttribute=l[2]
+                endTimeAttribute=l[3]
+                isEnabled=l[4]
                 timeFormat=l[5]
+                
                 try:
                     offset=l[6]
                 except IndexError: # old versions didn't have an offset option
                     offset=0
-                try:
-                    timeLayer = TimeLayer(layer,fromTimeAttribute,toTimeAttribute,enabled=="True",timeFormat,offset) # create a new TimeLayer
+                    
+                try: # here we use the previously determined class
+                    timeLayer = timeLayerClass(layer,startTimeAttribute,endTimeAttribute,isEnabled,timeFormat,offset)
                 except InvalidTimeLayerError, e:
                     QMessageBox.information(self.iface.mainWindow(),'Error','An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+e.value)
                     return False
+
+                if not timeLayer:
+                    break
+               
                 self.timeLayerManager.registerTimeLayer(timeLayer) 
                 self.guiControl.showLabel = True
                 self.guiControl.refreshMapCanvas('restoreTimeLayer')
-            return True          
-             
+            return True    
+    
     def restoreSettingCurrentMapTimePosition(self,value):
         """restore currentMapTimePosition"""
         if value:

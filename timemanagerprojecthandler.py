@@ -50,7 +50,11 @@ class TimeManagerProjectHandler(QObject):
         self.readingSettings = True        
         
         # map data types to function names
-        prj = QgsProject.instance()
+        try:
+            prj = QgsProject.instance()
+        except:
+            return None
+            
         functions = { 'str' : prj.readEntry,
                      'QString' : prj.readEntry,
                      'int' : prj.readNumEntry,

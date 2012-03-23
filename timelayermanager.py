@@ -2,6 +2,8 @@
 # -*- coding: UTF-8 -*-
 
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+
 from PyQt4.QtCore import *
 from qgis.core import *
 
@@ -57,6 +59,10 @@ class TimeLayerManager(QObject):
         # this is how you can devide two timedeltas (not supported by default):
         us1 = td1.microseconds + 1000000 * (td1.seconds + 86400 * td1.days)
         us2 = td2.microseconds + 1000000 * (td2.seconds + 86400 * td2.days)
+        
+        if us2 == 0:
+            return 1000 # this is just a stupid default, TODO!
+        
         return us1 / us2
 
     def hasLayers(self):
@@ -82,7 +88,9 @@ class TimeLayerManager(QObject):
 
     def timeFrame(self):
         """returns the current time frame as datetime.timedelta object"""
-        if self.timeFrameType == 'weeks':
+        if self.timeFrameType == 'months':
+            return relativedelta(months=self.timeFrameSize) # months are not supported by timedelta
+        elif self.timeFrameType == 'weeks':
             return timedelta(weeks=self.timeFrameSize)
         elif self.timeFrameType == 'days':
             return timedelta(days=self.timeFrameSize)
@@ -98,16 +106,17 @@ class TimeLayerManager(QObject):
         elif self.timeFrameType == 'microseconds':
             return timedelta(microseconds=self.timeFrameSize)
         
-        #default
-        #return timedelta(days=1)
 
     def refresh(self):
-        """Applies or removes the spatial constraints (not the complete subset) for all managed (and enabled) layers"""
+        """Applies or removes the temporal constraints for all managed (and enabled) layers"""
         if not self.hasLayers():
             return
         if self.timeManagementEnabled:
             for timeLayer in self.timeLayerList:
-                timeLayer.setTimeRestriction(self.currentTimePosition,self.timeFrame())
+                #try:
+                    timeLayer.setTimeRestriction(self.currentTimePosition,self.timeFrame())
+                #except AttributeError: # if timeLayer is of NoneType
+                #    pass
         else:
             for timeLayer in self.timeLayerList:
                 if not timeLayer.hasTimeRestriction():

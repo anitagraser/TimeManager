@@ -149,7 +149,7 @@
       <item>
        <widget class="QComboBox" name="comboBoxTimeExtent">
         <property name="currentIndex">
-         <number>5</number>
+         <number>0</number>
         </property>
         <item>
          <property name="text">
@@ -184,6 +184,11 @@
         <item>
          <property name="text">
           <string>weeks</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>months</string>
          </property>
         </item>
        </widget>

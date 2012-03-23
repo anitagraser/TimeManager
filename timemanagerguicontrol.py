@@ -18,9 +18,12 @@ from PyQt4 import uic
 from qgis.core import *
 
 from timelayer import *
+from timevectorlayer import *
+from timerasterlayer import *
 
 class TimeManagerGuiControl(QObject):
-    """This class controls all plugin-related GUI elements. Emitted signals are defined here."""
+    """This class controls all plugin-related GUI elements. Emitted signals are defined here.
+    New TimeLayers are created here, in createTimeLayer()"""
     
     def __init__ (self,iface,timeLayerManager):
         """initialize the GUI control"""
@@ -98,22 +101,24 @@ class TimeManagerGuiControl(QObject):
        
         # restore options from layerList:
         for layer in layerList:
+            
             layerName=layer.getName()
+            if layer.isEnabled():
+                checkState=Qt.Checked
+            else:
+                checkState=Qt.Unchecked
+            layerId=layer.getLayerId()
+            
+            offset=layer.getOffset()
+
             times=layer.getTimeAttributes()
             startTime=times[0]
             if times[0] != times[1]: # end time equals start time for timeLayers of type timePoint
                 endTime = times[1]
             else:
                 endTime = ""
-            if layer.isEnabled():
-                checkState=Qt.Checked
-            else:
-                checkState=Qt.Unchecked
-            layerId=layer.getLayerId()
             timeFormat=layer.getTimeFormat()
-            offset=layer.getOffset()
-            
-            self.addRowToOptionsTable(layerName,startTime,endTime,checkState,layerId,timeFormat,offset)
+            self.addRowToOptionsTable(layerName,checkState,layerId,offset,timeFormat,startTime,endTime)
         
         # restore animation options
         self.optionsDialog.spinBoxFrameLength.setValue(animationFrameLength)
@@ -150,46 +155,64 @@ class TimeManagerGuiControl(QObject):
         
         # loop through the rows in the table widget and add all layers accordingly
         for row in range(0,self.optionsDialog.tableWidget.rowCount()):
-            # layer
-            layer=QgsMapLayerRegistry.instance().mapLayer(self.optionsDialog.tableWidget.item(row,4).text())
-            # start time
-            startTimeAttribute = self.optionsDialog.tableWidget.item(row,1).text()
-            # end time (optional)
-            if self.optionsDialog.tableWidget.item(row,2).text() == QString(""):
-                endTimeAttribute = startTimeAttribute # end time equals start time for timeLayers of type timePoint
-            else:
-                endTimeAttribute = self.optionsDialog.tableWidget.item(row,2).text()
-            if self.optionsDialog.tableWidget.item(row,3).checkState() == Qt.Checked:
-                isEnabled = True
-            else:
-                isEnabled = False
-            # time format
-            timeFormat = self.optionsDialog.tableWidget.item(row,5).text()
-            # offset
-            offset = int(self.optionsDialog.tableWidget.item(row,6).text()) # currently only seconds!
-            try:
-                timeLayer = TimeLayer(layer,startTimeAttribute,endTimeAttribute,isEnabled,timeFormat,offset)
-            except InvalidTimeLayerError, e:
-                QMessageBox.information(self.iface.mainWindow(),'Error','An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+e.value)
-                break
-            self.emit(SIGNAL('registerTimeLayer(PyQt_PyObject)'),timeLayer)        
-        
-        # save animation options
-        animationFrameLength = self.optionsDialog.spinBoxFrameLength.value()
-        playBackwards = self.optionsDialog.checkBoxBackwards.isChecked()
-        self.showLabel = self.optionsDialog.checkBoxLabel.isChecked()
-        loopAnimation = self.optionsDialog.checkBoxLoop.isChecked()
-        self.emit(SIGNAL('setAnimationOptions(PyQt_PyObject,PyQt_PyObject,PyQt_PyObject)'),animationFrameLength,playBackwards,loopAnimation)
-        
-        self.refreshMapCanvas('saveOptions')
-        
-        if len(self.getManagedLayers()) > 0:
-            self.dock.pushButtonExportVideo.setEnabled(True)
-        else:
-            self.dock.pushButtonExportVideo.setEnabled(False)
-        
-        self.emit(SIGNAL('saveOptionsEnd()'),)
 
+        
+            if self.createTimeLayer(row):
+                # save animation options
+                animationFrameLength = self.optionsDialog.spinBoxFrameLength.value()
+                playBackwards = self.optionsDialog.checkBoxBackwards.isChecked()
+                self.showLabel = self.optionsDialog.checkBoxLabel.isChecked()
+                loopAnimation = self.optionsDialog.checkBoxLoop.isChecked()
+                self.emit(SIGNAL('setAnimationOptions(PyQt_PyObject,PyQt_PyObject,PyQt_PyObject)'),animationFrameLength,playBackwards,loopAnimation)
+                
+                self.refreshMapCanvas('saveOptions')
+                
+                if len(self.getManagedLayers()) > 0:
+                    self.dock.pushButtonExportVideo.setEnabled(True)
+                else:
+                    self.dock.pushButtonExportVideo.setEnabled(False)
+                
+                self.emit(SIGNAL('saveOptionsEnd()'),)
+            else:
+                break
+            
+    def createTimeLayer(self,row):
+        """create a TimeLayer from options set in the table row"""
+        # layer
+        layer=QgsMapLayerRegistry.instance().mapLayer(self.optionsDialog.tableWidget.item(row,4).text())
+        if self.optionsDialog.tableWidget.item(row,3).checkState() == Qt.Checked:
+            isEnabled = True
+        else:
+            isEnabled = False
+        # offset
+        offset = int(self.optionsDialog.tableWidget.item(row,6).text()) # currently only seconds!        
+
+        # start time
+        startTimeAttribute = self.optionsDialog.tableWidget.item(row,1).text()
+        # end time (optional)
+        if self.optionsDialog.tableWidget.item(row,2).text() == QString(""):
+            endTimeAttribute = startTimeAttribute # end time equals start time for timeLayers of type timePoint
+        else:
+            endTimeAttribute = self.optionsDialog.tableWidget.item(row,2).text()
+        # time format
+        timeFormat = self.optionsDialog.tableWidget.item(row,5).text()
+            
+        # this should be a python class factory
+        if type(layer).__name__ == "QgsVectorLayer":
+            timeLayerClass = TimeVectorLayer
+        elif type(layer).__name__ == "QgsRasterLayer":
+            timeLayerClass = TimeRasterLayer           
+            
+        try: # here we use the selected class
+            timeLayer = timeLayerClass(layer,startTimeAttribute,endTimeAttribute,isEnabled,timeFormat,offset)
+        except InvalidTimeLayerError, e:
+            QMessageBox.information(self.iface.mainWindow(),'Error','An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+e.value)
+            return False
+            
+        self.emit(SIGNAL('registerTimeLayer(PyQt_PyObject)'),timeLayer) 
+        return True
+
+        
     def setOptionsDialogToNone(self):
         """set self.optionsDialog to None"""
         self.optionsDialog = None
@@ -215,10 +238,10 @@ class TimeManagerGuiControl(QObject):
         tempname=''
         # fill the combo box with all available vector layers
         for (name,layer) in self.mapLayers.iteritems():
-            if type(layer).__name__ == "QgsVectorLayer" and layer not in managedLayers:
+            #if type(layer).__name__ == "QgsVectorLayer" and layer not in managedLayers:
+            if layer not in managedLayers:
                 self.layerIds.append(name)
-                # stripping out the trailing numeric code:
-                tempname = str(layer.name()).rstrip('01234567890')
+                tempname = str(layer.name())#.rstrip('01234567890') # stripping out the trailing numeric code
                 self.addLayerDialog.comboBoxLayers.addItem(tempname)
 
         if len(self.layerIds) == 0:
@@ -274,9 +297,9 @@ class TimeManagerGuiControl(QObject):
         timeFormat = "%Y-%m-%d %H:%M:%S" # default
         offset = self.addLayerDialog.spinBoxOffset.value()
 
-        self.addRowToOptionsTable(layerName,startTime,endTime,checkState,layerId,timeFormat,offset)
+        self.addRowToOptionsTable(layerName,checkState,layerId,offset,timeFormat,startTime,endTime)
 
-    def addRowToOptionsTable(self,layerName,startTime,endTime,checkState,layerId,timeFormat,offset):
+    def addRowToOptionsTable(self,layerName,checkState,layerId,offset,timeFormat="",startTime="",endTime=""):
         """insert a new row into optionsDialog.tableWidget"""
         # insert row
         row=self.optionsDialog.tableWidget.rowCount()
