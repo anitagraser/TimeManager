@@ -13,7 +13,7 @@ The aim of '''Time Manager plugin for QGIS''' is to provide comfortable browsing
 
 ## What Time Manager currently does
 
-Time Manager filters your vector datasets (It only works for vector data!) and displays only features with timestamps in the user specified time frame. Timestamps have to be in one of the following formats:
+Time Manager filters your datasets and displays only features with timestamps in the user specified time frame. Timestamps have to be in one of the following formats:
 
 * YYYY-MM-DD HH:MM:SS.ssssss
 * YYYY-MM-DD HH:MM:SS
