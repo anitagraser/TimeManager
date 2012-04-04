@@ -50,16 +50,22 @@
 <p>Time Manager filters your datasets and displays only features with timestamps in the user specified time frame. Timestamps have to be in one of the following formats:</p>
 
 <ul>
+<li>YYYY-MM-DD HH:MM:SS.ssssss</li>
 <li>YYYY-MM-DD HH:MM:SS</li>
 <li>YYYY-MM-DD HH:MM</li>
 <li>YYYY-MM-DD</li>
-</ul><p>Time Manager plugin requires QGIS &gt;= 1.6.</p>
+<li>YYYY/MM/DD HH:MM:SS</li>
+</ul>
+
+<p>Time Manager plugin requires QGIS &gt;= 1.6.</p>
 
 <p>The biggest tested dataset was a Spatialite table with indexed timestamps containing approximately 400,000 points, covering a time span of 24 hours. Stepping through the data for example in 1-hour-sized steps works without problems.</p>
 
 <p>Time Manager 0.3 supports exporting image series based on the defined animation settings. Our goal for future versions is to include a tool that creates actual animations from these image series. Until then, external programs can be used for this last step. A good option is memcoder. This is how it's used to create an .avi from all images within a folder: </p>
 
 <p><code>mencoder "mf://*.PNG" -mf fps=10 -o output.avi -ovc lavc -lavcopts vcodec=mpeg4</code></p>
+
+<iframe width="560" height="315" src="http://www.youtube.com/embed/kaZZVixiFcM" frameborder="0" allowfullscreen></iframe>
 
 <h2>What are the limitations?</h2>
 
