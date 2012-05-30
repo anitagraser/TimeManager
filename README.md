@@ -4,8 +4,8 @@ A plugin for QGIS by Anita Graser
 
 * project home and bug tracker: https://github.com/anitagraser/TimeManager
 * plugin repository: http://plugins.qgis.org/plugins/plugins.xml
-* Wiki: https://github.com/anitagraser/TimeManager/wiki
 
+Latest news will be published on my blog: http://underdark.wordpress.com/tag/time-manager/
 
 ## What is the goal
 
