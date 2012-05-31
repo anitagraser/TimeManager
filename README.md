@@ -40,12 +40,8 @@ the Free Software Foundation; either version 2 of the License, or
 
 QGIS:
 
-* Requires QGIS >= 1.6.
+* Requires QGIS >= 1.6 with Python 2.7
 * No other plugin dependencies: runs on a default QGIS installation
-
-Python:
-
-* Tested using Python 2.7
 
 ## What are the limitations?
 
