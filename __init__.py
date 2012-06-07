@@ -11,7 +11,7 @@ def version():
     return "Version 0.6"
 
 def qgisMinimumVersion():
-    return '1.6.0' 
+    return '1.7.0' 
 
 def authorName():
     return "Anita Graser"
