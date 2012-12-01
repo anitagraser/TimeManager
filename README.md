@@ -40,8 +40,8 @@ the Free Software Foundation; either version 2 of the License, or
 
 QGIS:
 
-* Requires QGIS >= 1.6 with Python 2.7
-* No other plugin dependencies: runs on a default QGIS installation
+* Requires QGIS >= 1.7 with Python 2.7
+* other plugin dependencies: Python module dateutil (included e.g. in matplotlib available in OSGeo4W)
 
 ## What are the limitations?
 
