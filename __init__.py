@@ -15,6 +15,11 @@ def qgisMinimumVersion():
 
 def authorName():
     return "Anita Graser"
+def author():
+    return "Anita Graser"
+    
+def email():
+    return "anitagraser@gmx.at"
 
 def classFactory(iface):
     return timemanager(iface)
