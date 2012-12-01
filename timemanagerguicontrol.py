@@ -274,9 +274,12 @@ class TimeManagerGuiControl(QObject):
         except: 
             #QMessageBox.information(self.iface.mainWindow(),'Test Output','Error at: self.mapLayers[self.layerIds[comboIndex]]')
             return
-        provider=layer.dataProvider()
-        try: # this function will crash on raster layers
-            fieldmap=provider.fields()
+        try: 
+            provider=layer.dataProvider() # this will crash on OpenLayers layers
+        except AttributeError:
+            return
+        try:
+            fieldmap=provider.fields() # this function will crash on raster layers
         except:
             #QMessageBox.information(self.iface.mainWindow(),'Test Output','Error at: provider.fields()')
             return
