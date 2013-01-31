@@ -7,6 +7,8 @@ A plugin for QGIS by Anita Graser
 
 Latest news will be published on my blog: http://underdark.wordpress.com/tag/time-manager/
 
+Please note that Time Manager does not work with the current development version of QGIS. (https://github.com/anitagraser/TimeManager/issues/34)
+
 ## What is the goal
 
 The aim of '''Time Manager plugin for QGIS''' is to provide comfortable browsing through temporal geodata. A dock widget provides a time slider and a configuration dialog for your layers to manage.
