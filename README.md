@@ -51,7 +51,7 @@ The plug-in uses Python's datetime module for calculations. It is therefore limi
 
 * Dates must be according to the format mentioned above
 * Dates must accord to the Gregorian calendar
-* **The range of years is limited**. The exact range of manageable years is dependent on your platform. This is due to limitations in time.mktime.
+* **The range of years is limited**. The exact range of manageable years is dependent on your platform. This is due to limitations in time.mktime. (Problems have been reported with dates before 1970.)
 * Limits to the size/resolution of the time frame size
 
 We currently don't support:
