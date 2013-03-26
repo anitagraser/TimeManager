@@ -49,8 +49,9 @@ QGIS:
 
 The plug-in uses Python's datetime module for calculations. It is therefore limited to the module's functionality. This enfolds (not exhaustive):
 
+* Dates must be according to the format mentioned above
 * Dates must accord to the Gregorian calendar
-* **The range of manageable years is limited due to limitations in time.mktime.** The exact range is platform dependent.
+* **The range of years is limited**. The exact range of manageable years is dependent on your platform. This is due to limitations in time.mktime.
 * Limits to the size/resolution of the time frame size
 
 We currently don't support:
