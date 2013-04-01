@@ -5,9 +5,12 @@ A plugin for QGIS by Anita Graser
 * project home and bug tracker: https://github.com/anitagraser/TimeManager
 * plugin repository: http://plugins.qgis.org/plugins/plugins.xml
 
-Latest news will be published on my blog: http://underdark.wordpress.com/tag/time-manager/
+Latest news will be published on my blog: http://anitagraser.com/tag/time-manager/
 
 Please note that Time Manager does not work with the current development version of QGIS. (https://github.com/anitagraser/TimeManager/issues/34)
+
+
+[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=underdark&url=https://github.com/anitagraser/TimeManager&title=TimeManager&language=&tags=github&category=software)
 
 ## What is the goal
 
