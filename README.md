@@ -71,6 +71,3 @@ It is not possible to time-manage Delimited Text layers. This is a limitation of
 ## Where to download Time Manager
 
 Time Manager is available through QGIS Plugin Repository http://plugins.qgis.org/plugins/timemanager/
-
-[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=underdark&url=https://github.com/anitagraser/TimeManager&title=TimeManager&language=&tags=github&category=software)
-
