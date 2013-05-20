@@ -5,7 +5,9 @@ A plugin for QGIS by Anita Graser
 * project home and bug tracker: https://github.com/anitagraser/TimeManager
 * plugin repository: http://plugins.qgis.org/plugins/plugins.xml
 
-Latest news will be published on my blog: http://underdark.wordpress.com/tag/time-manager/
+Latest news will be published on my blog: http://anitagraser.com/tag/time-manager/
+
+Please note that Time Manager does not work with the current development version of QGIS. (https://github.com/anitagraser/TimeManager/issues/34)
 
 ## What is the goal
 
@@ -47,8 +49,9 @@ QGIS:
 
 The plug-in uses Python's datetime module for calculations. It is therefore limited to the module's functionality. This enfolds (not exhaustive):
 
+* Dates must be according to the format mentioned above
 * Dates must accord to the Gregorian calendar
-* The range of manageable years is limited due to limitations in time.mktime. The exact range is platform dependent.
+* **The range of years is limited**. The exact range of manageable years is dependent on your platform. This is due to limitations in time.mktime. (Problems have been reported with dates before 1970.)
 * Limits to the size/resolution of the time frame size
 
 We currently don't support:
