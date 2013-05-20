@@ -7,7 +7,6 @@ A plugin for QGIS by Anita Graser
 
 Latest news will be published on my blog: http://anitagraser.com/tag/time-manager/
 
-Please note that Time Manager does not work with the current development version of QGIS. (https://github.com/anitagraser/TimeManager/issues/34)
 
 ## What is the goal
 
@@ -40,10 +39,11 @@ the Free Software Foundation; either version 2 of the License, or
 
 ## Dependencies
 
-QGIS:
+The latest version of Time Manager requries QGIS >= 1.9 with Python 2.7.
 
-* Requires QGIS >= 1.7 with Python 2.7
-* other plugin dependencies: Python module dateutil (included e.g. in matplotlib available in OSGeo4W)
+Time Manager versions <= 0.7 require QGIS 1.7 or 1.8 with Python 2.7.
+
+other plugin dependencies: Python module dateutil (included e.g. in matplotlib available in OSGeo4W)
 
 ## What are the limitations?
 
