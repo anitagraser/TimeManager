@@ -2,7 +2,7 @@
 name=TimeManager
 description=Working with temporal data
 version=0.8
-qgisMinimumVersion=1.7.0
+qgisMinimumVersion=1.9.0
 author=Anita Graser
 email=anitagraser@gmx.at
 icon=icon.png

@@ -286,7 +286,7 @@ class TimeManagerGuiControl(QObject):
         self.addLayerDialog.comboBoxStart.clear()
         self.addLayerDialog.comboBoxEnd.clear()
         self.addLayerDialog.comboBoxEnd.addItem('') # this box is optional, so we add an empty item
-        for (k,attr) in fieldmap.iteritems():
+        for attr in fieldmap: 
             self.addLayerDialog.comboBoxStart.addItem(attr.name())
             self.addLayerDialog.comboBoxEnd.addItem(attr.name())
 
