@@ -241,7 +241,7 @@ class TimeManagerGuiControl(QObject):
             #if type(layer).__name__ == "QgsVectorLayer" and layer not in managedLayers:
             if layer not in managedLayers:
                 self.layerIds.append(name)
-                tempname = str(layer.name())#.rstrip('01234567890') # stripping out the trailing numeric code
+                tempname = unicode(layer.name())#.rstrip('01234567890') # stripping out the trailing numeric code
                 self.addLayerDialog.comboBoxLayers.addItem(tempname)
 
         if len(self.layerIds) == 0:
