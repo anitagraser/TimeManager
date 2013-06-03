@@ -200,6 +200,10 @@ class TimeManagerControl(QObject):
         """move one step forward in time"""
         self.timeLayerManager.stepForward()
         self.writeSettings()
+        
+    def getCurrentTimePosition(self):
+        """get timeLayerManager's current time position"""
+        return self.timeLayerManager.getCurrentTimePosition()
 
     def setCurrentTimePosition(self,timePosition):
         """set timeLayerManager's current time position"""

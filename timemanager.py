@@ -16,6 +16,7 @@
 
 
 from qgis.core import *
+from qgis.utils import qgsfunction
 from timemanagercontrol import TimeManagerControl
 import resources # loads the icons
 
@@ -24,24 +25,28 @@ class timemanager:
     name = "TimeManagerPlugin"
     longName = "TimeManager Plugin for QGIS >= 1.9"
     description = "Working with temporal vector data"
-    version = "Version 0.8.1" # update in __init__.py too!
+    version = "Version 0.8.2" # update in __init__.py too!
     qgisMinimumVersion = '1.9.0' 
     author = "Anita Graser"
     pluginUrl = "https://github.com/anitagraser/TimeManager"
+    control = None
 
     def __init__( self, iface ):
         """initialize the plugin"""
-        self.iface = iface
-        self.control = TimeManagerControl(self.iface)
+        global control 
+        control = TimeManagerControl(iface)
         
     def initGui( self ):
         """initialize the gui"""
-        self.control.initGui()
+        control.initGui()
 
     def unload( self ):
         """Unload the plugin"""
-        self.control.unload()
-  
-
+        control.unload()
+        
+    @qgsfunction(0, "TimeManager")
+    def animation_datetime(values, feature, parent):
+        """called by QGIS to determine the current animation time"""
+        return str(control.getCurrentTimePosition())
   
             

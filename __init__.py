@@ -8,7 +8,7 @@ def description():
     return "The aim of TimeManager plugin for QGIS is to provide comfortable browsing through temporal geodata. A dock widget provides a time slider and a configuration dialog for your layers to manage."
 
 def version():
-    return "Version 0.8.1"
+    return "Version 0.8.2"
 
 def qgisMinimumVersion():
     return '1.9.0' 
