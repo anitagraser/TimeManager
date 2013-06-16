@@ -5,15 +5,22 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 from qgis.core import *
 
 from timelayer import NotATimeAttributeError
 
 class TimeLayerManager(QObject):
     """Class manages all layers that can be queried temporally and provides navigation in time. Parenthesized sections are not implemented yet. All functions, besides the get functions, trigger a redraw."""
+    
+    timeRestrictionsRefreshed = pyqtSignal(datetime)#object)
+    projectTimeExtentsChanged = pyqtSignal(object)#tuple)
+    lastLayerRemoved = pyqtSignal()
+    toggledManagement = pyqtSignal(object)
 
-    def __init__(self):
+    def __init__(self,iface):
         QObject.__init__(self)
+        self.iface = iface
         self.timeLayerList = []
         self.projectTimeExtents = ()
         self.timeFrameType = 'days' # default
@@ -122,7 +129,8 @@ class TimeLayerManager(QObject):
                 if not timeLayer.hasTimeRestriction():
                     return
                 timeLayer.deleteTimeRestriction()
-        self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition)   
+        #self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition)   
+        self.timeRestrictionsRefreshed.emit(self.currentTimePosition)
                 
     def registerTimeLayer( self, timeLayer ):
         """Register a new layer for management and update the project's temporal extent"""
@@ -147,7 +155,8 @@ class TimeLayerManager(QObject):
         # if the last layer was removed:
         if not self.hasLayers():
             self.setProjectTimeExtents((None,None))
-            self.emit(SIGNAL('lastLayerRemoved()'),)
+            #self.emit(SIGNAL('lastLayerRemoved()'),)
+            self.lastLayerRemoved.emit()
         self.refresh()
 
     def updateProjectTimeExtents(self):
@@ -165,8 +174,10 @@ class TimeLayerManager(QObject):
     def setProjectTimeExtents(self,timeExtents):
         """set projectTimeExtents to given time extent and emit signal 'projectTimeExtentsChanged(list)'"""
         self.projectTimeExtents = timeExtents
+        #QMessageBox.information(self.iface.mainWindow(),'Debug Output','setProjectTimeExtents\nTime extents: '+str(timeExtents)+'\nType: '+str(type(timeExtents)))
         try:
-            self.emit(SIGNAL('projectTimeExtentsChanged(PyQt_PyObject)'),timeExtents)
+            #self.emit(SIGNAL('projectTimeExtentsChanged(PyQt_PyObject)'),timeExtents)
+            self.projectTimeExtentsChanged.emit(timeExtents)
         except TypeError: # if timeExtent is not specified
             pass
 
@@ -181,24 +192,27 @@ class TimeLayerManager(QObject):
     def setTimeFrameType(self, frameType):
         """Defines the type of the time frame, accepts all values usable by timedelta objects:
         days, seconds, microseconds, milliseconds, minutes, hours, weeks"""
+        #QMessageBox.information(self.iface.mainWindow(),'Debug Output','Time frame type: '+str(frameType))
         self.timeFrameType = frameType
         self.refresh()
 
     def setTimeFrameSize( self, frameSize ):
         """Defines the size of the time frame"""
+        #QMessageBox.information(self.iface.mainWindow(),'Debug Output','Time frame size: '+str(frameSize))
         self.timeFrameSize = frameSize
         self.refresh()
 
     def setCurrentTimePosition( self, timePosition ):
         """Defines the currently selected point in time, which is at the beginning of the time-frame."""
-	     # TODO: Test
+         # TODO: Test
         if type(timePosition) == QDateTime:
             # convert QDateTime to datetime
             timePosition = datetime.strptime( str(timePosition.toString('yyyy-MM-dd hh:mm:ss.zzz')) ,"%Y-%m-%d %H:%M:%S.%f")
         elif type(timePosition) == int or type(timePosition) == float:
             timePosition = datetime.fromordinal(int(timePosition))
         self.currentTimePosition = timePosition
-        self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition) 
+        #self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition) 
+        self.timeRestrictionsRefreshed.emit(self.currentTimePosition)
         if self.isEnabled():
             self.refresh()
 
@@ -206,7 +220,8 @@ class TimeLayerManager(QObject):
         """Shifts query forward in time by one time frame"""
         if self.currentTimePosition != None:
             self.currentTimePosition += self.timeFrame()
-            self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition) 
+            #self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition) 
+            self.timeRestrictionsRefreshed.emit(self.currentTimePosition)
         if self.isEnabled():
             self.refresh()
 
@@ -214,7 +229,8 @@ class TimeLayerManager(QObject):
         """Shifts query back in time by one time frame"""
         if self.currentTimePosition != None:
             self.currentTimePosition -= self.timeFrame()
-            self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition) 
+            #self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition) 
+            self.timeRestrictionsRefreshed.emit(self.currentTimePosition)
         if self.isEnabled():
             self.refresh()
 
@@ -224,7 +240,8 @@ class TimeLayerManager(QObject):
             self.deactivateTimeManagement()
         else:
             self.activateTimeManagement()
-        self.emit(SIGNAL('toggledManagement(PyQt_PyObject)'),self.timeManagementEnabled)
+        #self.emit(SIGNAL('toggledManagement(PyQt_PyObject)'),self.timeManagementEnabled)
+        self.toggledManagement.emit(self.timeManagementEnabled)
 
     def activateTimeManagement(self):
         """Enable all temporal constraints on managed (and configured) layers. (Original subsets should still be active.)"""

@@ -65,8 +65,8 @@ class TimeVectorLayer(TimeLayer):
         provider=self.layer.dataProvider()
         fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
         toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
-        startStr = str(provider.minimumValue(fromTimeAttributeIndex).toString())
-        endStr = str(provider.maximumValue(toTimeAttributeIndex).toString())
+        startStr = str(provider.minimumValue(fromTimeAttributeIndex))#.toString())
+        endStr = str(provider.maximumValue(toTimeAttributeIndex))#.toString())
         try:
             startTime = self.strToDatetime(startStr)
         except ValueError:

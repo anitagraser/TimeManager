@@ -62,6 +62,8 @@ class TimeManagerProjectHandler(QObject):
                      'bool' : prj.readBoolEntry,
                      'datetime' : prj.readDoubleEntry, # we converted datetimes to float in writeSetting()
                      'QStringList' : prj.readListEntry,
+                     'list' : prj.readListEntry,
+                     '[]' : prj.readListEntry,
                      'pyqtWrapperType' : prj.readListEntry # strange name for QStringList
                      }
         
