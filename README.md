@@ -39,11 +39,11 @@ the Free Software Foundation; either version 2 of the License, or
 
 ## Dependencies
 
-The latest version of Time Manager requries QGIS >= 1.9 with Python 2.7.
+Time Manager 1.0 reqires **QGIS 2.0** with Python 2.7.
 
-Time Manager versions <= 0.7 require QGIS 1.7 or 1.8 with Python 2.7.
+Other plugin dependencies: Python module dateutil (included e.g. in matplotlib available in OSGeo4W)
 
-other plugin dependencies: Python module dateutil (included e.g. in matplotlib available in OSGeo4W)
+If you are running an **older version of QGIS**, Time Manager versions <= 0.7 require QGIS 1.7 or 1.8 with Python 2.7.
 
 ## What are the limitations?
 
