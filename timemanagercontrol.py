@@ -18,6 +18,7 @@ class TimeManagerControl(QObject):
         """initialize the plugin control"""
         QObject.__init__(self)
         self.iface = iface       
+        QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.__init__()')
         
         self.loopAnimation = False
         self.saveAnimationPath = os.path.expanduser('~')
@@ -25,7 +26,7 @@ class TimeManagerControl(QObject):
         self.projectHandler = TimeManagerProjectHandler(self.iface)
         self.timeLayerManager = TimeLayerManager(self.iface)
         self.timer = QTimer()
-        self.initGui()
+        #self.initGui()
         
         # QGIS iface connections
         #QObject.connect(self.iface,SIGNAL('projectRead ()'),self.readSettings)
@@ -51,8 +52,11 @@ class TimeManagerControl(QObject):
 
     def disableAnimationExport(self):
         """disable the animation export button"""
-        self.guiControl.disableAnimationExport()
-
+        try:
+            self.guiControl.disableAnimationExport()
+        except AttributeError:
+            pass
+          
     def restoreDefaults(self):
         """restore plugin default settings"""
         self.animationFrameLength = 2000 # default to 2000 milliseconds
@@ -65,6 +69,7 @@ class TimeManagerControl(QObject):
 
     def initGui(self):
         """initialize the plugin dock"""
+        QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.initGui()')
         self.guiControl = TimeManagerGuiControl(self.iface,self.timeLayerManager)
         
         #QObject.connect(self.guiControl,SIGNAL('stopAnimation()'),self.stopAnimation)   
@@ -139,6 +144,7 @@ class TimeManagerControl(QObject):
 
     def unload(self):
         """unload the plugin"""
+        QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.unload()')
         self.timeLayerManager.deactivateTimeManagement() 
         self.iface.unregisterMainWindowAction(self.actionShowSettings) 
         self.guiControl.unload()
