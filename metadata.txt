@@ -1,12 +1,12 @@
 [general]
 name=TimeManager
 description=Working with temporal data
-version=1.0
+version=1.0.1
 qgisMinimumVersion=2.0
 author=Anita Graser
 email=anitagraser@gmx.at
 icon=icon.png
 experimental=True
-homepage=http://anitagraser.github.com/TimeManager/
+homepage=http://anitagraser.com/projects/time-manager/
 tracker=https://github.com/anitagraser/TimeManager
 repository=https://github.com/anitagraser/TimeManager

@@ -18,37 +18,7 @@ class TimeManagerControl(QObject):
         """initialize the plugin control"""
         QObject.__init__(self)
         self.iface = iface       
-        QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.__init__()')
-        
-        self.loopAnimation = False
-        self.saveAnimationPath = os.path.expanduser('~')
-        
-        self.projectHandler = TimeManagerProjectHandler(self.iface)
-        self.timeLayerManager = TimeLayerManager(self.iface)
-        self.timer = QTimer()
-        #self.initGui()
-        
-        # QGIS iface connections
-        #QObject.connect(self.iface,SIGNAL('projectRead ()'),self.readSettings)
-        #QObject.connect(self.iface,SIGNAL('newProjectCreated()'),self.restoreDefaults)
-        #QObject.connect(self.iface,SIGNAL('newProjectCreated()'),self.disableAnimationExport)
-        self.iface.projectRead.connect(self.readSettings)
-        self.iface.newProjectCreated.connect(self.restoreDefaults)
-        self.iface.newProjectCreated.connect(self.disableAnimationExport)
-         
-        # prepare animation
-        #QObject.connect(self.timer,SIGNAL('timeout()'),self.playAnimation)
-        self.timer.timeout.connect(self.playAnimation)
-        
-        # establish connections to QgsMapLayerRegistry
-        #QObject.connect(QgsMapLayerRegistry.instance(),SIGNAL('layerWillBeRemoved(QString)'),self.timeLayerManager.removeTimeLayer)
-        #QObject.connect(QgsMapLayerRegistry.instance(),SIGNAL('removedAll()'),self.timeLayerManager.clearTimeLayerList)   
-        #QObject.connect(QgsMapLayerRegistry.instance(),SIGNAL('removedAll()'),self.disableAnimationExport) 
-        QgsMapLayerRegistry.instance().layerWillBeRemoved.connect(self.timeLayerManager.removeTimeLayer)
-        QgsMapLayerRegistry.instance().removeAll.connect(self.timeLayerManager.clearTimeLayerList)   
-        QgsMapLayerRegistry.instance().removeAll.connect(self.disableAnimationExport) 
-        
-        self.restoreDefaults()
+        #QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.__init__()')
 
     def disableAnimationExport(self):
         """disable the animation export button"""
@@ -69,26 +39,33 @@ class TimeManagerControl(QObject):
 
     def initGui(self):
         """initialize the plugin dock"""
-        QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.initGui()')
+        #QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.initGui()')
+
+        self.loopAnimation = False
+        self.saveAnimationPath = os.path.expanduser('~')
+        
+        self.projectHandler = TimeManagerProjectHandler(self.iface)
+        self.timeLayerManager = TimeLayerManager(self.iface)
+        self.timer = QTimer()
+        
+        # QGIS iface connections
+        self.iface.projectRead.connect(self.readSettings)
+        self.iface.newProjectCreated.connect(self.restoreDefaults)
+        self.iface.newProjectCreated.connect(self.disableAnimationExport)
+         
+        # prepare animation
+        self.timer.timeout.connect(self.playAnimation)
+        
+        # establish connections to QgsMapLayerRegistry
+        QgsMapLayerRegistry.instance().layerWillBeRemoved.connect(self.timeLayerManager.removeTimeLayer)
+        QgsMapLayerRegistry.instance().removeAll.connect(self.timeLayerManager.clearTimeLayerList)   
+        QgsMapLayerRegistry.instance().removeAll.connect(self.disableAnimationExport) 
+        
+        self.restoreDefaults()
+
+
         self.guiControl = TimeManagerGuiControl(self.iface,self.timeLayerManager)
         
-        #QObject.connect(self.guiControl,SIGNAL('stopAnimation()'),self.stopAnimation)   
-        #QObject.connect(self.guiControl,SIGNAL('showOptions()'),self.showOptionsDialog) 
-        #QObject.connect(self.guiControl,SIGNAL('exportVideo()'),self.exportVideo)
-        #QObject.connect(self.guiControl,SIGNAL('toggleTime()'),self.toggleTimeManagement)
-        #QObject.connect(self.guiControl,SIGNAL('back()'),self.stepBackward)
-        #QObject.connect(self.guiControl,SIGNAL('forward()'),self.stepForward)
-        #QObject.connect(self.guiControl,SIGNAL('play()'),self.toggleAnimation)   
-        #QObject.connect(self.guiControl,SIGNAL('setCurrentTime(PyQt_PyObject)'),self.setCurrentTimePosition)
-        #QObject.connect(self.guiControl,SIGNAL('setTimeFrameType(QString)'),self.setTimeFrameType)
-        #QObject.connect(self.guiControl,SIGNAL('setTimeFrameSize(PyQt_PyObject)'),self.setTimeFrameSize)        
-        #QObject.connect(self.guiControl,SIGNAL('saveOptionsStart()'),self.timeLayerManager.clearTimeLayerList)        
-        #QObject.connect(self.guiControl,SIGNAL('saveOptionsEnd()'),self.writeSettings) 
-        #QObject.connect(self.guiControl,SIGNAL('saveOptionsEnd()'),self.timeLayerManager.refresh) # sets the time restrictions again              
-        #QObject.connect(self.guiControl,SIGNAL('setAnimationOptions(PyQt_PyObject,PyQt_PyObject,PyQt_PyObject)'),self.setAnimationOptions)
-        #QObject.connect(self.guiControl,SIGNAL('registerTimeLayer(PyQt_PyObject)'),self.timeLayerManager.registerTimeLayer)
-
-        #self.guiControl.stopAnimation.connect(self.stopAnimation)   
         self.guiControl.showOptions.connect(self.showOptionsDialog) 
         self.guiControl.exportVideo.connect(self.exportVideo)
         self.guiControl.toggleTime.connect(self.toggleTimeManagement)
@@ -109,14 +86,9 @@ class TimeManagerControl(QObject):
         self.actionShowSettings = QAction(u"Show Time Manager Settings", self.iface.mainWindow())
         self.iface.registerMainWindowAction(self.actionShowSettings, "F8")
         self.guiControl.addActionShowSettings(self.actionShowSettings)
-        #QObject.connect(self.actionShowSettings, SIGNAL('triggered()'),self.showOptionsDialog)
         self.actionShowSettings.triggered.connect(self.showOptionsDialog)
         
         # establish connections to timeLayerManager
-        #QObject.connect(self.timeLayerManager,SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.guiControl.refreshTimeRestrictions)
-        #QObject.connect(self.timeLayerManager,SIGNAL('projectTimeExtentsChanged(PyQt_PyObject)'),self.guiControl.updateTimeExtents)
-        #QObject.connect(self.timeLayerManager,SIGNAL('toggledManagement(PyQt_PyObject)'),self.toggleOnOff)  
-        #QObject.connect(self.timeLayerManager,SIGNAL('lastLayerRemoved()'),self.disableAnimationExport)  
         self.timeLayerManager.timeRestrictionsRefreshed.connect(self.guiControl.refreshTimeRestrictions)
         self.timeLayerManager.projectTimeExtentsChanged.connect(self.guiControl.updateTimeExtents)
         self.timeLayerManager.toggledManagement.connect(self.toggleOnOff)  
@@ -144,10 +116,18 @@ class TimeManagerControl(QObject):
 
     def unload(self):
         """unload the plugin"""
-        QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.unload()')
+        #QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.unload()')
         self.timeLayerManager.deactivateTimeManagement() 
         self.iface.unregisterMainWindowAction(self.actionShowSettings) 
         self.guiControl.unload()
+        
+        self.iface.projectRead.disconnect(self.readSettings)
+        self.iface.newProjectCreated.disconnect(self.restoreDefaults)
+        self.iface.newProjectCreated.disconnect(self.disableAnimationExport)
+        self.timer.timeout.disconnect(self.playAnimation)
+        QgsMapLayerRegistry.instance().layerWillBeRemoved.disconnect(self.timeLayerManager.removeTimeLayer)
+        QgsMapLayerRegistry.instance().removeAll.disconnect(self.timeLayerManager.clearTimeLayerList)   
+        QgsMapLayerRegistry.instance().removeAll.disconnect(self.disableAnimationExport)                
         
     def toggleAnimation(self):
         """toggle animation on/off"""

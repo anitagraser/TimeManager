@@ -25,7 +25,7 @@ class timemanager:
     name = "TimeManagerPlugin"
     longName = "TimeManager Plugin for QGIS >= 2.0"
     description = "Working with temporal vector data"
-    version = "Version 1.0" # update in __init__.py too!
+    version = "Version 1.0.1" 
     qgisMinimumVersion = '2.0' 
     author = "Anita Graser"
     pluginUrl = "https://github.com/anitagraser/TimeManager"
@@ -34,7 +34,10 @@ class timemanager:
     def __init__( self, iface ):
         """initialize the plugin"""
         global control 
-        control = TimeManagerControl(iface)
+        try:
+            control
+        except NameError:
+            control = TimeManagerControl(iface)
         
     def initGui( self ):
         """initialize the gui"""

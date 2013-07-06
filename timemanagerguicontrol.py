@@ -57,17 +57,6 @@ class TimeManagerGuiControl(QObject):
         self.dock.pushButtonExportVideo.setEnabled(False) # only enabled if there are managed layers
         self.setTimeFrameType('days') # should be 'days'
         
-        #QObject.connect(self.dock.pushButtonOptions, SIGNAL('clicked()'),self.optionsClicked) 
-        #QObject.connect(self.dock.pushButtonExportVideo, SIGNAL('clicked()'),self.exportVideoClicked)
-        #QObject.connect(self.dock.pushButtonToggleTime,SIGNAL('clicked()'),self.toggleTimeClicked)
-        #QObject.connect(self.dock.pushButtonBack,SIGNAL('clicked()'),self.backClicked)
-        #QObject.connect(self.dock.pushButtonForward,SIGNAL('clicked()'),self.forwardClicked)
-        #QObject.connect(self.dock.pushButtonPlay,SIGNAL('clicked()'),self.playClicked)   
-        #QObject.connect(self.dock.dateTimeEditCurrentTime,SIGNAL('dateTimeChanged(QDateTime)'),self.currentTimeChanged)
-        #QObject.connect(self.dock.horizontalTimeSlider,SIGNAL('valueChanged(int)'),self.currentTimeChanged)
-        #QObject.connect(self.dock.comboBoxTimeExtent,SIGNAL('currentIndexChanged(QString)'),self.currentTimeFrameTypeChanged)
-        #QObject.connect(self.dock.spinBoxTimeExtent,SIGNAL('valueChanged(int)'),self.currentTimeFrameSizeChanged)          
-        #QObject.connect(self.iface.mapCanvas(), SIGNAL("renderComplete(QPainter *)"), self.renderLabel)
         self.dock.pushButtonOptions.clicked.connect(self.optionsClicked) 
         self.dock.pushButtonExportVideo.clicked.connect(self.exportVideoClicked)
         self.dock.pushButtonToggleTime.clicked.connect(self.toggleTimeClicked)
@@ -81,39 +70,30 @@ class TimeManagerGuiControl(QObject):
         self.iface.mapCanvas().renderComplete.connect(self.renderLabel)
 		
     def optionsClicked(self):
-        #self.emit(SIGNAL('showOptions()'),)
         self.showOptions.emit()
         
     def exportVideoClicked(self):
-        #self.emit(SIGNAL('exportVideo()'),)
         self.exportVideo.emit()
         
     def toggleTimeClicked(self):
-        #self.emit(SIGNAL('toggleTime()'),)
         self.toggleTime.emit()
         
     def backClicked(self):
-        #self.emit(SIGNAL('back()'),)
         self.back.emit()
         
     def forwardClicked(self):
-        #self.emit(SIGNAL('forward()'),)
         self.forward.emit()
         
     def playClicked(self):
-        #self.emit(SIGNAL('play()'),)
         self.play.emit()
         
     def currentTimeChanged(self,datetime):
-        #self.emit(SIGNAL('setCurrentTime(PyQt_PyObject)'),datetime)
         self.signalCurrentTime.emit(datetime)
         
     def currentTimeFrameTypeChanged(self,frameType):
-        #self.emit(SIGNAL('setTimeFrameType(QString)'),frameType)
         self.signalTimeFrameType.emit(frameType)
         
     def currentTimeFrameSizeChanged(self,frameSize):
-        #self.emit(SIGNAL('setTimeFrameSize(PyQt_PyObject)'),frameSize)
         self.signalTimeFrameSize.emit(frameSize)
         
     def unload(self):
@@ -164,13 +144,6 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.show()
 
         # establish connections
-        #QObject.connect(self.optionsDialog.pushButtonAdd,SIGNAL('clicked()'),self.showAddLayerDialog)
-        #QObject.connect(self.optionsDialog.pushButtonRemove,SIGNAL('clicked()'),self.removeLayer)
-        #QObject.connect(self.optionsDialog.buttonBox,SIGNAL('accepted()'),self.saveOptions)
-        #QObject.connect(self.optionsDialog.buttonBox,SIGNAL('accepted()'),self.setOptionsDialogToNone)
-        #QObject.connect(self.optionsDialog.buttonBox,SIGNAL('rejected()'),self.setOptionsDialogToNone)
-        #QObject.connect(self.optionsDialog,SIGNAL('rejected()'),self.setOptionsDialogToNone)
-        #QObject.connect(self.optionsDialog.buttonBox,SIGNAL('helpRequested()'),self.showHelp)
         self.optionsDialog.pushButtonAdd.clicked.connect(self.showAddLayerDialog)
         self.optionsDialog.pushButtonRemove.clicked.connect(self.removeLayer)
         self.optionsDialog.buttonBox.accepted.connect(self.saveOptions)
@@ -205,7 +178,6 @@ class TimeManagerGuiControl(QObject):
                 playBackwards = self.optionsDialog.checkBoxBackwards.isChecked()
                 self.showLabel = self.optionsDialog.checkBoxLabel.isChecked()
                 loopAnimation = self.optionsDialog.checkBoxLoop.isChecked()
-                #self.emit(SIGNAL('setAnimationOptions(PyQt_PyObject,PyQt_PyObject,PyQt_PyObject)'),animationFrameLength,playBackwards,loopAnimation)
                 self.signalAnimationOptions.emit(animationFrameLength,playBackwards,loopAnimation)
                 
                 self.refreshMapCanvas('saveOptions')
@@ -215,7 +187,6 @@ class TimeManagerGuiControl(QObject):
                 else:
                     self.dock.pushButtonExportVideo.setEnabled(False)
                 
-                #self.emit(SIGNAL('saveOptionsEnd()'),)
                 self.saveOptionsEnd.emit()
             else:
                 break
@@ -253,7 +224,6 @@ class TimeManagerGuiControl(QObject):
             QMessageBox.information(self.iface.mainWindow(),'Error','An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+e.value)
             return False
             
-        #self.emit(SIGNAL('registerTimeLayer(PyQt_PyObject)'),timeLayer) 
         self.registerTimeLayer.emit(timeLayer)
         return True
 
@@ -299,8 +269,6 @@ class TimeManagerGuiControl(QObject):
         self.addLayerDialog.show()
 
         # establish connections
-        #QObject.connect(self.addLayerDialog.comboBoxLayers,SIGNAL('currentIndexChanged (int)'),self.getLayerAttributes)
-        #QObject.connect(self.addLayerDialog.buttonBox,SIGNAL('accepted()'),self.addLayerToOptions)
         self.addLayerDialog.comboBoxLayers.currentIndexChanged.connect(self.getLayerAttributes)
         self.addLayerDialog.buttonBox.accepted.connect(self.addLayerToOptions)
 
