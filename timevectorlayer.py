@@ -86,7 +86,14 @@ class TimeVectorLayer(TimeLayer):
             self.deleteTimeRestriction()
             return
         startTime = datetime.strftime(timePosition + timedelta(seconds=self.offset),self.timeFormat)
-        endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),self.timeFormat)
+        if self.toTimeAttribute != self.fromTimeAttribute:
+          # if an end time attribute is set for the layer, then only show features where the current time position
+          # falls between the feature's time from and time to attributes
+          endTime = startTime
+        else:
+          # if no end time attribute has been set for this layer, then show features with a time attribute
+          # which falls somewhere between the current time position and the start position of the next frame         
+          endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),self.timeFormat)
         #subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
         if self.originalSubsetString == "":
             subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
