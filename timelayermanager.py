@@ -260,10 +260,15 @@ class TimeLayerManager(QObject):
         saveListLayers = []
         
         if len(self.projectTimeExtents) > 0:
+            try: # test if projectTimeExtens are populated with datetimes
+                datetime.strftime(self.projectTimeExtents[0], tdfmt)
+            except TypeError: # if Nonetypes:
+                return (saveString,saveListLayers)
+                
             saveString  = datetime.strftime(self.projectTimeExtents[0], tdfmt) + ';'
             saveString += datetime.strftime(self.projectTimeExtents[1], tdfmt) + ';'
-            saveString += datetime.strftime(self.currentTimePosition, tdfmt) + ';'
-            
+            saveString += datetime.strftime(self.currentTimePosition, tdfmt) + ';'            
+
             for timeLayer in self.timeLayerList:
                 saveListLayers.append(timeLayer.getSaveString())
         

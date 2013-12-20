@@ -259,21 +259,19 @@ class TimeManagerControl(QObject):
         
     def writeSettings(self):  
         """write all relevant settings to the project file """
-        try:
-            (timeLayerManagerSettings,timeLayerList) = self.timeLayerManager.getSaveString()
-        except:
-            return
-            
-        settings= { 'animationFrameLength': self.animationFrameLength,
-                 'playBackwards': self.playBackwards,
-                 'loopAnimation': self.loopAnimation,
-                 'timeLayerManager': timeLayerManagerSettings,
-                 'timeLayerList': timeLayerList,
-                 'currentMapTimePosition': self.currentMapTimePosition,
-                 'timeFrameType': self.timeLayerManager.getTimeFrameType(),
-                 'timeFrameSize': self.timeLayerManager.getTimeFrameSize() }
-                 
-        self.projectHandler.writeSettings(settings)
+        (timeLayerManagerSettings,timeLayerList) = self.timeLayerManager.getSaveString()
+        
+        if timeLayerManagerSettings:    
+            settings= { 'animationFrameLength': self.animationFrameLength,
+                     'playBackwards': self.playBackwards,
+                     'loopAnimation': self.loopAnimation,
+                     'timeLayerManager': timeLayerManagerSettings,
+                     'timeLayerList': timeLayerList,
+                     'currentMapTimePosition': self.currentMapTimePosition,
+                     'timeFrameType': self.timeLayerManager.getTimeFrameType(),
+                     'timeFrameSize': self.timeLayerManager.getTimeFrameSize() }
+                     
+            self.projectHandler.writeSettings(settings)
         
     def readSettings(self):
         """load and restore settings from project file"""
