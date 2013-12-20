@@ -257,7 +257,7 @@ class TimeLayerManager(QObject):
         """create a save string that can be put into project file"""
         tdfmt = "%Y-%m-%d %H:%M:%S.%f"
         saveString = ''
-        saveListLayers = QStringList()
+        saveListLayers = []
         
         if len(self.projectTimeExtents) > 0:
             saveString  = datetime.strftime(self.projectTimeExtents[0], tdfmt) + ';'
