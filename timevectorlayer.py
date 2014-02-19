@@ -46,19 +46,24 @@ class TimeVectorLayer(TimeLayer):
         return self.offset
 
     def strToDatetime(self, dtStr):
-       """convert a date/time string into a Python datetime object"""
-       try:
-           # Try the last known format, if not, try all known formats.
-           return datetime.strptime(dtStr, self.timeFormat)
-       except:
-           for fmt in self.supportedFormats:
+             """convert a date/time string into a Python datetime object"""
+       try: # see if time value is timestamp (in seconds)
+	    return datetime.fromtimestamp(long(dtStr))	
+       except ValueError:	
+           try: # see if time value is timestamp (in milliseconds)
+               return datetime.fromtimestamp(long(dtStr)/1000.0)
+           except ValueError:
                try:
-                   self.timeFormat = fmt
                    return datetime.strptime(dtStr, self.timeFormat)
-               except:
-                   pass
-       # If all fail, re-raise the exception
-       raise
+	       except:
+	           for fmt in self.supportedFormats:
+	               try:
+		           self.timeFormat = fmt
+		           return datetime.strptime(dtStr, self.timeFormat)
+		       except:
+		           pass
+	       # If all fail, re-raise the exception
+               raise
 
     def getTimeExtents( self ):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
