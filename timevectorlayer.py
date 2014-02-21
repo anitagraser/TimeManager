@@ -46,7 +46,7 @@ class TimeVectorLayer(TimeLayer):
         return self.offset
 
     def strToDatetime(self, dtStr):
-             """convert a date/time string into a Python datetime object"""
+       """convert a date/time string into a Python datetime object"""
        try: # see if time value is timestamp (in seconds)
 	    return datetime.fromtimestamp(long(dtStr))	
        except ValueError:	
