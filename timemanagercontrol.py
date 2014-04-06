@@ -36,6 +36,7 @@ class TimeManagerControl(QObject):
         self.projectHandler.writeSetting('active',True)
         self.setTimeFrameType('days')
         self.setTimeFrameSize(1)
+        self.animationActive = False
 
     def initGui(self):
         """initialize the plugin dock"""
@@ -46,7 +47,6 @@ class TimeManagerControl(QObject):
         
         self.projectHandler = TimeManagerProjectHandler(self.iface)
         self.timeLayerManager = TimeLayerManager(self.iface)
-        self.timer = QTimer()
         
         # QGIS iface connections
         self.iface.projectRead.connect(self.readSettings)
@@ -54,7 +54,9 @@ class TimeManagerControl(QObject):
         self.iface.newProjectCreated.connect(self.disableAnimationExport)
          
         # prepare animation
-        self.timer.timeout.connect(self.playAnimation)
+        #self.timer = QTimer()   
+        #self.timer.timeout.connect(self.playAnimation)
+        self.iface.mapCanvas().renderComplete.connect(self.waitAfterRenderComplete)
         
         # establish connections to QgsMapLayerRegistry
         QgsMapLayerRegistry.instance().layerWillBeRemoved.connect(self.timeLayerManager.removeTimeLayer)
@@ -124,21 +126,22 @@ class TimeManagerControl(QObject):
         self.iface.projectRead.disconnect(self.readSettings)
         self.iface.newProjectCreated.disconnect(self.restoreDefaults)
         self.iface.newProjectCreated.disconnect(self.disableAnimationExport)
-        self.timer.timeout.disconnect(self.playAnimation)
+        #self.timer.timeout.disconnect(self.playAnimation)
         QgsMapLayerRegistry.instance().layerWillBeRemoved.disconnect(self.timeLayerManager.removeTimeLayer)
         QgsMapLayerRegistry.instance().removeAll.disconnect(self.timeLayerManager.clearTimeLayerList)   
         QgsMapLayerRegistry.instance().removeAll.disconnect(self.disableAnimationExport)                
         
     def toggleAnimation(self):
         """toggle animation on/off"""
-        if self.timer.isActive():
-            self.timer.stop()
+        if self.animationActive: #self.timer.isActive():
+            self.animationActive = False #self.timer.stop()
         else:
-            self.timer.start(self.animationFrameLength) 
+            self.animationActive = True #self.timer.start(self.animationFrameLength) 
+            self.startAnimation()
             self.animationFrameCounter = 0
             expectedNumberOfFrames = self.timeLayerManager.getFrameCount()
             if expectedNumberOfFrames == 0: # will be zero if no layer is time managed
-                self.timer.stop()
+                self.animationActive = False #self.timer.stop()
             self.exportNameDigits = len(str(expectedNumberOfFrames))
 
     def toggleOnOff(self,turnOn):
@@ -153,8 +156,19 @@ class TimeManagerControl(QObject):
             pass
         self.guiControl.refreshMapCanvas('toggleOnOff')
 
+    def startAnimation(self):
+        """kick-start the animation, afterwards the animation will run based on signal chains"""
+        self.waitAfterRenderComplete()
+        
+    def waitAfterRenderComplete(self, painter=None):
+        """when the map canvas signals renderComplete, wait defined millisec until next animation step"""
+        QTimer.singleShot(self.animationFrameLength,self.playAnimation)
+        
     def playAnimation(self):
         """play animation in map window"""
+        if not self.animationActive:
+            return
+        
         # check if the end of the project time extents has been reached
         projectTimeExtents = self.timeLayerManager.getProjectTimeExtents()
         currentTime = self.timeLayerManager.getCurrentTimePosition()
@@ -192,8 +206,8 @@ class TimeManagerControl(QObject):
         """stop the animation in case it's running"""
         if self.saveAnimation:
             QMessageBox.information(self.iface.mainWindow(),'Export finished','The export finished successfully!')
-            self.saveAnimation=False
-        self.timer.stop()
+            self.saveAnimation = False
+        self.animationActive = False #self.timer.stop()
         self.guiControl.turnPlayButtonOff()
         
     def resetAnimation(self):
