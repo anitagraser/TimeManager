@@ -52,10 +52,7 @@ class TimeManagerControl(QObject):
         self.iface.projectRead.connect(self.readSettings)
         self.iface.newProjectCreated.connect(self.restoreDefaults)
         self.iface.newProjectCreated.connect(self.disableAnimationExport)
-         
-        # prepare animation
-        #self.timer = QTimer()   
-        #self.timer.timeout.connect(self.playAnimation)
+        
         self.iface.mapCanvas().renderComplete.connect(self.waitAfterRenderComplete)
         
         # establish connections to QgsMapLayerRegistry
@@ -64,7 +61,6 @@ class TimeManagerControl(QObject):
         QgsMapLayerRegistry.instance().removeAll.connect(self.disableAnimationExport) 
         
         self.restoreDefaults()
-
 
         self.guiControl = TimeManagerGuiControl(self.iface,self.timeLayerManager)
         
@@ -126,22 +122,21 @@ class TimeManagerControl(QObject):
         self.iface.projectRead.disconnect(self.readSettings)
         self.iface.newProjectCreated.disconnect(self.restoreDefaults)
         self.iface.newProjectCreated.disconnect(self.disableAnimationExport)
-        #self.timer.timeout.disconnect(self.playAnimation)
         QgsMapLayerRegistry.instance().layerWillBeRemoved.disconnect(self.timeLayerManager.removeTimeLayer)
         QgsMapLayerRegistry.instance().removeAll.disconnect(self.timeLayerManager.clearTimeLayerList)   
         QgsMapLayerRegistry.instance().removeAll.disconnect(self.disableAnimationExport)                
         
     def toggleAnimation(self):
         """toggle animation on/off"""
-        if self.animationActivated: #self.timer.isActive():
-            self.animationActivated = False #self.timer.stop()
+        if self.animationActivated: 
+            self.animationActivated = False 
         else:
-            self.animationActivated = True #self.timer.start(self.animationFrameLength) 
+            self.animationActivated = True 
             self.startAnimation()
             self.animationFrameCounter = 0
             expectedNumberOfFrames = self.timeLayerManager.getFrameCount()
             if expectedNumberOfFrames == 0: # will be zero if no layer is time managed
-                self.animationActivated = False #self.timer.stop()
+                self.animationActivated = False
             self.exportNameDigits = len(str(expectedNumberOfFrames))
 
     def toggleOnOff(self,turnOn):
@@ -177,7 +172,6 @@ class TimeManagerControl(QObject):
         currentTime = self.timeLayerManager.getCurrentTimePosition()
         
         if self.saveAnimation:
-            self.guiControl.renderLabel(painter)
             fileName = os.path.join(self.saveAnimationPath,"frame"+str(self.animationFrameCounter).zfill(self.exportNameDigits)+".PNG")
             self.saveCurrentMap(fileName)
             self.animationFrameCounter += 1
@@ -210,7 +204,7 @@ class TimeManagerControl(QObject):
         if self.saveAnimation:
             QMessageBox.information(self.iface.mainWindow(),'Export finished','The export finished successfully!')
             self.saveAnimation = False
-        self.animationActivated = False #self.timer.stop()
+        self.animationActivated = False 
         self.guiControl.turnPlayButtonOff()
         
     def resetAnimation(self):
