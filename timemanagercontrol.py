@@ -36,7 +36,7 @@ class TimeManagerControl(QObject):
         self.projectHandler.writeSetting('active',True)
         self.setTimeFrameType('days')
         self.setTimeFrameSize(1)
-        self.animationActive = False
+        self.animationActivated = False
 
     def initGui(self):
         """initialize the plugin dock"""
@@ -133,15 +133,15 @@ class TimeManagerControl(QObject):
         
     def toggleAnimation(self):
         """toggle animation on/off"""
-        if self.animationActive: #self.timer.isActive():
-            self.animationActive = False #self.timer.stop()
+        if self.animationActivated: #self.timer.isActive():
+            self.animationActivated = False #self.timer.stop()
         else:
-            self.animationActive = True #self.timer.start(self.animationFrameLength) 
+            self.animationActivated = True #self.timer.start(self.animationFrameLength) 
             self.startAnimation()
             self.animationFrameCounter = 0
             expectedNumberOfFrames = self.timeLayerManager.getFrameCount()
             if expectedNumberOfFrames == 0: # will be zero if no layer is time managed
-                self.animationActive = False #self.timer.stop()
+                self.animationActivated = False #self.timer.stop()
             self.exportNameDigits = len(str(expectedNumberOfFrames))
 
     def toggleOnOff(self,turnOn):
@@ -162,11 +162,14 @@ class TimeManagerControl(QObject):
         
     def waitAfterRenderComplete(self, painter=None):
         """when the map canvas signals renderComplete, wait defined millisec until next animation step"""
-        QTimer.singleShot(self.animationFrameLength,self.playAnimation)
+        if self.saveAnimation: # make animation/export run as fast as possible
+            self.playAnimation(painter)
+        else:
+            QTimer.singleShot(self.animationFrameLength,self.playAnimation)
         
-    def playAnimation(self):
+    def playAnimation(self,painter=None):
         """play animation in map window"""
-        if not self.animationActive:
+        if not self.animationActivated:
             return
         
         # check if the end of the project time extents has been reached
@@ -174,10 +177,10 @@ class TimeManagerControl(QObject):
         currentTime = self.timeLayerManager.getCurrentTimePosition()
         
         if self.saveAnimation:
+            self.guiControl.renderLabel(painter)
             fileName = os.path.join(self.saveAnimationPath,"frame"+str(self.animationFrameCounter).zfill(self.exportNameDigits)+".PNG")
             self.saveCurrentMap(fileName)
             self.animationFrameCounter += 1
-        
         try:
             if self.playBackwards:
                 if currentTime > projectTimeExtents[0]:
@@ -207,7 +210,7 @@ class TimeManagerControl(QObject):
         if self.saveAnimation:
             QMessageBox.information(self.iface.mainWindow(),'Export finished','The export finished successfully!')
             self.saveAnimation = False
-        self.animationActive = False #self.timer.stop()
+        self.animationActivated = False #self.timer.stop()
         self.guiControl.turnPlayButtonOff()
         
     def resetAnimation(self):
