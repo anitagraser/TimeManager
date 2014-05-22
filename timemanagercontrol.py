@@ -172,7 +172,7 @@ class TimeManagerControl(QObject):
         currentTime = self.timeLayerManager.getCurrentTimePosition()
         
         if self.saveAnimation:
-            fileName = os.path.join(self.saveAnimationPath,"frame"+str(self.animationFrameCounter).zfill(self.exportNameDigits)+".PNG")
+            fileName = os.path.join(self.saveAnimationPath,"frame"+str(self.animationFrameCounter).zfill(self.exportNameDigits)+".png")
             self.saveCurrentMap(fileName)
             self.animationFrameCounter += 1
         try:
