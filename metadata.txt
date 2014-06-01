@@ -6,10 +6,11 @@ qgisMinimumVersion=2.3
 author=Anita Graser
 email=anitagraser@gmx.at
 changelog=1.1.0
-    - export now runs as fast as possible, fixes #3
+    - updates to improve compatibility with QGIS multi-threaded rendering
+    - added more datetime string formats
 tags=spatio-temporal,time,animation
 icon=icon.png
 experimental=True
 homepage=http://anitagraser.com/projects/time-manager/
-tracker=https://github.com/anitagraser/TimeManager
+tracker=https://github.com/anitagraser/TimeManager/issues
 repository=https://github.com/anitagraser/TimeManager
