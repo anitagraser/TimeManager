@@ -3,7 +3,7 @@
 A plugin for QGIS by Anita Graser 
 
 * project home and bug tracker: https://github.com/anitagraser/TimeManager
-* plugin repository: http://plugins.qgis.org/plugins/plugins.xml
+* plugin repository: http://plugins.qgis.org/plugins/timemanager/
 
 Latest news will be published on my blog: http://anitagraser.com/tag/time-manager/
 
@@ -20,13 +20,16 @@ Time Manager filters your datasets and displays only features with timestamps in
 * YYYY-MM-DD HH:MM:SS
 * YYYY-MM-DD HH:MM
 * YYYY-MM-DD
+* YYYY/MM/DD HH:MM:SS.ssssss
 * YYYY/MM/DD HH:MM:SS
+* YYYY/MM/DD HH:MM
+* YYYY/MM/DD
 
-Other formats can be added by appending to the `supportedFormats` list in `timelayer.py`.
+Other formats can be added by appending to the `supportedFormats` list in `timevectorlayer.py`.
 
 The biggest tested dataset was a Spatialite table with indexed timestamps containing approximately 400,000 points, covering a time span of 24 hours. Stepping through the data for example in 1-hour-sized steps works without problems.
 
-Time Manager 0.3 supports exporting image series based on the defined animation settings. Our goal for future versions is to include a tool that creates actual animations from these image series. Until then, external programs can be used for this last step. A good option is memcoder. This is how it's used to create an .avi from all images within a folder:
+Time Manager supports exporting image series based on the defined animation settings. Our goal for future versions is to include a tool that creates actual animations from these image series. Until then, external programs can be used for this last step. A good option is memcoder. This is how it's used to create an .avi from all images within a folder:
 
 ``mencoder "mf://*.PNG" -mf fps=10 -o output.avi -ovc lavc -lavcopts vcodec=mpeg4``
 
@@ -67,6 +70,8 @@ Please review the tickets for more information!
 Shapefiles can't be edited directly, while time-managed. This is an OGR limitation. It also exists for any other query you set: You simply can't edit a shapefile whilst a query is set.
 
 It is not possible to time-manage Delimited Text layers. This is a limitation of the data provider. Save the data as e.g. Shapefile to use it with Time Manager.
+
+For other known issues check https://github.com/anitagraser/TimeManager/issues?direction=desc&sort=updated&state=open
 
 ## Where to download Time Manager
 
