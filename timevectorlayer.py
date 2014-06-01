@@ -20,11 +20,14 @@ class TimeVectorLayer(TimeLayer):
         self.originalSubsetString = self.layer.subsetString()
         self.timeFormat = str(timeFormat) # cast in case timeFormat comes as a QString
         self.supportedFormats = [
-             "%Y-%m-%d %H:%M:%S",
              "%Y-%m-%d %H:%M:%S.%f",
+             "%Y-%m-%d %H:%M:%S",
              "%Y-%m-%d %H:%M",
              "%Y-%m-%d",
-             "%Y/%m/%d %H:%M:%S"]
+             "%Y/%m/%d %H:%M:%S.%f",
+             "%Y/%m/%d %H:%M:%S",
+             "%Y/%m/%d %H:%M",
+             "%Y/%m/%d"]
         if timeFormat not in self.supportedFormats:
             self.supportedFormats.append(timeFormat)
         self.offset = int(offset)
