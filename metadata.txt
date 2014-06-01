@@ -8,6 +8,7 @@ email=anitagraser@gmx.at
 changelog=1.1.0
     - updates to improve compatibility with QGIS multi-threaded rendering
     - added more datetime string formats
+    - export now runs as fast as possible, fixes #3
 tags=spatio-temporal,time,animation
 icon=icon.png
 experimental=True
