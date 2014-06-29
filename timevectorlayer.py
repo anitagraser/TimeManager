@@ -98,10 +98,16 @@ class TimeVectorLayer(TimeLayer):
           # which falls somewhere between the current time position and the start position of the next frame         
           endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),self.timeFormat)
         #subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
-        if self.originalSubsetString == "":
-            subsetString = "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
-        else:
-            subsetString = "%s AND cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.originalSubsetString,self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+        if self.layer.dataProvider().storageType() == 'PostgreSQL database with PostGIS extension':
+            if self.originalSubsetString == "":
+                subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+            else:
+                subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.originalSubsetString,self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)		
+        else:	
+            if self.originalSubsetString == "":
+                subsetString = "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+            else:
+                subsetString = "%s AND cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.originalSubsetString,self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
         self.layer.setSubsetString( subsetString )
         #QMessageBox.information(self.iface.mainWindow(),"Test Output",subsetString)
 
