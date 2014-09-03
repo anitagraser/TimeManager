@@ -5,6 +5,7 @@ Created on Thu Mar 22 17:28:19 2012
 @author: Anita
 """
 
+from PyQt4 import QtCore
 from datetime import datetime, timedelta
 from qgis.core import *
 from timelayer import *
@@ -68,16 +69,22 @@ class TimeVectorLayer(TimeLayer):
         provider=self.layer.dataProvider()
         fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
         toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
-        startStr = str(provider.minimumValue(fromTimeAttributeIndex))#.toString())
-        endStr = str(provider.maximumValue(toTimeAttributeIndex))#.toString())
-        try:
-            startTime = self.strToDatetime(startStr)
-        except ValueError:
-            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
-        try:
-            endTime = self.strToDatetime(endStr)
-        except ValueError:
-            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+endStr)
+        minValue = provider.minimumValue(fromTimeAttributeIndex)
+        maxValue = provider.maximumValue(toTimeAttributeIndex)
+        if type(minValue) is QtCore.QDate:
+            startTime = datetime.combine(minValue.toPyDate(), datetime.min.time())
+            endTime = datetime.combine(maxValue.toPyDate(), datetime.min.time())
+        else:
+            startStr = str(minValue)
+            endStr = str(maxValue)
+            try:
+                startTime = self.strToDatetime(startStr)
+            except ValueError:
+                raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
+            try:
+                endTime = self.strToDatetime(endStr)
+            except ValueError:
+                raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+endStr)
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
