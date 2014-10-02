@@ -28,7 +28,16 @@ class TimeVectorLayer(TimeLayer):
              "%Y/%m/%d %H:%M:%S.%f",
              "%Y/%m/%d %H:%M:%S",
              "%Y/%m/%d %H:%M",
-             "%Y/%m/%d"]
+             "%Y/%m/%d",
+             "%d-%m-%Y %H:%M:%S.%f",
+             "%d-%m-%Y %H:%M:%S",
+             "%d-%m-%Y %H:%M",
+             "%d-%m-%Y",
+             "%d/%m/%Y %H:%M:%S.%f",
+             "%d/%m/%Y %H:%M:%S",
+             "%d/%m/%Y %H:%M",
+             "%d/%m/%Y"
+             ]
         if timeFormat not in self.supportedFormats:
             self.supportedFormats.append(timeFormat)
         self.offset = int(offset)
@@ -112,11 +121,32 @@ class TimeVectorLayer(TimeLayer):
                 subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.originalSubsetString,self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)		
         else:	
             if self.originalSubsetString == "":
-                subsetString = "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+                subsetString = self.sqlSubsetString(startTime, endTime) 
             else:
-                subsetString = "%s AND cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.originalSubsetString,self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+                subsetString = "%s AND %s"%(self.originalSubsetString,self.sqlSubsetString(startTime, endTime))
         self.layer.setSubsetString( subsetString )
         #QMessageBox.information(self.iface.mainWindow(),"Test Output",subsetString)
+
+    def sqlSubsetString(self, startTime, endTime):
+        if self.timeFormat[0:2] == '%Y' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%d':
+            return "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+        elif self.timeFormat[0:2] == '%d' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%Y':
+            s = "CONCAT(SUBSTR(cast(\"{0:s}\" as character),7,10),"\
+                "SUBSTR(cast(\"{0:s}\" as character),4,5),"\
+                "SUBSTR(cast(\"{0:s}\" as character),1,2)"\
+                +(",SUBSTR(cast(\"{0:s}\" as character),11))", ")")[ len(self.timeFormat) <= 8]+\
+                " < "\
+                "CONCAT(SUBSTR('{1:s}',7,10),SUBSTR('{1:s}',4,5),SUBSTR('{1:s}',1,2)"\
+                +(",SUBSTR('{1:s}',11))", ")")[len(self.timeFormat) <= 8]+\
+                " AND "\
+                "CONCAT(SUBSTR(cast(\"{2:s}\" as character),7,10),"\
+                "SUBSTR(cast(\"{2:s}\" as character),4,5),"\
+                "SUBSTR(cast(\"{2:s}\" as character),1,2)"\
+                +(",SUBSTR(cast(\"{2:s}\" as character),11))", ")")[len(self.timeFormat) <= 8]+\
+                " >= "\
+                "CONCAT(SUBSTR('{3:s}',7,10),SUBSTR('{3:s}',4,5),SUBSTR('{3:s}',1,2)"\
+                +(",SUBSTR('{3:s}',11))", ")")[len(self.timeFormat) <= 8]
+            return s.format( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
 
     def deleteTimeRestriction(self):
         """Restore original subset"""
