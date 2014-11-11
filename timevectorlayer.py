@@ -8,30 +8,28 @@ Created on Thu Mar 22 17:28:19 2012
 from datetime import datetime, timedelta
 from qgis.core import *
 from timelayer import *
+from time_util import strToDatetime, getFormatOfStr, DEFAULT_FORMAT, UTC, SUPPORTED_FORMATS
 
 class TimeVectorLayer(TimeLayer):
-    def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,timeFormat="%Y-%m-%d %H:%M:%S",offset=0):
+    def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,timeFormat=DEFAULT_FORMAT,offset=0):
         TimeLayer.__init__(self,layer,enabled)
         
         self.layer = layer
-        self.fromTimeAttribute = fromTimeAttribute
-        self.toTimeAttribute = toTimeAttribute
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
-        self.timeFormat = str(timeFormat) # cast in case timeFormat comes as a QString
-        self.supportedFormats = [
-             "%Y-%m-%d %H:%M:%S",
-             "%Y-%m-%d %H:%M:%S.%f",
-             "%Y-%m-%d %H:%M",
-             "%Y-%m-%d",
-             "%Y/%m/%d %H:%M:%S"]
+       # self.timeFormat = str(timeFormat) # cast in case timeFormat comes as a QString
+        self.supportedFormats = SUPPORTED_FORMATS
         if timeFormat not in self.supportedFormats:
             self.supportedFormats.append(timeFormat)
         self.offset = int(offset)
+        self.timeFormat = getFormatOfStr(fromTimeAttribute, timeFormat)
         try:
             self.getTimeExtents()
         except NotATimeAttributeError, e:
             raise InvalidTimeLayerError(e.value)
+        self.fromTimeAttribute = fromTimeAttribute
+        self.toTimeAttribute = toTimeAttribute
+
             
     def getTimeAttributes(self):
         """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""
@@ -45,26 +43,6 @@ class TimeVectorLayer(TimeLayer):
         """returns the layer's offset, integer in seconds"""
         return self.offset
 
-    def strToDatetime(self, dtStr):
-       """convert a date/time string into a Python datetime object"""
-       try: # see if time value is timestamp (in seconds)
-	    return datetime.fromtimestamp(long(dtStr))	
-       except ValueError:	
-           try: # see if time value is timestamp (in milliseconds)
-               return datetime.fromtimestamp(long(dtStr)/1000.0)
-           except ValueError:
-               try:
-                   return datetime.strptime(dtStr, self.timeFormat)
-	       except:
-	           for fmt in self.supportedFormats:
-	               try:
-		           self.timeFormat = fmt
-		           return datetime.strptime(dtStr, self.timeFormat)
-		       except:
-		           pass
-	       # If all fail, re-raise the exception
-               raise
-
     def getTimeExtents( self ):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
         provider=self.layer.dataProvider()
@@ -73,11 +51,11 @@ class TimeVectorLayer(TimeLayer):
         startStr = str(provider.minimumValue(fromTimeAttributeIndex))#.toString())
         endStr = str(provider.maximumValue(toTimeAttributeIndex))#.toString())
         try:
-            startTime = self.strToDatetime(startStr)
+            startTime = strToDatetime(startStr, self.getTimeFormat())
         except ValueError:
             raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
         try:
-            endTime = self.strToDatetime(endStr)
+            endTime = strToDatetime(endStr, self.getTimeFormat())
         except ValueError:
             raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+endStr)
         # apply offset
@@ -85,18 +63,43 @@ class TimeVectorLayer(TimeLayer):
         endTime += timedelta(seconds=self.offset)
         return (startTime,endTime)
 
+
+    def setTimeRestrictionForInts(self,timePosition,timeFrame):
+        """Constructs the query, including the original subset when dealing with int timestamps"""
+        if not self.timeEnabled:
+            self.deleteTimeRestriction()
+            return
+        startTime = timePosition + timedelta(seconds=self.offset)
+        endTime =timePosition + timeFrame + timedelta(seconds=self.offset)
+        fromTime, toTime = self.getTimeExtents()
+        startTime = datetime.strftime(startTime, DEFAULT_FORMAT)
+        endTime = datetime.strftime(endTime, DEFAULT_FORMAT)
+        toTime = datetime.strftime(toTime, DEFAULT_FORMAT)
+        fromTime = datetime.strftime(fromTime, DEFAULT_FORMAT)
+        if self.originalSubsetString == "":
+            subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( fromTime,endTime,toTime,startTime)
+        else:
+            subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.originalSubsetString,fromTime,endTime,toTime,startTime)
+        self.layer.setSubsetString( subsetString )
+
+
     def setTimeRestriction(self,timePosition,timeFrame):
         """Constructs the query, including the original subset"""
+         if self.getTimeFormat()==UTC:
+             return self.setTimeRestrictionForInts(timePosition, timeFrame)
         if not self.timeEnabled:
             self.deleteTimeRestriction()
             return
         startTime = datetime.strftime(timePosition + timedelta(seconds=self.offset),self.timeFormat)
         endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),self.timeFormat)
-        #subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+        fromTime, toTime = self.getTimeExtents()
+        toTime = datetime.strftime(toTime, self.timeFormat)
+        fromTime = datetime.strftime(fromTime, self.timeFormat)
+
         if self.originalSubsetString == "":
-            subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+            subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( fromTime,endTime,toTime,startTime)
         else:
-            subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.originalSubsetString,self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+            subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.originalSubsetString,fromTime,endTime,toTime,startTime)
         self.layer.setSubsetString( subsetString )
         #QMessageBox.information(self.iface.mainWindow(),"Test Output",subsetString)
 
