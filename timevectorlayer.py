@@ -72,26 +72,6 @@ class TimeVectorLayer(TimeLayer):
         endTime += timedelta(seconds=self.offset)
         return (startTime,endTime)
 
-
-    def setTimeRestrictionForInts(self,timePosition,timeFrame):
-        """Constructs the query, including the original subset when dealing with int timestamps"""
-        if not self.timeEnabled:
-            self.deleteTimeRestriction()
-            return
-        startTime = timePosition + timedelta(seconds=self.offset)
-        endTime =timePosition + timeFrame + timedelta(seconds=self.offset)
-        fromTime, toTime = self.getTimeExtents()
-        startTime = datetime.strftime(startTime, DEFAULT_FORMAT)
-        endTime = datetime.strftime(endTime, DEFAULT_FORMAT)
-        toTime = datetime.strftime(toTime, DEFAULT_FORMAT)
-        fromTime = datetime.strftime(fromTime, DEFAULT_FORMAT)
-        if self.originalSubsetString == "":
-            subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( fromTime,endTime,toTime,startTime)
-        else:
-            subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.originalSubsetString,fromTime,endTime,toTime,startTime)
-        self.layer.setSubsetString( subsetString )
-
-
     def setTimeRestriction(self,timePosition,timeFrame):
         """Constructs the query, including the original subset"""
         if not self.timeEnabled:
