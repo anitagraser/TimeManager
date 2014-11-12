@@ -1,5 +1,7 @@
 from datetime import datetime
 
+""" A module to have time related functionality """
+
 DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
 UTC = "UTC"
 SUPPORTED_FORMATS = [
@@ -7,7 +9,10 @@ SUPPORTED_FORMATS = [
              "%Y-%m-%d %H:%M:%S.%f",
              "%Y-%m-%d %H:%M",
              "%Y-%m-%d",
-             "%Y/%m/%d %H:%M:%S"]
+             "%Y/%m/%d %H:%M:%S",
+             "%Y/%m/%d %H:%M:%S.%f",
+             "%Y/%m/%d %H:%M",
+             "%Y/%m/%d"]
 
 def getFormatOfStr(datetimeString, timeFormat, supportedFormats=SUPPORTED_FORMATS):
     datetimeString = str(datetimeString)
