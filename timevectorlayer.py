@@ -23,12 +23,12 @@ class TimeVectorLayer(TimeLayer):
             self.supportedFormats.append(timeFormat)
         self.offset = int(offset)
         self.timeFormat = getFormatOfStr(fromTimeAttribute, timeFormat)
+        self.fromTimeAttribute = fromTimeAttribute
+        self.toTimeAttribute = toTimeAttribute
         try:
             self.getTimeExtents()
         except NotATimeAttributeError, e:
             raise InvalidTimeLayerError(e.value)
-        self.fromTimeAttribute = fromTimeAttribute
-        self.toTimeAttribute = toTimeAttribute
 
             
     def getTimeAttributes(self):
@@ -85,7 +85,7 @@ class TimeVectorLayer(TimeLayer):
 
     def setTimeRestriction(self,timePosition,timeFrame):
         """Constructs the query, including the original subset"""
-         if self.getTimeFormat()==UTC:
+        if self.getTimeFormat()==UTC:
              return self.setTimeRestrictionForInts(timePosition, timeFrame)
         if not self.timeEnabled:
             self.deleteTimeRestriction()
