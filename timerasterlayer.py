@@ -9,23 +9,20 @@ Created on Thu Mar 22 18:33:13 2012
 from datetime import datetime, timedelta
 from qgis.core import *
 from timelayer import *
+from time_util import strToDatetime, getFormatOfStr, DEFAULT_FORMAT, UTC, SUPPORTED_FORMATS
+
 
 class TimeRasterLayer(TimeLayer):
-    def __init__(self,layer,fromTimeAttribute="",toTimeAttribute="",enabled=True,timeFormat="%Y-%m-%d %H:%M:%S",offset=0):
+    def __init__(self,layer,fromTimeAttribute="",toTimeAttribute="",enabled=True,timeFormat=DEFAULT_FORMAT,offset=0):
         TimeLayer.__init__(self,layer,enabled)
         
         self.layer = layer        
         self.fromTimeAttribute = fromTimeAttribute
         self.toTimeAttribute = toTimeAttribute
         self.timeFormat = timeFormat
-        self.supportedFormats = [
-             "%Y-%m-%d %H:%M:%S",
-             "%Y-%m-%d %H:%M:%S.%f",
-             "%Y-%m-%d %H:%M",
-             "%Y-%m-%d",
-             "%Y/%m/%d %H:%M:%S"]
+        self.supportedFormats = SUPPORTED_FORMATS
         self.offset = int(offset)
-        
+        self.timeFormat = getFormatOfStr(fromTimeAttribute, timeFormat)
         try:
             self.getTimeExtents()
         except NotATimeAttributeError, e:
@@ -38,37 +35,25 @@ class TimeRasterLayer(TimeLayer):
     def getTimeFormat(self):
         """returns the layer's time format"""
         return self.timeFormat
+
+    def setTimeFormat(self, format):
+        """ sets the layer's time format"""
+        self.timeFormat = format
         
     def getOffset(self):
         """returns the layer's offset, integer in seconds"""
         return self.offset
-
-    def strToDatetime(self, datetimeString):
-        """convert a date/time string into a Python datetime object"""
-        datetimeString = str(datetimeString)
-        try:
-           # Try the last known format, if not, try all known formats.
-           return datetime.strptime(datetimeString, self.timeFormat)
-        except:
-            for format in self.supportedFormats:
-                try:
-                    self.timeFormat = format
-                    return datetime.strptime(datetimeString, self.timeFormat)
-                except:
-                    pass
-        # If all fail, re-raise the exception
-        raise
 
     def getTimeExtents( self ):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
         startStr = self.fromTimeAttribute
         endStr = self.toTimeAttribute
         try:
-            startTime = self.strToDatetime(startStr)
+            startTime = strToDatetime(startStr,  self.getTimeFormat())
         except ValueError:
             raise NotATimeAttributeError(str(self.fromTimeAttribute)+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
         try:
-            endTime = self.strToDatetime(endStr)
+            endTime = strToDatetime(endStr,  self.getTimeFormat())
         except ValueError:
             raise NotATimeAttributeError(str(self.toTimeAttribute)+': The attribute specified for use as end time contains invalid data:\n'+endStr)
         # apply offset
@@ -84,8 +69,7 @@ class TimeRasterLayer(TimeLayer):
 
         startTime = timePosition + timedelta(seconds=self.offset)
         endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
-
-        if self.strToDatetime(self.fromTimeAttribute) < endTime and self.strToDatetime(self.toTimeAttribute) >= startTime:
+        if strToDatetime(self.fromTimeAttribute, self.getTimeFormat() ) < endTime and strToDatetime(self.toTimeAttribute,  self.getTimeFormat()) >= startTime:
             # if the timestamp is within the extent --> show the raster
             self.layer.renderer().setOpacity(1) # no transparency  
         else: # hide the raster
