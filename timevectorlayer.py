@@ -5,16 +5,19 @@ Created on Thu Mar 22 17:28:19 2012
 @author: Anita
 """
 
+from PyQt4 import QtCore
 from datetime import datetime, timedelta
 from qgis.core import *
 from timelayer import *
 from time_util import strToDatetime, getFormatOfStr, DEFAULT_FORMAT, UTC, SUPPORTED_FORMATS
 
 class TimeVectorLayer(TimeLayer):
-    def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,timeFormat=DEFAULT_FORMAT,offset=0):
+    def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,timeFormat="%Y-%m-%d %H:%M:%S",offset=0):
         TimeLayer.__init__(self,layer,enabled)
         
         self.layer = layer
+        self.fromTimeAttribute = fromTimeAttribute
+        self.toTimeAttribute = toTimeAttribute
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
        # self.timeFormat = str(timeFormat) # cast in case timeFormat comes as a QString
@@ -48,16 +51,22 @@ class TimeVectorLayer(TimeLayer):
         provider=self.layer.dataProvider()
         fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
         toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
-        startStr = str(provider.minimumValue(fromTimeAttributeIndex))#.toString())
-        endStr = str(provider.maximumValue(toTimeAttributeIndex))#.toString())
-        try:
-            startTime = strToDatetime(startStr, self.getTimeFormat())
-        except ValueError:
-            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
-        try:
-            endTime = strToDatetime(endStr, self.getTimeFormat())
-        except ValueError:
-            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+endStr)
+        minValue = provider.minimumValue(fromTimeAttributeIndex)
+        maxValue = provider.maximumValue(toTimeAttributeIndex)
+        if type(minValue) is QtCore.QDate:
+            startTime = datetime.combine(minValue.toPyDate(), datetime.min.time())
+            endTime = datetime.combine(maxValue.toPyDate(), datetime.min.time())
+        else:
+            startStr = str(minValue)
+            endStr = str(maxValue)
+            try:
+                startTime = strToDatetime(startStr, self.getTimeFormat())
+            except ValueError:
+                raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
+            try:
+                endTime = strToDatetime(endStr, self.getTimeFormat())
+            except ValueError:
+                raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+endStr)
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
@@ -85,21 +94,30 @@ class TimeVectorLayer(TimeLayer):
 
     def setTimeRestriction(self,timePosition,timeFrame):
         """Constructs the query, including the original subset"""
-        if self.getTimeFormat()==UTC:
-             return self.setTimeRestrictionForInts(timePosition, timeFrame)
         if not self.timeEnabled:
             self.deleteTimeRestriction()
             return
-        startTime = datetime.strftime(timePosition + timedelta(seconds=self.offset),self.timeFormat)
-        endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),self.timeFormat)
-        fromTime, toTime = self.getTimeExtents()
-        toTime = datetime.strftime(toTime, self.timeFormat)
-        fromTime = datetime.strftime(fromTime, self.timeFormat)
-
-        if self.originalSubsetString == "":
-            subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( fromTime,endTime,toTime,startTime)
+        if self.getTimeFormat()!=UTC:
+            startTime = datetime.strftime(timePosition + timedelta(seconds=self.offset),self.timeFormat)
+            endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),self.timeFormat)
+            toTime = self.toTimeAttribute
+            fromTime = self.fromTimeAttribute
         else:
-            subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.originalSubsetString,fromTime,endTime,toTime,startTime)
+            startTime = datetime.strftime(timePosition + timedelta(seconds=self.offset), DEFAULT_FORMAT)
+            endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),DEFAULT_FORMAT)
+            toTime = datetime.strftime(strToDatetime(self.toTimeAttribute, self.getTimeFormat()), DEFAULT_FORMAT)
+            fromTime = datetime.strftime(strToDatetime(self.fromTimeAttribute,  self.getTimeFormat()), DEFAULT_FORMAT)
+
+        if self.layer.dataProvider().storageType() == 'PostgreSQL database with PostGIS extension':
+            if self.originalSubsetString == "":
+                subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( fromTime,endTime,toTime,startTime)
+            else:
+                subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.originalSubsetString,fromTime,endTime,toTime,startTime)
+        else:
+            if self.originalSubsetString == "":
+                subsetString = "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+            else:
+                subsetString = "%s AND cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.originalSubsetString,self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
         self.layer.setSubsetString( subsetString )
         #QMessageBox.information(self.iface.mainWindow(),"Test Output",subsetString)
 
