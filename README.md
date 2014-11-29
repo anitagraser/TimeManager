@@ -24,6 +24,18 @@ Time Manager filters your datasets and displays only features with timestamps in
 * YYYY/MM/DD HH:MM:SS
 * YYYY/MM/DD HH:MM
 * YYYY/MM/DD
+* DD.MM.YYYY HH:MM:SS.ssssss
+* DD.MM.YYYY HH:MM:SS
+* DD.MM.YYYY HH:MM
+* DD.MM.YYYY
+* DD-MM-YYYY HH:MM:SS.ssssss
+* DD-MM-YYYY HH:MM:SS
+* DD-MM-YYYY HH:MM
+* DD-MM-YYYY
+* DD/MM/YYYY HH:MM:SS.ssssss
+* DD/MM/YYYY HH:MM:SS
+* DD/MM/YYYY HH:MM
+* DD/MM/YYYY
 
 Other formats can be added by appending to the `supportedFormats` list in `timevectorlayer.py`.
 
@@ -52,7 +64,7 @@ If you are running an **older version of QGIS**, Time Manager versions <= 0.7 re
 
 The plug-in uses Python's datetime module for calculations. It is therefore limited to the module's functionality. This enfolds (not exhaustive):
 
-* Dates must be according to the format mentioned above
+* Dates must be according to the formats mentioned above
 * Dates must accord to the Gregorian calendar
 * **The range of years is limited**. The exact range of manageable years is dependent on your platform. This is due to limitations in time.mktime. (Problems have been reported with dates before 1970.)
 * Limits to the size/resolution of the time frame size
