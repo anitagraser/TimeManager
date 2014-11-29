@@ -110,21 +110,21 @@ class TimeVectorLayer(TimeLayer):
             return
         startTime = datetime.strftime(timePosition + timedelta(seconds=self.offset),self.timeFormat)
         if self.toTimeAttribute != self.fromTimeAttribute:
-			"""If an end time attribute is set for the layer, then only show features where the current time position
-			falls between the feature's time from and time to attributes """
-			endTime = startTime
+            """If an end time attribute is set for the layer, then only show features where the current time position
+            falls between the feature's time from and time to attributes """
+            endTime = startTime
         else:
-			"""If no end time attribute has been set for this layer, then show features with a time attribute
-			which falls somewhere between the current time position and the start position of the next frame"""   
-			endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),self.timeFormat)
+            """If no end time attribute has been set for this layer, then show features with a time attribute
+            which falls somewhere between the current time position and the start position of the next frame"""   
+            endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),self.timeFormat)
         """PostGIS has to be handled differently than OGR sources since it's not possible to get the same query
-		syntax to work"""
-		if self.layer.dataProvider().storageType() == 'PostgreSQL database with PostGIS extension':
+        syntax to work"""
+        if self.layer.dataProvider().storageType() == 'PostgreSQL database with PostGIS extension':
             if self.originalSubsetString == "":
                 subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
             else:
-                subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.originalSubsetString,self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)		
-        else:	
+                subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.originalSubsetString,self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)        
+        else:    
             if self.originalSubsetString == "":
                 subsetString = self.constructOGRSubsetString(startTime, endTime) 
             else:
@@ -133,7 +133,7 @@ class TimeVectorLayer(TimeLayer):
         #QMessageBox.information(self.iface.mainWindow(),"Test Output",subsetString)
 
     def constructOGRSubsetString(self, startTime, endTime):
-		"""Constructs the subset query depending on which time format was detected"""
+        """Constructs the subset query depending on which time format was detected"""
         if self.timeFormat[0:2] == '%Y' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%d':
             return "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
         elif self.timeFormat[0:2] == '%d' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%Y':
