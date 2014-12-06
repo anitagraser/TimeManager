@@ -21,6 +21,15 @@ from timelayer import *
 from timevectorlayer import *
 from timerasterlayer import *
 
+class TimestampLabelConfig(object):
+    """Edit configuration for the timestamp label here, in liu of GUI control"""
+    font = "Arial"      # Font names or family, comma-separated CSS style
+    size = 4            # Relative values between 1-7
+    fmt = "yyyy-MM-dd hh:mm:ss.zzz"  # Uses Qt's QDate format, see: http://qt-project.org/doc/qt-4.8/qdate.html#toString
+    placement = 'NW'    # Choose from N, NE, E, SE, S, SW, W, NW
+    color = 'black'     # Text color as name, rgb(RR,GG,BB), or #XXXXXX
+    bgcolor = 'white'   # Background color as name, rgb(RR,GG,BB), or #XXXXXX
+
 class TimeManagerGuiControl(QObject):
     """This class controls all plugin-related GUI elements. Emitted signals are defined here.
     New TimeLayers are created here, in createTimeLayer()"""
@@ -46,6 +55,7 @@ class TimeManagerGuiControl(QObject):
         self.iface = iface   
         self.timeLayerManager = timeLayerManager
         self.showLabel = False
+        self.labelOptions = TimestampLabelConfig()  # placeholder until config is in GUI
         
         self.optionsDialog = None
         
@@ -414,49 +424,30 @@ class TimeManagerGuiControl(QObject):
         """render the current timestamp on the map canvas"""        
         if not self.showLabel:
             return
-            
-        self.font = QFont("Arial")         
-        self.labelString = str(self.dock.dateTimeEditCurrentTime.dateTime().toString("yyyy-MM-dd hh:mm:ss.zzz"))
-        self.placementIndex = 3
-        
-        fm = QFontMetrics(self.font, painter.device())
-        rect = fm.boundingRect(self.labelString)
-        
-        # Determine placement of label from form combo box
-        index = self.placementIndex
+
+        labelString = str(self.dock.dateTimeEditCurrentTime.dateTime().toString(self.labelOptions.fmt))
+
+        # Determine placement of label given cardinal directions
         flags = 0
-        if index == 0: # Bottom Left
-          flags = Qt.AlignBottom | Qt.AlignLeft
-        elif index == 1: # Top left
-          flags = Qt.AlignTop | Qt.AlignLeft
-        elif index == 2: # Top Right
-          flags = Qt.AlignTop | Qt.AlignRight
-        elif index == 3: # Bottom Right
-          flags = Qt.AlignBottom | Qt.AlignRight
-        else:
-          print "Unknown placement index of " + str(index)
-    
+        for direction, flag in ('N', Qt.AlignTop), ('S', Qt.AlignBottom), ('E', Qt.AlignRight), ('W', Qt.AlignLeft):
+            if direction in self.labelOptions.placement:
+                flags |= flag
+
         # Get canvas dimensions
         width = painter.device().width()
         height = painter.device().height()
-        
-        # TODO: set font, color
-    
+
+        painter.setRenderHint(painter.Antialiasing, True)
         txt = QTextDocument()
-        txt.setHtml('<span style="background-color:#ffffff;">'+self.labelString+"</span>")
+        html = '<span style="background-color:%s; padding: 5px;"><font face="%s" size="%s" color="%s">%s</font></span>' % \
+               (self.labelOptions.bgcolor, self.labelOptions.font, self.labelOptions.size, self.labelOptions.color, labelString)
+        txt.setHtml(html)
         layout = txt.documentLayout()
         size = layout.documentSize()
         
-        if flags & Qt.AlignRight:
-          x = width - 5 - size.width()
-        else:
-          x = 5
-    
-        if flags & Qt.AlignBottom:
-          y = height - 5 - size.height()
-        else:
-          y = 5
-        
+        x = width - 5 - size.width() if flags & Qt.AlignRight else 5
+        y = height - 5 - size.height() if flags & Qt.AlignBottom else 5
+
         painter.translate(x, y)
         layout.draw(painter, QAbstractTextDocumentLayout.PaintContext())
-        painter.translate(-x, -y) # translate back
+        painter.translate(-x, -y)  # translate back
