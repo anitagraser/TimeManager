@@ -49,10 +49,12 @@ class TimeVectorLayer(TimeLayer):
             self.getTimeExtents()
         except NotATimeAttributeError, e:
             raise InvalidTimeLayerError(e.value)
-            
+        self.fromTimeAttributeType = layer.dataProvider().fields().field(fromTimeAttribute).typeName()
+        self.toTimeAttributeType = layer.dataProvider().fields().field(toTimeAttribute).typeName()
+
     def getTimeAttributes(self):
         """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""
-        return(self.fromTimeAttribute,self.toTimeAttribute)
+        return (self.fromTimeAttribute,self.toTimeAttribute)
 
     def getTimeFormat(self):
         """returns the layer's time format"""
@@ -77,9 +79,9 @@ class TimeVectorLayer(TimeLayer):
        # If all fail, re-raise the exception
        raise
 
-    def getTimeExtents( self ):
+    def getTimeExtents(self):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
-        provider=self.layer.dataProvider()
+        provider = self.layer.dataProvider()
         fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
         toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
         minValue = provider.minimumValue(fromTimeAttributeIndex)
@@ -101,14 +103,14 @@ class TimeVectorLayer(TimeLayer):
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
-        return (startTime,endTime)
+        return (startTime, endTime)
 
-    def setTimeRestriction(self,timePosition,timeFrame):
+    def setTimeRestriction(self, timePosition, timeFrame):
         """Constructs the query, including the original subset"""
         if not self.timeEnabled:
             self.deleteTimeRestriction()
             return
-        startTime = datetime.strftime(timePosition + timedelta(seconds=self.offset),self.timeFormat)
+        startTime = datetime.strftime(timePosition + timedelta(seconds=self.offset), self.timeFormat)
         if self.toTimeAttribute != self.fromTimeAttribute:
             """If an end time attribute is set for the layer, then only show features where the current time position
             falls between the feature's time from and time to attributes """
@@ -117,26 +119,38 @@ class TimeVectorLayer(TimeLayer):
             """If no end time attribute has been set for this layer, then show features with a time attribute
             which falls somewhere between the current time position and the start position of the next frame"""   
             endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),self.timeFormat)
-        """PostGIS has to be handled differently than OGR sources since it's not possible to get the same query
-        syntax to work"""
         if self.layer.dataProvider().storageType() == 'PostgreSQL database with PostGIS extension':
+            # Use PostGIS query syntax (incompatible with OGR syntax)
             if self.originalSubsetString == "":
-                subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+                subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % (self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
             else:
-                subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % ( self.originalSubsetString,self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)        
-        else:    
+                subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % (self.originalSubsetString,self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+        else:
+            # Use OGR query syntax
             if self.originalSubsetString == "":
-                subsetString = self.constructOGRSubsetString(startTime, endTime) 
+                subsetString = self.constructOGRSubsetString(startTime, endTime)
             else:
-                subsetString = "%s AND %s"%(self.originalSubsetString,self.constructOGRSubsetString(startTime, endTime))
-        self.layer.setSubsetString( subsetString )
+                subsetString = "%s AND %s" % (self.originalSubsetString, self.constructOGRSubsetString(startTime, endTime))
+        self.layer.setSubsetString(subsetString)
         #QMessageBox.information(self.iface.mainWindow(),"Test Output",subsetString)
 
     def constructOGRSubsetString(self, startTime, endTime):
         """Constructs the subset query depending on which time format was detected"""
+
+        if self.fromTimeAttributeType == 'Date':
+            # QDate in QGIS detects a format of YYYY-MM-DD, but OGR serializes its Date type as YYYY/MM/DD
+            # See: https://github.com/anitagraser/TimeManager/issues/71
+            startTime = startTime.replace('-', '/')
+        if self.toTimeAttributeType == 'Date':
+            endTime = endTime.replace('-', '/')
+
         if self.timeFormat[0:2] == '%Y' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%d':
-            return "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+            # sane Y-M-D format
+            return "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % \
+                   (self.fromTimeAttribute, endTime, self.toTimeAttribute, startTime)
+
         elif self.timeFormat[0:2] == '%d' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%Y':
+            # crazy D-M-Y format!
             s = "CONCAT(SUBSTR(cast(\"{0:s}\" as character),7,10),"\
                 "SUBSTR(cast(\"{0:s}\" as character),4,5),"\
                 "SUBSTR(cast(\"{0:s}\" as character),1,2)"\
@@ -153,6 +167,9 @@ class TimeVectorLayer(TimeLayer):
                 "CONCAT(SUBSTR('{3:s}',7,10),SUBSTR('{3:s}',4,5),SUBSTR('{3:s}',1,2)"\
                 +(",SUBSTR('{3:s}',11))", ")")[len(self.timeFormat) <= 8]
             return s.format( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+
+        else:
+            raise Exception('Unable to construct OGR subset query for time format: %s' % (self.timeFormat))
 
     def deleteTimeRestriction(self):
         """Restore original subset"""
