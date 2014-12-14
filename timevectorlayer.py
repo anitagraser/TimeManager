@@ -121,16 +121,17 @@ class TimeVectorLayer(TimeLayer):
             endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),self.timeFormat)
         if self.layer.dataProvider().storageType() == 'PostgreSQL database with PostGIS extension':
             # Use PostGIS query syntax (incompatible with OGR syntax)
-            if self.originalSubsetString == "":
-                subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % (self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
-            else:
-                subsetString = "%s AND \"%s\" < '%s' AND \"%s\" >= '%s' " % (self.originalSubsetString,self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+            subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % (self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
         else:
             # Use OGR query syntax
-            if self.originalSubsetString == "":
-                subsetString = self.constructOGRSubsetString(startTime, endTime)
-            else:
-                subsetString = "%s AND %s" % (self.originalSubsetString, self.constructOGRSubsetString(startTime, endTime))
+            subsetString = self.constructOGRSubsetString(startTime, endTime)
+        if self.toTimeAttribute != self.fromTimeAttribute:
+            """Change < to <= when and end time is specified, otherwise features starting at 15:00 would only 
+            be displayed starting from 15:01"""
+            subsetString = subsetString.replace('<','<=')
+        if self.originalSubsetString != "":
+            # Prepend original subset string 
+            subsetString = "%s AND %s" % (self.originalSubsetString, subsetString)
         self.layer.setSubsetString(subsetString)
         #QMessageBox.information(self.iface.mainWindow(),"Test Output",subsetString)
 
