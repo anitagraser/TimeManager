@@ -26,7 +26,7 @@ class TimestampLabelConfig(object):
     font = "Arial"      # Font names or family, comma-separated CSS style
     size = 4            # Relative values between 1-7
     fmt = "yyyy-MM-dd hh:mm:ss.zzz"  # Uses Qt's QDate format, see: http://qt-project.org/doc/qt-4.8/qdate.html#toString
-    placement = 'NW'    # Choose from N, NE, E, SE, S, SW, W, NW
+    placement = 'SE'    # Choose from N, NE, E, SE, S, SW, W, NW
     color = 'black'     # Text color as name, rgb(RR,GG,BB), or #XXXXXX
     bgcolor = 'white'   # Background color as name, rgb(RR,GG,BB), or #XXXXXX
 

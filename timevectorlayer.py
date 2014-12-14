@@ -145,12 +145,12 @@ class TimeVectorLayer(TimeLayer):
             endTime = endTime.replace('-', '/')
 
         if self.timeFormat[0:2] == '%Y' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%d':
-            # sane Y-M-D format
+            # Y-M-D format
             return "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % \
                    (self.fromTimeAttribute, endTime, self.toTimeAttribute, startTime)
 
         elif self.timeFormat[0:2] == '%d' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%Y':
-            # crazy D-M-Y format!
+            # D-M-Y format
             s = "CONCAT(SUBSTR(cast(\"{0:s}\" as character),7,10),"\
                 "SUBSTR(cast(\"{0:s}\" as character),4,5),"\
                 "SUBSTR(cast(\"{0:s}\" as character),1,2)"\
