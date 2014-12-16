@@ -44,6 +44,12 @@ class TimeLayerManager(QObject):
         """returns the manager's currentTimePosition"""
         return self.currentTimePosition
         
+    def getCurrentEpochPosition(self):
+        """returns the manager's currentTimePosition"""
+        epoch=datetime(1970,1,1)
+        td = self.currentTimePosition - epoch
+        return (td.microseconds + (td.seconds + td.days * 24 * 3600))
+    
     def getTimeFrameType(self):
         """returns the type of the time frame, e.g. minutes, hours, days"""
         return self.timeFrameType
