@@ -5,6 +5,7 @@ Created on Thu Mar 22 17:28:19 2012
 @author: Anita
 """
 
+import time
 from PyQt4 import QtCore
 from datetime import datetime, timedelta
 from qgis.core import *
@@ -16,17 +17,7 @@ class TimeVectorLayer(TimeLayer):
         
         self.layer = layer
         self.fromTimeAttribute = fromTimeAttribute
-        self.toTimeAttributeOrValue = toTimeAttribute
-        
-        # if toTimeAttribue is numeric, it is used instead of field value, in addition to the fromTime value
-        # We make the difference between toTimeAttribute storing a field name and toTimeAttributeOrValue storing the field name or numeric value (user defined) 
-        if self.toTimeAttributeOrValue.isnumeric():
-            self.toTimeAttribute = fromTimeAttribute
-            self.toTimeOffset = int(self.toTimeAttributeOrValue)
-        else:
-            self.toTimeAttribute = self.toTimeAttributeOrValue
-            self.toTimeOffset = int(0)
-
+        self.toTimeAttribute = toTimeAttribute
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
         self.timeFormat = str(timeFormat) # cast in case timeFormat comes as a QString
@@ -62,8 +53,8 @@ class TimeVectorLayer(TimeLayer):
             raise InvalidTimeLayerError(e.value)
             
     def getTimeAttributes(self):
-        """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttributeOrValue)"""
-        return(self.fromTimeAttribute,self.toTimeAttributeOrValue)
+        """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""
+        return(self.fromTimeAttribute,self.toTimeAttribute)
 
     def getTimeFormat(self):
         """returns the layer's time format"""
@@ -73,10 +64,9 @@ class TimeVectorLayer(TimeLayer):
         """returns the layer's offset, integer in seconds"""
         return self.offset
 
-    def totimestamp(self, dt, epoch=datetime(1970,1,1)):
+    def totimestamp(self, dt):
         """convert datetime into epoch (number of seconds since 01/01/1970)"""
-        td = dt - epoch
-        return (td.microseconds + (td.seconds + td.days * 24 * 3600) )  
+        return long(time.mktime(dt.timetuple()))
 
     def strToDatetime(self, dtStr):
        """convert a date/time string into a Python datetime object"""
@@ -91,7 +81,6 @@ class TimeVectorLayer(TimeLayer):
            for fmt in self.supportedFormats:
                try:
                    self.timeFormat = fmt
-                   # the %s (epoch) format is managed specifically (not supported by strptime)
                    if self.timeFormat == '%s':
                        return datetime.fromtimestamp(int(dtStr))
                    else:
@@ -128,11 +117,8 @@ class TimeVectorLayer(TimeLayer):
         fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
         
         minValue = provider.minimumValue(fromTimeAttributeIndex)
-        if self.toTimeOffset != 0:
-            maxValue = provider.maximumValue(fromTimeAttributeIndex)
-        else:
-            toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttributeOrValue)
-            maxValue = provider.maximumValue(toTimeAttributeIndex)
+        toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
+        maxValue = provider.maximumValue(toTimeAttributeIndex)
 
         if type(minValue) is QtCore.QDate:
             startTime = datetime.combine(minValue.toPyDate(), datetime.min.time())
@@ -148,7 +134,7 @@ class TimeVectorLayer(TimeLayer):
         else:
             endStr = str(maxValue)
             try:
-                endTime = self.strToDatetime(endStr) - timedelta(days=self.toTimeOffset)
+                endTime = self.strToDatetime(endStr)
             except ValueError:
                 raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+endStr)
 
@@ -163,7 +149,7 @@ class TimeVectorLayer(TimeLayer):
             self.deleteTimeRestriction()
             return
 
-        startTime = self.datetimeToStr(timePosition + timedelta(seconds=self.offset) - timedelta(days=self.toTimeOffset))
+        startTime = self.datetimeToStr(timePosition + timedelta(seconds=self.offset))
         if self.toTimeAttribute != self.fromTimeAttribute:
             """If an end time attribute is set for the layer, then only show features where the current time position
             falls between the feature's time from and time to attributes """
@@ -191,7 +177,7 @@ class TimeVectorLayer(TimeLayer):
     def constructOGRSubsetString(self, startTime, endTime):
         """Constructs the subset query depending on which time format was detected"""
         if self.timeFormat == '%s' :
-            return "cast(\"%s\" as character) < %s AND cast(\"%s\" as character) >= %s " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+            return "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
         elif self.timeFormat[0:2] == '%Y' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%d':
             return "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
         elif self.timeFormat[0:2] == '%d' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%Y':
@@ -214,7 +200,9 @@ class TimeVectorLayer(TimeLayer):
 
     def deleteTimeRestriction(self):
         """Restore original subset"""
-        self.layer.setSubsetString( self.originalSubsetString )
+        # only if it changes (time-consuming process even layer is disabled) 
+        if self.layer.subsetString() != self.originalSubsetString:
+            self.layer.setSubsetString( self.originalSubsetString )
 
     def hasTimeRestriction(self):
         """returns true if current layer.subsetString is not equal to originalSubsetString"""
@@ -226,7 +214,7 @@ class TimeVectorLayer(TimeLayer):
         saveString = self.getLayerId() + delimiter
         saveString += self.originalSubsetString + delimiter
         saveString += self.fromTimeAttribute + delimiter
-        saveString += self.toTimeAttributeOrValue + delimiter
+        saveString += self.toTimeAttribute + delimiter
         saveString += str(self.timeEnabled) + delimiter
         saveString += self.timeFormat + delimiter
         saveString += str(self.offset)

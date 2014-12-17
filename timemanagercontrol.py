@@ -382,7 +382,7 @@ class TimeManagerControl(QObject):
                     
                 startTimeAttribute=l[2]
                 endTimeAttribute=l[3]
-                isEnabled=l[4]
+                isEnabled=(l[4]=='True')
                 timeFormat=l[5]
                 
                 try:
