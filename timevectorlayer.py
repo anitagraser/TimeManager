@@ -5,6 +5,7 @@ Created on Thu Mar 22 17:28:19 2012
 @author: Anita
 """
 
+import time
 from PyQt4 import QtCore
 from datetime import datetime, timedelta
 from qgis.core import *
@@ -17,7 +18,6 @@ class TimeVectorLayer(TimeLayer):
         self.layer = layer
         self.fromTimeAttribute = fromTimeAttribute
         self.toTimeAttribute = toTimeAttribute
-
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
         self.timeFormat = str(timeFormat) # cast in case timeFormat comes as a QString
@@ -64,10 +64,9 @@ class TimeVectorLayer(TimeLayer):
         """returns the layer's offset, integer in seconds"""
         return self.offset
 
-    def totimestamp(self, dt, epoch=datetime(1970,1,1)):
+    def totimestamp(self, dt):
         """convert datetime into epoch (number of seconds since 01/01/1970)"""
-        td = dt - epoch
-        return (td.microseconds + (td.seconds + td.days * 24 * 3600) )  
+        return long(time.mktime(dt.timetuple()))
 
     def strToDatetime(self, dtStr):
        """convert a date/time string into a Python datetime object"""
@@ -82,7 +81,6 @@ class TimeVectorLayer(TimeLayer):
            for fmt in self.supportedFormats:
                try:
                    self.timeFormat = fmt
-                   # the %s (epoch) format is managed specifically (not supported by strptime)
                    if self.timeFormat == '%s':
                        return datetime.fromtimestamp(int(dtStr))
                    else:
