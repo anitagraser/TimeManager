@@ -177,7 +177,7 @@ class TimeVectorLayer(TimeLayer):
     def constructOGRSubsetString(self, startTime, endTime):
         """Constructs the subset query depending on which time format was detected"""
         if self.timeFormat == '%s' :
-            return "cast(\"%s\" as character) < %s AND cast(\"%s\" as character) >= %s " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+            return "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
         elif self.timeFormat[0:2] == '%Y' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%d':
             return "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % ( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
         elif self.timeFormat[0:2] == '%d' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%Y':
@@ -200,7 +200,9 @@ class TimeVectorLayer(TimeLayer):
 
     def deleteTimeRestriction(self):
         """Restore original subset"""
-        self.layer.setSubsetString( self.originalSubsetString )
+        # only if it changes (time-consuming process even layer is disabled) 
+        if self.layer.subsetString() != self.originalSubsetString:
+            self.layer.setSubsetString( self.originalSubsetString )
 
     def hasTimeRestriction(self):
         """returns true if current layer.subsetString is not equal to originalSubsetString"""
