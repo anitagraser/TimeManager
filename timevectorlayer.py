@@ -16,16 +16,7 @@ class TimeVectorLayer(TimeLayer):
         
         self.layer = layer
         self.fromTimeAttribute = fromTimeAttribute
-        self.toTimeAttributeOrValue = toTimeAttribute
-        
-        # if toTimeAttribue is numeric, it is used instead of field value, in addition to the fromTime value
-        # We make the difference between toTimeAttribute storing a field name and toTimeAttributeOrValue storing the field name or numeric value (user defined) 
-        if self.toTimeAttributeOrValue.isnumeric():
-            self.toTimeAttribute = fromTimeAttribute
-            self.toTimeOffset = int(self.toTimeAttributeOrValue)
-        else:
-            self.toTimeAttribute = self.toTimeAttributeOrValue
-            self.toTimeOffset = int(0)
+        self.toTimeAttribute = toTimeAttribute
 
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
@@ -62,8 +53,8 @@ class TimeVectorLayer(TimeLayer):
             raise InvalidTimeLayerError(e.value)
             
     def getTimeAttributes(self):
-        """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttributeOrValue)"""
-        return(self.fromTimeAttribute,self.toTimeAttributeOrValue)
+        """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""
+        return(self.fromTimeAttribute,self.toTimeAttribute)
 
     def getTimeFormat(self):
         """returns the layer's time format"""
@@ -128,11 +119,8 @@ class TimeVectorLayer(TimeLayer):
         fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
         
         minValue = provider.minimumValue(fromTimeAttributeIndex)
-        if self.toTimeOffset != 0:
-            maxValue = provider.maximumValue(fromTimeAttributeIndex)
-        else:
-            toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttributeOrValue)
-            maxValue = provider.maximumValue(toTimeAttributeIndex)
+        toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
+        maxValue = provider.maximumValue(toTimeAttributeIndex)
 
         if type(minValue) is QtCore.QDate:
             startTime = datetime.combine(minValue.toPyDate(), datetime.min.time())
@@ -148,7 +136,7 @@ class TimeVectorLayer(TimeLayer):
         else:
             endStr = str(maxValue)
             try:
-                endTime = self.strToDatetime(endStr) - timedelta(days=self.toTimeOffset)
+                endTime = self.strToDatetime(endStr)
             except ValueError:
                 raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+endStr)
 
@@ -163,7 +151,7 @@ class TimeVectorLayer(TimeLayer):
             self.deleteTimeRestriction()
             return
 
-        startTime = self.datetimeToStr(timePosition + timedelta(seconds=self.offset) - timedelta(days=self.toTimeOffset))
+        startTime = self.datetimeToStr(timePosition + timedelta(seconds=self.offset))
         if self.toTimeAttribute != self.fromTimeAttribute:
             """If an end time attribute is set for the layer, then only show features where the current time position
             falls between the feature's time from and time to attributes """
@@ -226,7 +214,7 @@ class TimeVectorLayer(TimeLayer):
         saveString = self.getLayerId() + delimiter
         saveString += self.originalSubsetString + delimiter
         saveString += self.fromTimeAttribute + delimiter
-        saveString += self.toTimeAttributeOrValue + delimiter
+        saveString += self.toTimeAttribute + delimiter
         saveString += str(self.timeEnabled) + delimiter
         saveString += self.timeFormat + delimiter
         saveString += str(self.offset)
