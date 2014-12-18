@@ -9,7 +9,7 @@ Created on Thu Mar 22 18:33:13 2012
 from datetime import datetime, timedelta
 from qgis.core import *
 from timelayer import *
-from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetime, getFormatOfStr
+from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfStr
 
 class TimeRasterLayer(TimeLayer):
     def __init__(self,layer,fromTimeAttribute="",toTimeAttribute="",enabled=True,timeFormat=DEFAULT_FORMAT,offset=0):
@@ -44,11 +44,11 @@ class TimeRasterLayer(TimeLayer):
         startStr = self.fromTimeAttribute
         endStr = self.toTimeAttribute
         try:
-            startTime = strToDatetime(startStr)
+            startTime = strToDatetimeWithFormatHint(startStr, self.getTimeFormat())
         except ValueError:
             raise NotATimeAttributeError(str(self.fromTimeAttribute)+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
         try:
-            endTime = strToDatetime(endStr)
+            endTime = strToDatetimeWithFormatHint(endStr, self.getTimeFormat())
         except ValueError:
             raise NotATimeAttributeError(str(self.toTimeAttribute)+': The attribute specified for use as end time contains invalid data:\n'+endStr)
         # apply offset
@@ -65,7 +65,7 @@ class TimeRasterLayer(TimeLayer):
         startTime = timePosition + timedelta(seconds=self.offset)
         endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
 
-        if strToDatetime(self.fromTimeAttribute) < endTime and strToDatetime(self.toTimeAttribute) >= startTime:
+        if strToDatetimeWithFormatHint(self.fromTimeAttribute, self.getTimeFormat()) < endTime and strToDatetimeWithFormatHint(self.toTimeAttribute, self.getTimeFormat()) >= startTime:
             # if the timestamp is within the extent --> show the raster
             self.layer.renderer().setOpacity(1) # no transparency  
         else: # hide the raster

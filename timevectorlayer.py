@@ -20,7 +20,7 @@ class TimeVectorLayer(TimeLayer):
         self.toTimeAttribute = toTimeAttribute
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
-        self.timeFormat = getFormatOfStr(fromTimeAttribute, hint=str(timeFormat))
+        self.timeFormat = getFormatOfStr(self.getMinMaxValues()[0], hint=str(timeFormat))
         self.supportedFormats = SUPPORTED_FORMATS
         self.offset = int(offset)
         try:
@@ -42,13 +42,17 @@ class TimeVectorLayer(TimeLayer):
         """returns the layer's offset, integer in seconds"""
         return self.offset
 
-    def getTimeExtents(self):
-        """Get layer's temporal extent using the fields and the format defined somewhere else!"""
+    def getMinMaxValues(self):
         provider = self.layer.dataProvider()
         fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
         toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
-        minValue = provider.minimumValue(fromTimeAttributeIndex)
+        minValue =  provider.minimumValue(fromTimeAttributeIndex)
         maxValue = provider.maximumValue(toTimeAttributeIndex)
+        return minValue, maxValue
+
+    def getTimeExtents(self):
+        """Get layer's temporal extent using the fields and the format defined somewhere else!"""
+        minValue, maxValue = self.getMinMaxValues()
         if type(minValue) is QtCore.QDate:
             startTime = datetime.combine(minValue.toPyDate(), datetime.min.time())
             endTime = datetime.combine(maxValue.toPyDate(), datetime.min.time())

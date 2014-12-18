@@ -43,8 +43,8 @@ def getFormatOfStr(datetimeString, hint=DEFAULT_FORMAT, supportedFormats=SUPPORT
             return format
         except:
             pass
-    # If all fail, re-raise the exception
-    raise
+    # If all fail, raise an exception
+    raise "Could not find a suitable time format for value {}".format(datetimeString)
 
 
 def strToDatetime(datetimeString):
