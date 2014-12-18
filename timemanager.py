@@ -52,4 +52,8 @@ class timemanager:
         """called by QGIS to determine the current animation time"""
         return str(control.getCurrentTimePosition())
   
+    @qgsfunction(0, "TimeManager")
+    def animation_epoch(values, feature, parent):
+        """called by QGIS to determine the current animation time"""
+        return control.getCurrentEpochPosition()
             

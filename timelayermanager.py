@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+import time
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
@@ -44,6 +45,10 @@ class TimeLayerManager(QObject):
         """returns the manager's currentTimePosition"""
         return self.currentTimePosition
         
+    def getCurrentEpochPosition(self):
+        """returns the manager's currentTimePosition"""
+        return long(time.mktime(self.currentTimePosition.timetuple()))
+    
     def getTimeFrameType(self):
         """returns the type of the time frame, e.g. minutes, hours, days"""
         return self.timeFrameType
