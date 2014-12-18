@@ -9,9 +9,10 @@ from PyQt4 import QtCore
 from datetime import datetime, timedelta
 from qgis.core import *
 from timelayer import *
+from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfStr, UTC
 
 class TimeVectorLayer(TimeLayer):
-    def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,timeFormat="%Y-%m-%d %H:%M:%S",offset=0):
+    def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,timeFormat=DEFAULT_FORMAT,offset=0):
         TimeLayer.__init__(self,layer,enabled)
         
         self.layer = layer
@@ -19,31 +20,8 @@ class TimeVectorLayer(TimeLayer):
         self.toTimeAttribute = toTimeAttribute
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
-        self.timeFormat = str(timeFormat) # cast in case timeFormat comes as a QString
-        self.supportedFormats = [
-             "%Y-%m-%d %H:%M:%S.%f",
-             "%Y-%m-%d %H:%M:%S",
-             "%Y-%m-%d %H:%M",
-             "%Y-%m-%d",
-             "%Y/%m/%d %H:%M:%S.%f",
-             "%Y/%m/%d %H:%M:%S",
-             "%Y/%m/%d %H:%M",
-             "%Y/%m/%d",
-             "%d.%m.%Y %H:%M:%S.%f",
-             "%d.%m.%Y %H:%M:%S",
-             "%d.%m.%Y %H:%M",
-             "%d.%m.%Y",
-             "%d-%m-%Y %H:%M:%S.%f",
-             "%d-%m-%Y %H:%M:%S",
-             "%d-%m-%Y %H:%M",
-             "%d-%m-%Y",
-             "%d/%m/%Y %H:%M:%S.%f",
-             "%d/%m/%Y %H:%M:%S",
-             "%d/%m/%Y %H:%M",
-             "%d/%m/%Y"
-             ]
-        if timeFormat not in self.supportedFormats:
-            self.supportedFormats.append(timeFormat)
+        self.timeFormat = getFormatOfStr(fromTimeAttribute, hint=str(timeFormat))
+        self.supportedFormats = SUPPORTED_FORMATS
         self.offset = int(offset)
         try:
             self.getTimeExtents()
@@ -64,21 +42,6 @@ class TimeVectorLayer(TimeLayer):
         """returns the layer's offset, integer in seconds"""
         return self.offset
 
-    def strToDatetime(self, dtStr):
-       """convert a date/time string into a Python datetime object"""
-       try:
-           # Try the last known format, if not, try all known formats.
-           return datetime.strptime(dtStr, self.timeFormat)
-       except:
-           for fmt in self.supportedFormats:
-               try:
-                   self.timeFormat = fmt
-                   return datetime.strptime(dtStr, self.timeFormat)
-               except:
-                   pass
-       # If all fail, re-raise the exception
-       raise
-
     def getTimeExtents(self):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
         provider = self.layer.dataProvider()
@@ -93,11 +56,11 @@ class TimeVectorLayer(TimeLayer):
             startStr = str(minValue)
             endStr = str(maxValue)
             try:
-                startTime = self.strToDatetime(startStr)
+                startTime = strToDatetimeWithFormatHint(startStr,  self.getTimeFormat())
             except ValueError:
                 raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
             try:
-                endTime = self.strToDatetime(endStr)
+                endTime = strToDatetimeWithFormatHint(endStr,  self.getTimeFormat())
             except ValueError:
                 raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+endStr)
         # apply offset
@@ -105,20 +68,44 @@ class TimeVectorLayer(TimeLayer):
         endTime += timedelta(seconds=self.offset)
         return (startTime, endTime)
 
+
+    def setTimeRestrictionInts(self, timePosition, timeFrame):
+        """Constucts the query on integer attributes"""
+        startTime = int((timePosition + timedelta(seconds=self.offset) - datetime(1970,1,1)).total_seconds())
+        if self.toTimeAttribute != self.fromTimeAttribute:
+            endTime = startTime
+        else:
+            endTime =  int((timePosition + timeFrame + timedelta(seconds=self.offset) - datetime(1970,1,1)).total_seconds())
+
+        subsetString = "%s < %s AND %s >= %s " % (self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+        if self.toTimeAttribute != self.fromTimeAttribute:
+            """Change < to <= when and end time is specified, otherwise features starting at 15:00 would only 
+            be displayed starting from 15:01"""
+            subsetString = subsetString.replace('<','<=')
+        if self.originalSubsetString != "":
+            # Prepend original subset string 
+            subsetString = "%s AND %s" % (self.originalSubsetString, subsetString)
+        self.layer.setSubsetString(subsetString)
+
+
     def setTimeRestriction(self, timePosition, timeFrame):
         """Constructs the query, including the original subset"""
         if not self.timeEnabled:
             self.deleteTimeRestriction()
             return
-        startTime = datetime.strftime(timePosition + timedelta(seconds=self.offset), self.timeFormat)
+        if self.timeFormat==UTC:
+           self.setTimeRestrictionInts(timePosition, timeFrame)
+           return
+        startTime = datetime.strftime(timePosition + timedelta(seconds=self.offset),  self.getTimeFormat())
         if self.toTimeAttribute != self.fromTimeAttribute:
             """If an end time attribute is set for the layer, then only show features where the current time position
-            falls between the feature's time from and time to attributes """
+            falls between the feature'sget time from and time to attributes """
             endTime = startTime
         else:
             """If no end time attribute has been set for this layer, then show features with a time attribute
             which falls somewhere between the current time position and the start position of the next frame"""   
-            endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),self.timeFormat)
+            endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),   self.getTimeFormat())
+
         if self.layer.dataProvider().storageType() == 'PostgreSQL database with PostGIS extension':
             # Use PostGIS query syntax (incompatible with OGR syntax)
             subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % (self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
