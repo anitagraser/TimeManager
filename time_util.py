@@ -27,7 +27,7 @@ SUPPORTED_FORMATS = [
 "%d/%m/%Y"
 ]
 
-def getFormatOfStr(datetimeString, hint=DEFAULT_FORMAT, supportedFormats=SUPPORTED_FORMATS):
+def getFormatOfStr(datetimeString, hint=DEFAULT_FORMAT):
     datetimeString = str(datetimeString)
     # is it an integer representing seconds?
     try:
@@ -62,13 +62,12 @@ def strToDatetimeWithFormatHint(datetimeString, hint=DEFAULT_FORMAT):
     except:
         pass
      
-    formatsToTry = [hint] + SUPPORTED_FORMATS
     # is it a string in a known format?
     try:
-       # Try the last known format, if not, try all known formats.
-       return datetime.strptime(datetimeString, timeFormat)
+       # Try the hinted format, if not, try all known formats.
+       return datetime.strptime(datetimeString, hint)
     except:
-        for format in formatsToTry:
+        for format in SUPPORTED_FORMATS:
             try:
                 return datetime.strptime(datetimeString, format)
             except:
