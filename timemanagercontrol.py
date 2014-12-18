@@ -231,6 +231,10 @@ class TimeManagerControl(QObject):
         """get timeLayerManager's current time position"""
         return self.timeLayerManager.getCurrentTimePosition()
 
+    def getCurrentEpochPosition(self):
+        """get timeLayerManager's current epoch position"""
+        return self.timeLayerManager.getCurrentEpochPosition()
+
     def setCurrentTimePosition(self,timePosition):
         """set timeLayerManager's current time position"""
         original = timePosition
@@ -378,7 +382,7 @@ class TimeManagerControl(QObject):
                     
                 startTimeAttribute=l[2]
                 endTimeAttribute=l[3]
-                isEnabled=l[4]
+                isEnabled=(l[4]=='True')
                 timeFormat=l[5]
                 
                 try:
