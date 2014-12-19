@@ -1,6 +1,10 @@
 from datetime import datetime
+from PyQt4.QtCore import QDateTime
 
 """ A module to have time related functionality """
+
+__author__="Karolina Alexiou"
+__email__="karolina.alexiou@teralytics.ch"
 
 DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
 UTC = "UTC"
@@ -26,6 +30,38 @@ SUPPORTED_FORMATS = [
 "%d/%m/%Y %H:%M",
 "%d/%m/%Y"
 ]
+
+def QDateTime_to_datetime(date):
+    return datetime.strptime( str(date.toString('yyyy-MM-dd hh:mm:ss.zzz')) ,"%Y-%m-%d %H:%M:%S.%f")
+
+def ordinal_to_datetime(ordinal):
+    """Convert a number of seconds till the beginning of time (NOT the epoch of 1970) to datetime"""
+    return datetime.fromordinal(int(ordinal))
+
+def epoch_to_datetime(seconds_from_epoch):
+    """Convert seconds since 1970-1-1 (UNIX epoch) to a datetime"""
+    return datetime.utcfromtimestamp(seconds_from_epoch)
+
+def time_position_to_datetime(pos):
+    if type(pos) == datetime:
+        return pos
+    if type(pos) == QDateTime:
+        #convert QDateTime to datetime :
+        return QDateTime_to_datetime(pos)
+    elif type(pos) == int or type(pos) == float:
+        return ordinal_to_datetime(pos)
+
+def datetime_to_epoch(dt):
+    """ convert a datetime to seconds after (or possibly before) 1970-1-1 """
+    return (dt - datetime(1970,1,1)).total_seconds()
+
+def datetime_to_str(dt, fmt):
+    """ strftime has a bug for years<1900, so fixing """
+    if dt.year>=1900:
+        datetime.strftime(dt, fmt)
+    else:
+        #TODO: work-around
+        raise Exception("Invalid date (<1900) for strftime")
 
 def getFormatOfStr(datetimeString, hint=DEFAULT_FORMAT):
     datetimeString = str(datetimeString)

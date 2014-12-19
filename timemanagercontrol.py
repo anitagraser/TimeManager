@@ -10,6 +10,7 @@ from timelayer import *
 from timevectorlayer import * 
 from timelayermanager import *
 from timemanagerprojecthandler import *
+from time_util import *
 
 class TimeManagerControl(QObject):
     """Controls the logic behind the GUI. Signals are processed here."""
@@ -32,7 +33,7 @@ class TimeManagerControl(QObject):
         self.animationFrameLength = 2000 # default to 2000 milliseconds
         self.playBackwards = False # play forwards by default
         self.saveAnimation = False
-        self.currentMapTimePosition = datetime.now()   
+        self.currentMapTimePosition = datetime.now() # this sets the current time position to the current *local* system time   
         self.projectHandler.writeSetting('active',True)
         self.setTimeFrameType('days')
         self.setTimeFrameSize(1)
@@ -233,12 +234,8 @@ class TimeManagerControl(QObject):
 
     def setCurrentTimePosition(self,timePosition):
         """set timeLayerManager's current time position"""
-        original = timePosition
-        if type(timePosition) == QDateTime:
-            # convert QDateTime to datetime :S
-            timePosition = datetime.strptime( str(timePosition.toString('yyyy-MM-dd hh:mm:ss.zzz')) ,"%Y-%m-%d %H:%M:%S.%f")
-        elif type(timePosition) == int or type(timePosition) == float:
-            timePosition = datetime.fromtimestamp(timePosition)
+        #original = timePosition
+        timePosition = time_position_to_datetime(timePosition)
         if timePosition == self.currentMapTimePosition:
             return
         self.currentMapTimePosition = timePosition

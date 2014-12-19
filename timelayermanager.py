@@ -9,6 +9,7 @@ from PyQt4.QtGui import *
 from qgis.core import *
 
 from timelayer import NotATimeAttributeError
+from time_util import *
 
 class TimeLayerManager(QObject):
     """Class manages all layers that can be queried temporally and provides navigation in time. Parenthesized sections are not implemented yet. All functions, besides the get functions, trigger a redraw."""
@@ -204,12 +205,8 @@ class TimeLayerManager(QObject):
 
     def setCurrentTimePosition( self, timePosition ):
         """Defines the currently selected point in time, which is at the beginning of the time-frame."""
-         # TODO: Test
-        if type(timePosition) == QDateTime:
-            # convert QDateTime to datetime
-            timePosition = datetime.strptime( str(timePosition.toString('yyyy-MM-dd hh:mm:ss.zzz')) ,"%Y-%m-%d %H:%M:%S.%f")
-        elif type(timePosition) == int or type(timePosition) == float:
-            timePosition = datetime.fromordinal(int(timePosition))
+        #QMessageBox.information(self.iface.mainWindow(),'Debug Output','Timepos {}, type: {}'.format(timePosition, type(timePosition)))
+        timePosition = time_position_to_datetime(timePosition)
         self.currentTimePosition = timePosition
         #self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition) 
         self.timeRestrictionsRefreshed.emit(self.currentTimePosition)
@@ -261,13 +258,13 @@ class TimeLayerManager(QObject):
         
         if len(self.projectTimeExtents) > 0:
             try: # test if projectTimeExtens are populated with datetimes
-                datetime.strftime(self.projectTimeExtents[0], tdfmt)
+                datetime_to_str(self.projectTimeExtents[0], tdfmt)
             except TypeError: # if Nonetypes:
                 return (saveString,saveListLayers)
                 
-            saveString  = datetime.strftime(self.projectTimeExtents[0], tdfmt) + ';'
-            saveString += datetime.strftime(self.projectTimeExtents[1], tdfmt) + ';'
-            saveString += datetime.strftime(self.currentTimePosition, tdfmt) + ';'            
+            saveString  = datetime_to_str(self.projectTimeExtents[0], tdfmt) + ';'
+            saveString += datetime_to_str(self.projectTimeExtents[1], tdfmt) + ';'
+            saveString += datetime_to_str(self.currentTimePosition, tdfmt) + ';'            
 
             for timeLayer in self.timeLayerList:
                 saveListLayers.append(timeLayer.getSaveString())
@@ -281,19 +278,19 @@ class TimeLayerManager(QObject):
             self.isFirstRun = False
             saveString = str(saveString).split(';')
             try:
-                timeExtents = (datetime.strptime(saveString[0], tdfmt),
-                               datetime.strptime(saveString[1], tdfmt))
+                timeExtents = (datetime_to_str(saveString[0], tdfmt),
+                               datetime_to_str(saveString[1], tdfmt))
             except ValueError:
                 try:
                     # Try converting without the fractional seconds for
                     # backward compatibility.
                     tdfmt = "%Y-%m-%d %H:%M:%S"
-                    timeExtents = (datetime.strptime(saveString[0], tdfmt),
-                                   datetime.strptime(saveString[1], tdfmt))
+                    timeExtents = (datetime_to_str(saveString[0], tdfmt),
+                                   datetime_to_str(saveString[1], tdfmt))
                 except ValueError:
                     # avoid error message for projects without
                     # time-managed layers
                     return
             self.projectTimeExtents = timeExtents
-            self.setCurrentTimePosition(datetime.strptime(saveString[2], tdfmt))
+            self.setCurrentTimePosition(datetime_to_str(saveString[2], tdfmt))
             return saveString[3]

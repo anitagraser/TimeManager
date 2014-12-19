@@ -9,7 +9,7 @@ from PyQt4 import QtCore
 from datetime import datetime, timedelta
 from qgis.core import *
 from timelayer import *
-from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfStr, UTC
+from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfStr, UTC, datetime_to_epoch, datetime_to_str
 
 class TimeVectorLayer(TimeLayer):
     def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,timeFormat=DEFAULT_FORMAT,offset=0):
@@ -74,12 +74,12 @@ class TimeVectorLayer(TimeLayer):
 
 
     def setTimeRestrictionInts(self, timePosition, timeFrame):
-        """Constucts the query on integer attributes"""
-        startTime = int((timePosition + timedelta(seconds=self.offset) - datetime(1970,1,1)).total_seconds())
+        """Constucts the query on integer attributes (ie time represented as seconds since the epoch)"""
+        startTime = datetime_to_epoch(timePosition + timedelta(seconds=self.offset))
         if self.toTimeAttribute != self.fromTimeAttribute:
             endTime = startTime
         else:
-            endTime =  int((timePosition + timeFrame + timedelta(seconds=self.offset) - datetime(1970,1,1)).total_seconds())
+            endTime =  datetime_to_epoch(timePosition + timeFrame + timedelta(seconds=self.offset))
 
         subsetString = "%s < %s AND %s >= %s " % (self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
         if self.toTimeAttribute != self.fromTimeAttribute:
@@ -100,7 +100,7 @@ class TimeVectorLayer(TimeLayer):
         if self.timeFormat==UTC:
            self.setTimeRestrictionInts(timePosition, timeFrame)
            return
-        startTime = datetime.strftime(timePosition + timedelta(seconds=self.offset),  self.getTimeFormat())
+        startTime = datetime_to_str(timePosition + timedelta(seconds=self.offset), self.getTimeFormat())
         if self.toTimeAttribute != self.fromTimeAttribute:
             """If an end time attribute is set for the layer, then only show features where the current time position
             falls between the feature'sget time from and time to attributes """
@@ -108,7 +108,7 @@ class TimeVectorLayer(TimeLayer):
         else:
             """If no end time attribute has been set for this layer, then show features with a time attribute
             which falls somewhere between the current time position and the start position of the next frame"""   
-            endTime = datetime.strftime((timePosition + timeFrame + timedelta(seconds=self.offset)),   self.getTimeFormat())
+            endTime = datetime_to_str((timePosition + timeFrame + timedelta(seconds=self.offset)),  self.getTimeFormat())
 
         if self.layer.dataProvider().storageType() == 'PostgreSQL database with PostGIS extension':
             # Use PostGIS query syntax (incompatible with OGR syntax)

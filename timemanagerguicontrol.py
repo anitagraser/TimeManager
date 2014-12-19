@@ -9,7 +9,6 @@ import os, sys
 sys.path.append("~/.qgis/python")
 
 from string import replace
-from time import mktime
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -20,6 +19,7 @@ from qgis.core import *
 from timelayer import *
 from timevectorlayer import *
 from timerasterlayer import *
+from time_util import datetime_to_epoch
 
 class TimestampLabelConfig(object):
     """Edit configuration for the timestamp label here, in liu of GUI control"""
@@ -368,8 +368,8 @@ class TimeManagerGuiControl(QObject):
         if timeExtents != (None,None):
             self.dock.labelStartTime.setText(str(timeExtents[0])[0:23])
             self.dock.labelEndTime.setText(str(timeExtents[1])[0:23])
-            self.dock.horizontalTimeSlider.setMinimum(mktime(timeExtents[0].timetuple())) 
-            self.dock.horizontalTimeSlider.setMaximum(mktime(timeExtents[1].timetuple())) 
+            self.dock.horizontalTimeSlider.setMinimum(datetime_to_epoch(timeExtents[0])) 
+            self.dock.horizontalTimeSlider.setMaximum(datetime_to_epoch(timeExtents[1])) 
         else: # set to default values
             self.dock.labelStartTime.setText('not set')
             self.dock.labelEndTime.setText('not set')
@@ -381,7 +381,7 @@ class TimeManagerGuiControl(QObject):
         #QMessageBox.information(self.iface.mainWindow(),'Test Output','Refresh!\n'+str(sender)+'\n'+str(currentTimePosition))
         try:
             self.dock.dateTimeEditCurrentTime.setDateTime(currentTimePosition)
-            self.dock.horizontalTimeSlider.setValue(mktime(currentTimePosition.timetuple())) 
+            self.dock.horizontalTimeSlider.setValue(datetime_to_epoch(currentTimePosition)) 
         except:
             pass
 

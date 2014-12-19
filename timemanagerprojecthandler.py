@@ -10,6 +10,7 @@ from time import mktime
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
+from time_util import datetime_to_epoch
 
 class TimeManagerProjectHandler(QObject):
     """This class manages reading from and writing to the QgsProject instance. 
@@ -31,7 +32,7 @@ class TimeManagerProjectHandler(QObject):
         """write plugin settings to QgsProject instance"""
         # there is no writeEntry() for datetime!
         if type(value) == datetime:
-            value = mktime(value.timetuple()) # convert datetime to float 
+            value = datetime_to_epoch(value) 
         try: # write plugin settings to QgsProject
             QgsProject.instance().writeEntry("TimeManager",attribute, value )
         except TypeError:
