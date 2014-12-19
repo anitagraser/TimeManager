@@ -35,8 +35,8 @@ def QDateTime_to_datetime(date):
     return datetime.strptime( str(date.toString('yyyy-MM-dd hh:mm:ss.zzz')) ,"%Y-%m-%d %H:%M:%S.%f")
 
 def ordinal_to_datetime(ordinal):
-    """Convert a number of seconds till the beginning of time (NOT the epoch of 1970) to datetime"""
-    return datetime.fromordinal(int(ordinal))
+    """Convert a number of seconds till the beginning of time (NOT the epoch of 1970 but year 0) to datetime"""
+    return datetime.fromordinal(int(ordinal) if ordinal>0 else 1)
 
 def epoch_to_datetime(seconds_from_epoch):
     """Convert seconds since 1970-1-1 (UNIX epoch) to a datetime"""
@@ -49,16 +49,16 @@ def time_position_to_datetime(pos):
         #convert QDateTime to datetime :
         return QDateTime_to_datetime(pos)
     elif type(pos) == int or type(pos) == float:
-        return ordinal_to_datetime(pos)
+        return epoch_to_datetime(pos)#ordinal_to_datetime(pos)
 
 def datetime_to_epoch(dt):
     """ convert a datetime to seconds after (or possibly before) 1970-1-1 """
-    return (dt - datetime(1970,1,1)).total_seconds()
+    return int((dt - datetime(1970,1,1)).total_seconds())
 
 def datetime_to_str(dt, fmt):
     """ strftime has a bug for years<1900, so fixing """
     if dt.year>=1900:
-        datetime.strftime(dt, fmt)
+        return datetime.strftime(dt, fmt)
     else:
         #TODO: work-around
         raise Exception("Invalid date (<1900) for strftime")

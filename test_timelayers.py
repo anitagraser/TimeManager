@@ -5,7 +5,7 @@ from time_util import DEFAULT_FORMAT, UTC
 from datetime import datetime, timedelta
 import unittest
 
-__author__="Karolina Alexiou"$
+__author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
 
 class TestLayers(unittest.TestCase):
