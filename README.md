@@ -43,7 +43,7 @@ The biggest tested dataset was a Spatialite table with indexed timestamps contai
 
 Time Manager supports exporting image series based on the defined animation settings. Our goal for future versions is to include a tool that creates actual animations from these image series. Until then, external programs can be used for this last step. A good option is memcoder. This is how it's used to create an .avi from all images within a folder:
 
-``mencoder "mf://*.PNG" -mf fps=10 -o output.avi -ovc lavc -lavcopts vcodec=mpeg4``
+``mencoder "mf://*.png" -mf fps=10 -o output.avi -ovc lavc -lavcopts vcodec=mpeg4``
 
 ## License
 
