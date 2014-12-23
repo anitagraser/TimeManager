@@ -128,16 +128,17 @@ class TimeManagerControl(QObject):
         
     def toggleAnimation(self):
         """toggle animation on/off"""
+        self.startAnimation()
+        self.animationFrameCounter = 0
+        expectedNumberOfFrames = self.timeLayerManager.getFrameCount()
+        if expectedNumberOfFrames == 0: # will be zero if no layer is time managed
+            self.animationActivated = False
+        self.exportNameDigits = len(str(expectedNumberOfFrames))        
         if self.animationActivated: 
             self.animationActivated = False 
         else:
             self.animationActivated = True 
-            self.startAnimation()
-            self.animationFrameCounter = 0
-            expectedNumberOfFrames = self.timeLayerManager.getFrameCount()
-            if expectedNumberOfFrames == 0: # will be zero if no layer is time managed
-                self.animationActivated = False
-            self.exportNameDigits = len(str(expectedNumberOfFrames))
+
 
     def toggleOnOff(self,turnOn):
         """write plugin status (on/off) to project settings"""
