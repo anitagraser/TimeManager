@@ -33,11 +33,16 @@ class TimeManagerControl(QObject):
         self.animationFrameLength = 2000 # default to 2000 milliseconds
         self.playBackwards = False # play forwards by default
         self.saveAnimation = False
-        self.currentMapTimePosition = datetime.now() # this sets the current time position to the current *local* system time   
+        self.currentMapTimePosition = datetime.utcnow() # this sets the current time position to the current *local* system time   
         self.projectHandler.writeSetting('active',True)
         self.setTimeFrameType('days')
         self.setTimeFrameSize(1)
         self.animationActivated = False
+
+
+    def getTimeLayerManager(self):
+        return self.timeLayerManager
+
 
     def initGui(self):
         """initialize the plugin dock"""
@@ -234,12 +239,12 @@ class TimeManagerControl(QObject):
 
     def setCurrentTimePosition(self,timePosition):
         """set timeLayerManager's current time position"""
-        #original = timePosition
+        original = timePosition
         timePosition = time_position_to_datetime(timePosition)
         if timePosition == self.currentMapTimePosition:
             return
         self.currentMapTimePosition = timePosition
-        #QMessageBox.information(self.iface.mainWindow(),'Info','original = '+str(original)+' - timePosition = '+str(timePosition))
+        QMessageBox.information(self.iface.mainWindow(),'Info','original = '+str(original)+',timePosition = '+str(timePosition)+", extents ="+ str(self.timeLayerManager.getProjectTimeExtents()))
         self.guiControl.refreshTimeRestrictions(timePosition,'setCurrentTimePosition')
         self.timeLayerManager.setCurrentTimePosition(timePosition)
 
@@ -308,9 +313,9 @@ class TimeManagerControl(QObject):
                  'active': (self.restoreSettingActive,1)
                  }
                  
-        savedTimePosition = datetime.fromtimestamp(1)
+        savedTimePosition = datetime.utcfromtimestamp(1)
         try: # save the timePosition first because it might get over-written by successive functions
-            savedTimePosition = datetime.fromtimestamp(settings['currentMapTimePosition'])
+            savedTimePosition = datetime.utcfromtimestamp(settings['currentMapTimePosition'])
         except KeyError:
             pass
         except TypeError:
