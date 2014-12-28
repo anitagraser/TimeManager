@@ -56,6 +56,7 @@ class TimeManagerGuiControl(QObject):
     saveOptionsStart = pyqtSignal()
     saveOptionsEnd = pyqtSignal()
     registerTimeLayer = pyqtSignal(object)
+    updatedRestrictions = False
     
     def __init__ (self,iface,timeLayerManager):
         """initialize the GUI control"""
@@ -116,6 +117,10 @@ class TimeManagerGuiControl(QObject):
 
         #self.debug("slider val {}".format(sliderVal))
 
+        if (self.updatedRestrictions):
+            self.updatedRestrictions = False
+            return
+
         try:
 
             pct = (sliderVal - self.dock.horizontalTimeSlider.minimum())*1.0/(
@@ -136,6 +141,9 @@ class TimeManagerGuiControl(QObject):
         self.signalCurrentTime.emit(realEpochTime)
         
     def currentTimeChanged(self,datetime):
+        if (self.updatedRestrictions):
+            self.updatedRestrictions = False
+            return
         self.signalCurrentTime.emit(datetime)
         
     def currentTimeFrameTypeChanged(self,frameType):
@@ -434,6 +442,7 @@ class TimeManagerGuiControl(QObject):
     def refreshTimeRestrictions(self,currentTimePosition,sender=None):
         """update current time showing in dateTimeEditCurrentTime and horizontalTimeSlider"""
 
+        self.updatedRestrictions = True
         if currentTimePosition is None:
             return
         self.dock.dateTimeEditCurrentTime.setDateTime(currentTimePosition)

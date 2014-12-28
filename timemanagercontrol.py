@@ -33,7 +33,8 @@ class TimeManagerControl(QObject):
         self.animationFrameLength = 2000 # default to 2000 milliseconds
         self.playBackwards = False # play forwards by default
         self.saveAnimation = False
-        self.currentMapTimePosition = datetime.utcnow() # this sets the current time position to the current *local* system time   
+        self.currentMapTimePosition = datetime.utcnow() # this sets the current time position to
+        #  the current *UTC* system time
         self.projectHandler.writeSetting('active',True)
         self.setTimeFrameType('days')
         self.setTimeFrameSize(1)
@@ -244,8 +245,11 @@ class TimeManagerControl(QObject):
         """set timeLayerManager's current time position"""
         original = timePosition
         timePosition = time_position_to_datetime(timePosition)
-        if timePosition == self.currentMapTimePosition:
+        if abs((timePosition - self.currentMapTimePosition).total_seconds())<1:
             return
+        #self.debug("timep ={}, curr={}".format(timePosition, self.currentMapTimePosition))
+        #import time
+        #time.sleep(0.1)
         self.currentMapTimePosition = timePosition
         ##self.debug('original = '+str(original)+',timePosition = '+str(timePosition)+","
         #                                                                            " extents
