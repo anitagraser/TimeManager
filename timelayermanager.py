@@ -139,20 +139,20 @@ class TimeLayerManager(QObject):
     def registerTimeLayer( self, timeLayer ):
         """Register a new layer for management and update the project's temporal extent"""
         self.timeLayerList.append( timeLayer )
-        #self.debug("registering timelayer")
+        ##self.debug("registering timelayer")
         if len( self.timeLayerList ) == 1:
             # update projectTimeExtents to first layer's timeExtents
-            #self.debug("will set time extents to {}".format(timeLayer.getTimeExtents()))
+            ##self.debug("will set time extents to {}".format(timeLayer.getTimeExtents()))
             self.setProjectTimeExtents(timeLayer.getTimeExtents())
 
-            #self.debug("updated project time extents to {}".format(timeLayer.getTimeExtents()))
+            ##self.debug("updated project time extents to {}".format(timeLayer.getTimeExtents()))
 
             # Set current time to the earliest time record
             if self.isFirstRun:
 
-                #self.debug("!!!!!!!current pos:"+str(timeLayer.getTimeExtents()[0]))
+                ##self.debug("!!!!!!!current pos:"+str(timeLayer.getTimeExtents()[0]))
                 self.setCurrentTimePosition(timeLayer.getTimeExtents()[0])
-                #self.debug("start of layer when registering time layer:"+str(self.getCurrentTimePosition()))
+                ##self.debug("start of layer when registering time layer:"+str(self.getCurrentTimePosition()))
                 self.isFirstRun = False
         else:
             self.updateProjectTimeExtents()
@@ -219,10 +219,10 @@ class TimeLayerManager(QObject):
 
     def setCurrentTimePosition( self, timePosition ):
         """Defines the currently selected point in time, which is at the beginning of the time-frame."""
-        #self.debug("timePostion {}, class timelayermanager.setCTP()".format(str(timePosition)))
+        ##self.debug("timePostion {}, class timelayermanager.setCTP()".format(str(timePosition)))
         timePosition = time_position_to_datetime(timePosition)
         self.currentTimePosition = timePosition
-        #self.debug("!!!!ct pos:"+str(self.currentTimePosition))
+        ##self.debug("!!!!ct pos:"+str(self.currentTimePosition))
         #self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition) 
         self.timeRestrictionsRefreshed.emit(self.currentTimePosition)
         if self.isEnabled():
@@ -281,7 +281,7 @@ class TimeLayerManager(QObject):
             saveString += datetime_to_str(self.projectTimeExtents[1], tdfmt) + ';'
 
             saveString += datetime_to_str(self.currentTimePosition, tdfmt) + ';'            
-            #self.debug("save string:"+saveString)
+            ##self.debug("save string:"+saveString)
             for timeLayer in self.timeLayerList:
                 saveListLayers.append(timeLayer.getSaveString())
         
@@ -309,6 +309,6 @@ class TimeLayerManager(QObject):
                     return
             self.projectTimeExtents = timeExtents
             pos = datetime_to_str(saveString[2], tdfmt)
-            #self.debug("tlmanager: set current time position to:"+str(pos))
+            ##self.debug("tlmanager: set current time position to:"+str(pos))
             self.setCurrentTimePosition(pos)
             return saveString[3]

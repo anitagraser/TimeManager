@@ -39,6 +39,11 @@ def QDateTime_to_datetime(date):
 
     return date.toPyDateTime()
 
+def datetime_at_start_of_day(dt):
+    return datetime.combine(dt, datetime.min.time())
+
+def datetime_at_end_of_day(dt):
+    return datetime.combine(dt, datetime.max.time())
 
 def epoch_to_datetime(seconds_from_epoch):
     """Convert seconds since 1970-1-1 (UNIX epoch) to a datetime"""
@@ -57,8 +62,8 @@ def datetime_to_epoch(dt):
     """ convert a datetime to seconds after (or possibly before) 1970-1-1 """
     return int((dt - datetime(1970,1,1)).total_seconds())
 
-def datetime_to_str(dt, fmt):
-    """ strftime has a bug for years<1900, so fixing """
+def datetime_to_str(dt, fmt=DEFAULT_FORMAT):
+    """ strftime has a bug for years<1900, so fixing it as well as we can """
     if dt.year>=1900:
         return datetime.strftime(dt, fmt)
     else:

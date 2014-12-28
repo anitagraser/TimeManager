@@ -10,7 +10,9 @@ from datetime import datetime, timedelta
 from qgis.core import *
 from PyQt4.QtGui import QMessageBox
 from timelayer import *
-from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfStr, UTC, datetime_to_epoch, datetime_to_str
+from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, \
+    getFormatOfStr, UTC, datetime_to_epoch, datetime_to_str, datetime_at_start_of_day, \
+    datetime_at_end_of_day, QDateTime_to_datetime
 
 class TimeVectorLayer(TimeLayer):
     def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,
@@ -59,10 +61,10 @@ class TimeVectorLayer(TimeLayer):
     def getTimeExtents(self):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
         minValue, maxValue = self.getMinMaxValues()
-        ##self.debug("vector layer min {} max{}".format(minValue, maxValue))
+        ###self.debug("vector layer min {} max{}".format(minValue, maxValue))
         if type(minValue) is QtCore.QDate:
-            startTime = datetime.combine(minValue.toPyDate(), datetime.min.time())
-            endTime = datetime.combine(maxValue.toPyDate(), datetime.min.time())
+            startTime = datetime_at_start_of_day(QDateTime_to_datetime(minValue))
+            endTime = datetime_at_end_of_day(QDateTime_to_datetime(maxValue))
         else:
             startStr = str(minValue)
             endStr = str(maxValue)
@@ -77,7 +79,7 @@ class TimeVectorLayer(TimeLayer):
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
-        ##self.debug("vector layer starttime {} endtime{}".format(startTime, endTime))
+        ###self.debug("vector layer starttime {} endtime{}".format(startTime, endTime))
         return (startTime, endTime)
 
 

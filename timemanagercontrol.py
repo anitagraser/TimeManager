@@ -246,12 +246,12 @@ class TimeManagerControl(QObject):
         if timePosition == self.currentMapTimePosition:
             return
         self.currentMapTimePosition = timePosition
-        #self.debug('original = '+str(original)+',timePosition = '+str(timePosition)+","
+        ##self.debug('original = '+str(original)+',timePosition = '+str(timePosition)+","
         #                                                                            " extents
         # ="+ str(self.timeLayerManager.getProjectTimeExtents()))
+
         self.guiControl.refreshTimeRestrictions(timePosition,
-                                                'timemanagercontrol.setCurrentTimePosition ('
-                                                'WHERE WEIRDNESS HAPPENS)')
+                                                'timemanagercontrol.setCurrentTimePosition')
         self.timeLayerManager.setCurrentTimePosition(timePosition)
 
         if self.timeLayerManager.hasActiveLayers() and self.timeLayerManager.isEnabled():
@@ -411,7 +411,7 @@ class TimeManagerControl(QObject):
     
     def restoreSettingCurrentMapTimePosition(self,value):
         """restore currentMapTimePosition"""
-        #self.debug("restoer? {}"+value)
+        ##self.debug("restoer? {}"+value)
         if value:
             try:
                 self.setCurrentTimePosition(value)
