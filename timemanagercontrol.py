@@ -43,6 +43,8 @@ class TimeManagerControl(QObject):
     def getTimeLayerManager(self):
         return self.timeLayerManager
 
+    def debug(self, msg):
+            QMessageBox.information(self.iface.mainWindow(),'Info', msg)
 
     def initGui(self):
         """initialize the plugin dock"""
@@ -244,12 +246,17 @@ class TimeManagerControl(QObject):
         if timePosition == self.currentMapTimePosition:
             return
         self.currentMapTimePosition = timePosition
-        QMessageBox.information(self.iface.mainWindow(),'Info','original = '+str(original)+',timePosition = '+str(timePosition)+", extents ="+ str(self.timeLayerManager.getProjectTimeExtents()))
-        self.guiControl.refreshTimeRestrictions(timePosition,'setCurrentTimePosition')
+        #self.debug('original = '+str(original)+',timePosition = '+str(timePosition)+","
+        #                                                                            " extents
+        # ="+ str(self.timeLayerManager.getProjectTimeExtents()))
+        self.guiControl.refreshTimeRestrictions(timePosition,
+                                                'timemanagercontrol.setCurrentTimePosition ('
+                                                'WHERE WEIRDNESS HAPPENS)')
         self.timeLayerManager.setCurrentTimePosition(timePosition)
 
         if self.timeLayerManager.hasActiveLayers() and self.timeLayerManager.isEnabled():
-            self.guiControl.refreshMapCanvas('setCurrentTimePosition'+str(timePosition))
+            self.guiControl.refreshMapCanvas('setCurrentTimePosition'+str(
+                timePosition))
 
         #if self.timeLayerManager.hasActiveLayers():
         #    self.guiControl.showLabel = True
@@ -404,6 +411,7 @@ class TimeManagerControl(QObject):
     
     def restoreSettingCurrentMapTimePosition(self,value):
         """restore currentMapTimePosition"""
+        #self.debug("restoer? {}"+value)
         if value:
             try:
                 self.setCurrentTimePosition(value)

@@ -6,7 +6,6 @@ Created on Fri Oct 29 17:22:52 2010
 """
 
 from datetime import datetime
-from time import mktime 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *

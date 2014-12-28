@@ -45,6 +45,9 @@ class TimeLayerManager(QObject):
         """returns the manager's currentTimePosition"""
         return self.currentTimePosition
         
+    def debug(self, msg):
+        QMessageBox.information(self.iface.mainWindow(),'Info', msg)
+
     def getTimeFrameType(self):
         """returns the type of the time frame, e.g. minutes, hours, days"""
         return self.timeFrameType
@@ -136,12 +139,20 @@ class TimeLayerManager(QObject):
     def registerTimeLayer( self, timeLayer ):
         """Register a new layer for management and update the project's temporal extent"""
         self.timeLayerList.append( timeLayer )
+        #self.debug("registering timelayer")
         if len( self.timeLayerList ) == 1:
             # update projectTimeExtents to first layer's timeExtents
+            #self.debug("will set time extents to {}".format(timeLayer.getTimeExtents()))
             self.setProjectTimeExtents(timeLayer.getTimeExtents())
+
+            #self.debug("updated project time extents to {}".format(timeLayer.getTimeExtents()))
+
             # Set current time to the earliest time record
             if self.isFirstRun:
-                self.setCurrentTimePosition(self.projectTimeExtents[0])
+
+                #self.debug("!!!!!!!current pos:"+str(timeLayer.getTimeExtents()[0]))
+                self.setCurrentTimePosition(timeLayer.getTimeExtents()[0])
+                #self.debug("start of layer when registering time layer:"+str(self.getCurrentTimePosition()))
                 self.isFirstRun = False
         else:
             self.updateProjectTimeExtents()
@@ -162,9 +173,12 @@ class TimeLayerManager(QObject):
 
     def updateProjectTimeExtents(self):
         """Loop through all timeLayers and make sure that the projectTimeExtents cover all layers"""
-        for timeLayer in self.timeLayerList:
+        for i,timeLayer in enumerate(self.timeLayerList):
             try:
                 extents = timeLayer.getTimeExtents()
+                if i==0:
+                    self.setProjectTimeExtents(timeLayer.getTimeExtents())
+                    continue
             except NotATimeAttributeError:
                 continue # TODO: we should probably do something useful here
             if extents[0] < self.projectTimeExtents[0]:
@@ -205,9 +219,10 @@ class TimeLayerManager(QObject):
 
     def setCurrentTimePosition( self, timePosition ):
         """Defines the currently selected point in time, which is at the beginning of the time-frame."""
-        #QMessageBox.information(self.iface.mainWindow(),'Debug Output','Timepos {}, type: {}'.format(timePosition, type(timePosition)))
+        #self.debug("timePostion {}, class timelayermanager.setCTP()".format(str(timePosition)))
         timePosition = time_position_to_datetime(timePosition)
         self.currentTimePosition = timePosition
+        #self.debug("!!!!ct pos:"+str(self.currentTimePosition))
         #self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition) 
         self.timeRestrictionsRefreshed.emit(self.currentTimePosition)
         if self.isEnabled():
@@ -264,8 +279,9 @@ class TimeLayerManager(QObject):
                 
             saveString  = datetime_to_str(self.projectTimeExtents[0], tdfmt) + ';'
             saveString += datetime_to_str(self.projectTimeExtents[1], tdfmt) + ';'
-            saveString += datetime_to_str(self.currentTimePosition, tdfmt) + ';'            
 
+            saveString += datetime_to_str(self.currentTimePosition, tdfmt) + ';'            
+            #self.debug("save string:"+saveString)
             for timeLayer in self.timeLayerList:
                 saveListLayers.append(timeLayer.getSaveString())
         
@@ -292,5 +308,7 @@ class TimeLayerManager(QObject):
                     # time-managed layers
                     return
             self.projectTimeExtents = timeExtents
-            self.setCurrentTimePosition(datetime_to_str(saveString[2], tdfmt))
+            pos = datetime_to_str(saveString[2], tdfmt)
+            #self.debug("tlmanager: set current time position to:"+str(pos))
+            self.setCurrentTimePosition(pos)
             return saveString[3]

@@ -98,6 +98,7 @@ class TimeManagerGuiControl(QObject):
         self.play.emit()
         
     def currentTimeChanged(self,datetime):
+        #self.debug("current time changed:{}".format(datetime))
         self.signalCurrentTime.emit(datetime)
         
     def currentTimeFrameTypeChanged(self,frameType):
@@ -200,10 +201,14 @@ class TimeManagerGuiControl(QObject):
                 self.saveOptionsEnd.emit()
             else:
                 break
+
+    def debug(self, msg):
+            QMessageBox.information(self.iface.mainWindow(),'Info', msg)
             
     def createTimeLayer(self,row):
         """create a TimeLayer from options set in the table row"""
         # layer
+        #self.debug("Creating time layer")
         layer=QgsMapLayerRegistry.instance().mapLayer(self.optionsDialog.tableWidget.item(row,4).text())
         if self.optionsDialog.tableWidget.item(row,3).checkState() == Qt.Checked:
             isEnabled = True
@@ -229,11 +234,13 @@ class TimeManagerGuiControl(QObject):
             timeLayerClass = TimeRasterLayer           
             
         try: # here we use the selected class
-            timeLayer = timeLayerClass(layer,startTimeAttribute,endTimeAttribute,isEnabled,timeFormat,offset)
+            timeLayer = timeLayerClass(layer,startTimeAttribute,endTimeAttribute,isEnabled,
+                                       timeFormat,offset, self.iface)
         except InvalidTimeLayerError, e:
             QMessageBox.information(self.iface.mainWindow(),'Error','An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+e.value)
             return False
-            
+
+        #self.debug("registering time layer")
         self.registerTimeLayer.emit(timeLayer)
         return True
 
@@ -366,6 +373,7 @@ class TimeManagerGuiControl(QObject):
         """update time extents showing in labels and represented by horizontalTimeSlider"""
         #QMessageBox.information(self.iface.mainWindow(),'Debug','start: '+str(timeExtents[0])+' \nend: '+str(timeExtents[1]))
         if timeExtents != (None,None):
+            #self.debug("extents:{}".format(timeExtents))
             self.dock.labelStartTime.setText(str(timeExtents[0])[0:23])
             self.dock.labelEndTime.setText(str(timeExtents[1])[0:23])
             self.dock.horizontalTimeSlider.setMinimum(datetime_to_epoch(timeExtents[0])) 
@@ -379,6 +387,7 @@ class TimeManagerGuiControl(QObject):
     def refreshTimeRestrictions(self,currentTimePosition,sender=None):
         """update current time showing in dateTimeEditCurrentTime and horizontalTimeSlider"""
         #QMessageBox.information(self.iface.mainWindow(),'Test Output','Refresh!\n'+str(sender)+'\n'+str(currentTimePosition))
+        #self.debug("refresh time restrictions: {}, sender {}".format(currentTimePosition,sender))
         try:
             self.dock.dateTimeEditCurrentTime.setDateTime(currentTimePosition)
             self.dock.horizontalTimeSlider.setValue(datetime_to_epoch(currentTimePosition)) 

@@ -8,14 +8,17 @@ Created on Thu Mar 22 17:28:19 2012
 from PyQt4 import QtCore
 from datetime import datetime, timedelta
 from qgis.core import *
+from PyQt4.QtGui import QMessageBox
 from timelayer import *
 from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfStr, UTC, datetime_to_epoch, datetime_to_str
 
 class TimeVectorLayer(TimeLayer):
-    def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,timeFormat=DEFAULT_FORMAT,offset=0):
+    def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,
+                 timeFormat=DEFAULT_FORMAT,offset=0, iface=None):
         TimeLayer.__init__(self,layer,enabled)
         
         self.layer = layer
+        self.iface = iface
         self.fromTimeAttribute = fromTimeAttribute
         self.toTimeAttribute = toTimeAttribute
         self.timeEnabled = enabled
@@ -42,6 +45,9 @@ class TimeVectorLayer(TimeLayer):
         """returns the layer's offset, integer in seconds"""
         return self.offset
 
+    def debug(self, msg):
+            QMessageBox.information(self.iface.mainWindow(),'Info', msg)
+
     def getMinMaxValues(self):
         provider = self.layer.dataProvider()
         fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
@@ -53,6 +59,7 @@ class TimeVectorLayer(TimeLayer):
     def getTimeExtents(self):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
         minValue, maxValue = self.getMinMaxValues()
+        ##self.debug("vector layer min {} max{}".format(minValue, maxValue))
         if type(minValue) is QtCore.QDate:
             startTime = datetime.combine(minValue.toPyDate(), datetime.min.time())
             endTime = datetime.combine(maxValue.toPyDate(), datetime.min.time())
@@ -70,6 +77,7 @@ class TimeVectorLayer(TimeLayer):
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
+        ##self.debug("vector layer starttime {} endtime{}".format(startTime, endTime))
         return (startTime, endTime)
 
 

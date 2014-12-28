@@ -38,7 +38,6 @@ SUPPORTED_FORMATS = [
 def QDateTime_to_datetime(date):
 
     return date.toPyDateTime()
-# return datetime.strptime( str(date.toString('yyyy-MM-dd hh:mm:ss.zzz')) ,"%Y-%m-%d %H:%M:%S.%f")
 
 
 def epoch_to_datetime(seconds_from_epoch):
