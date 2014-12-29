@@ -11,6 +11,7 @@ __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
 
 DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
+SAVE_STRING_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 UTC = "UTC"
 SUPPORTED_FORMATS = [
 "%Y-%m-%d %H:%M:%S.%f",
@@ -36,7 +37,6 @@ SUPPORTED_FORMATS = [
 ]
 
 def QDateTime_to_datetime(date):
-
     return date.toPyDateTime()
 
 def datetime_at_start_of_day(dt):
@@ -48,15 +48,6 @@ def datetime_at_end_of_day(dt):
 def epoch_to_datetime(seconds_from_epoch):
     """Convert seconds since 1970-1-1 (UNIX epoch) to a datetime"""
     return datetime.utcfromtimestamp(seconds_from_epoch)
-
-def time_position_to_datetime(pos):
-    if type(pos) == datetime:
-        return pos
-    if type(pos) == QDateTime:
-        #convert QDateTime to datetime :
-        return QDateTime_to_datetime(pos)
-    elif type(pos) == int or type(pos) == float:
-        return epoch_to_datetime(pos)
 
 def datetime_to_epoch(dt):
     """ convert a datetime to seconds after (or possibly before) 1970-1-1 """

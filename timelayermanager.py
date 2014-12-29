@@ -13,7 +13,8 @@ from time_util import *
 
 class TimeLayerManager(QObject):
     """Class manages all layers that can be queried temporally and provides navigation in time. Parenthesized sections are not implemented yet. All functions, besides the get functions, trigger a redraw."""
-    
+
+    # the signal for when the current time position is changed #FIXME naming?
     timeRestrictionsRefreshed = pyqtSignal(datetime)#object)
     projectTimeExtentsChanged = pyqtSignal(object)#tuple)
     lastLayerRemoved = pyqtSignal()
@@ -133,7 +134,7 @@ class TimeLayerManager(QObject):
                 if not timeLayer.hasTimeRestriction():
                     return
                 timeLayer.deleteTimeRestriction()
-        #self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition)   
+
         self.timeRestrictionsRefreshed.emit(self.currentTimePosition)
                 
     def registerTimeLayer( self, timeLayer ):
@@ -182,19 +183,18 @@ class TimeLayerManager(QObject):
             except NotATimeAttributeError:
                 continue # TODO: we should probably do something useful here
             if extents[0] < self.projectTimeExtents[0]:
-                self.projectTimeExtents = (extents[0],self.projectTimeExtents[1])
+                extents = (extents[0],self.projectTimeExtents[1])
             if extents[1] > self.projectTimeExtents[1]:
-                self.projectTimeExtents = (self.projectTimeExtents[0],extents[1])
+                extents = (self.projectTimeExtents[0],extents[1])
+
+        self.setProjectTimeExtents(extents) # this fires the event that the extents where changed
+        #self.debug("new project time extents:{}".format(self.projectTimeExtents))
 
     def setProjectTimeExtents(self,timeExtents):
         """set projectTimeExtents to given time extent and emit signal 'projectTimeExtentsChanged(list)'"""
         self.projectTimeExtents = timeExtents
-        #QMessageBox.information(self.iface.mainWindow(),'Debug Output','setProjectTimeExtents\nTime extents: '+str(timeExtents)+'\nType: '+str(type(timeExtents)))
-        try:
-            #self.emit(SIGNAL('projectTimeExtentsChanged(PyQt_PyObject)'),timeExtents)
-            self.projectTimeExtentsChanged.emit(timeExtents)
-        except TypeError: # if timeExtent is not specified
-            pass
+        self.projectTimeExtentsChanged.emit(timeExtents)
+
 
     def getProjectTimeExtents( self ):
         """Get the overall temporal extent of all managable (managed?) layers"""
@@ -218,21 +218,20 @@ class TimeLayerManager(QObject):
         self.refresh()
 
     def setCurrentTimePosition( self, timePosition ):
-        """Defines the currently selected point in time, which is at the beginning of the time-frame."""
-        ##self.debug("timePostion {}, class timelayermanager.setCTP()".format(str(timePosition)))
-        timePosition = time_position_to_datetime(timePosition)
+        """Sets the currently selected point in time (a datetime), which is at the beginning of
+        the time-frame."""
+        if type(timePosition)!=datetime:
+            raise Exception("Expected datetime got {} of type {} instead".format(timePosition,
+                                                                                 type(timePosition)))
         self.currentTimePosition = timePosition
-        ##self.debug("!!!!ct pos:"+str(self.currentTimePosition))
-        #self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition) 
         self.timeRestrictionsRefreshed.emit(self.currentTimePosition)
         if self.isEnabled():
             self.refresh()
 
-    def stepForward(self):
+    def stepForward(self): #FIXME shouldnt this logic be in the gui?
         """Shifts query forward in time by one time frame"""
         if self.currentTimePosition != None:
             self.currentTimePosition += self.timeFrame()
-            #self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition) 
             self.timeRestrictionsRefreshed.emit(self.currentTimePosition)
         if self.isEnabled():
             self.refresh()
@@ -241,7 +240,6 @@ class TimeLayerManager(QObject):
         """Shifts query back in time by one time frame"""
         if self.currentTimePosition != None:
             self.currentTimePosition -= self.timeFrame()
-            #self.emit(SIGNAL('timeRestrictionsRefreshed(PyQt_PyObject)'),self.currentTimePosition) 
             self.timeRestrictionsRefreshed.emit(self.currentTimePosition)
         if self.isEnabled():
             self.refresh()
@@ -264,10 +262,10 @@ class TimeLayerManager(QObject):
         """Disable all temporal constraints (and restore original subsets)"""
         self.timeManagementEnabled = False
         self.refresh()
-        
+
     def getSaveString(self):
         """create a save string that can be put into project file"""
-        tdfmt = "%Y-%m-%d %H:%M:%S.%f"
+        tdfmt = SAVE_STRING_FORMAT
         saveString = ''
         saveListLayers = []
         
@@ -289,7 +287,7 @@ class TimeLayerManager(QObject):
         
     def restoreFromSaveString(self, saveString):
         """restore settings from loaded project file"""
-        tdfmt = "%Y-%m-%d %H:%M:%S.%f"
+        tdfmt = SAVE_STRING_FORMAT
         if saveString:
             self.isFirstRun = False
             saveString = str(saveString).split(';')
@@ -300,14 +298,14 @@ class TimeLayerManager(QObject):
                 try:
                     # Try converting without the fractional seconds for
                     # backward compatibility.
-                    tdfmt = "%Y-%m-%d %H:%M:%S"
+                    tdfmt = DEFAULT_FORMAT
                     timeExtents = (datetime_to_str(saveString[0], tdfmt),
                                    datetime_to_str(saveString[1], tdfmt))
                 except ValueError:
                     # avoid error message for projects without
                     # time-managed layers
                     return
-            self.projectTimeExtents = timeExtents
+            self.setProjectTimeExtents(timeExtents)
             pos = datetime_to_str(saveString[2], tdfmt)
             ##self.debug("tlmanager: set current time position to:"+str(pos))
             self.setCurrentTimePosition(pos)
