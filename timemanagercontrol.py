@@ -23,7 +23,25 @@ class TimeManagerControl(QObject):
         """initialize the plugin control"""
         QObject.__init__(self)
         self.iface = iface       
-        #QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.__init__()')
+        self.loopAnimation = False
+        self.saveAnimationPath = os.path.expanduser('~')
+
+        self.projectHandler = TimeManagerProjectHandler(self.iface)
+        self.timeLayerManager = TimeLayerManager(self.iface)
+
+        # QGIS iface connections
+        self.iface.projectRead.connect(self.readSettings)
+        self.iface.newProjectCreated.connect(self.restoreDefaults)
+        self.iface.newProjectCreated.connect(self.disableAnimationExport)
+
+        self.iface.mapCanvas().renderComplete.connect(self.waitAfterRenderComplete)
+
+        # establish connections to QgsMapLayerRegistry
+        QgsMapLayerRegistry.instance().layerWillBeRemoved.connect(self.timeLayerManager.removeTimeLayer)
+        QgsMapLayerRegistry.instance().removeAll.connect(self.timeLayerManager.clearTimeLayerList)
+        QgsMapLayerRegistry.instance().removeAll.connect(self.disableAnimationExport)
+
+        self.restoreDefaults()
 
     def disableAnimationExport(self):
         """disable the animation export button"""
@@ -55,25 +73,6 @@ class TimeManagerControl(QObject):
         """initialize the plugin dock"""
         #QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.initGui()')
 
-        self.loopAnimation = False
-        self.saveAnimationPath = os.path.expanduser('~')
-        
-        self.projectHandler = TimeManagerProjectHandler(self.iface)
-        self.timeLayerManager = TimeLayerManager(self.iface)
-        
-        # QGIS iface connections
-        self.iface.projectRead.connect(self.readSettings)
-        self.iface.newProjectCreated.connect(self.restoreDefaults)
-        self.iface.newProjectCreated.connect(self.disableAnimationExport)
-        
-        self.iface.mapCanvas().renderComplete.connect(self.waitAfterRenderComplete)
-        
-        # establish connections to QgsMapLayerRegistry
-        QgsMapLayerRegistry.instance().layerWillBeRemoved.connect(self.timeLayerManager.removeTimeLayer)
-        QgsMapLayerRegistry.instance().removeAll.connect(self.timeLayerManager.clearTimeLayerList)   
-        QgsMapLayerRegistry.instance().removeAll.connect(self.disableAnimationExport) 
-        
-        self.restoreDefaults()
 
         self.guiControl = TimeManagerGuiControl(self.iface,self.timeLayerManager)
         
@@ -98,12 +97,13 @@ class TimeManagerControl(QObject):
         self.iface.registerMainWindowAction(self.actionShowSettings, "F8")
         self.guiControl.addActionShowSettings(self.actionShowSettings)
         self.actionShowSettings.triggered.connect(self.showOptionsDialog)
-        
+
         # establish connections to timeLayerManager
         self.timeLayerManager.timeRestrictionsRefreshed.connect(self.guiControl.refreshGuiWithCurrentTime)
         self.timeLayerManager.projectTimeExtentsChanged.connect(self.guiControl.updateTimeExtents)
-        self.timeLayerManager.toggledManagement.connect(self.toggleOnOff)  
-        self.timeLayerManager.lastLayerRemoved.connect(self.disableAnimationExport)  
+        self.timeLayerManager.toggledManagement.connect(self.toggleOnOff)
+        self.timeLayerManager.lastLayerRemoved.connect(self.disableAnimationExport)
+
         
     def setAnimationOptions(self,length,playBackwards,loopAnimation):
         """set length and play direction of the animation""" #animationFrameLength,playBackwards,loopAnimation
