@@ -13,6 +13,7 @@ from timemanagerprojecthandler import *
 from time_util import *
 
 DEFAULT_FRAME_LENGTH = 2000
+FRAME_FILENAME_PREFIX = "frame"
 
 class TimeManagerControl(QObject):
     """Controls the logic behind the GUI. Signals are processed here."""
@@ -34,6 +35,7 @@ class TimeManagerControl(QObject):
         self.iface.newProjectCreated.connect(self.restoreDefaults)
         self.iface.newProjectCreated.connect(self.disableAnimationExport)
 
+        # this signal is responsible for keeping the animation running
         self.iface.mapCanvas().renderComplete.connect(self.waitAfterRenderComplete)
 
         # establish connections to QgsMapLayerRegistry
@@ -69,12 +71,16 @@ class TimeManagerControl(QObject):
     def debug(self, msg):
             QMessageBox.information(self.iface.mainWindow(),'Info', msg)
 
-    def initGui(self):
-        """initialize the plugin dock"""
-        #QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.initGui()')
+    def initGui(self, test=False):
+        """initialize the plugin dock. If in testing mode, skip the Gui"""
 
+        if test:
+            from mock import Mock
+        if test:
+            self.guiControl = Mock()
+        else:
+            self.guiControl = TimeManagerGuiControl(self.iface,self.timeLayerManager)
 
-        self.guiControl = TimeManagerGuiControl(self.iface,self.timeLayerManager)
         
         self.guiControl.showOptions.connect(self.showOptionsDialog) 
         self.guiControl.exportVideo.connect(self.exportVideo)
@@ -90,13 +96,16 @@ class TimeManagerControl(QObject):
         self.guiControl.saveOptionsEnd.connect(self.timeLayerManager.refresh) # sets the time restrictions again              
         self.guiControl.signalAnimationOptions.connect(self.setAnimationOptions)
         self.guiControl.registerTimeLayer.connect(self.timeLayerManager.registerTimeLayer)
+
+        print "guiControls initialized"
         
         # create actions
         # F8 button press - show time manager settings
-        self.actionShowSettings = QAction(u"Show Time Manager Settings", self.iface.mainWindow())
-        self.iface.registerMainWindowAction(self.actionShowSettings, "F8")
-        self.guiControl.addActionShowSettings(self.actionShowSettings)
-        self.actionShowSettings.triggered.connect(self.showOptionsDialog)
+        if not test:
+            self.actionShowSettings = QAction(u"Show Time Manager Settings", self.iface.mainWindow())
+            self.iface.registerMainWindowAction(self.actionShowSettings, "F8")
+            self.guiControl.addActionShowSettings(self.actionShowSettings)
+            self.actionShowSettings.triggered.connect(self.showOptionsDialog)
 
         # establish connections to timeLayerManager
         self.timeLayerManager.timeRestrictionsRefreshed.connect(self.guiControl.refreshGuiWithCurrentTime)
@@ -116,16 +125,24 @@ class TimeManagerControl(QObject):
         self.stopAnimation()
         self.guiControl.showOptionsDialog(self.timeLayerManager.getTimeLayerList(),self.animationFrameLength,self.playBackwards,self.loopAnimation)
 
-    def exportVideo(self):
-        """export 'video' - currently only image sequence"""
-        self.saveAnimationPath = str(QFileDialog.getExistingDirectory (self.iface.mainWindow(),'Pick export destination',self.saveAnimationPath))
+
+    def exportVideoAtPath(self, path):
+        self.saveAnimationPath = path
         if self.saveAnimationPath:
             self.saveAnimation = True
             self.loopAnimation = False # on export looping has to be deactivated
             self.toggleAnimation()
-            QMessageBox.information(self.iface.mainWindow(),'Export Video','Image sequence from '
-                                                                           'current position onwards'
-                                                                           ' is being saved to '+self.saveAnimationPath+'.\n\nPlease wait until the process is finished.')
+        #FIXME make QMessageBox testable
+          #  QMessageBox.information(self.iface.mainWindow(),'Export Video','Image sequence from '
+          #                                                                 'current position
+          # onwards'                                                                           ' is being saved to '+self.saveAnimationPath+'.\n\nPlease wait until the process is finished.')
+
+    def exportVideo(self):
+        """export 'video' - currently only image sequence"""
+        path = str(QFileDialog.getExistingDirectory (self.iface.mainWindow(),
+                                                                       'Pick export '
+                                                                       'destination',self.saveAnimationPath))
+        self.exportVideoAtPath(path)
 
     def unload(self):
         """unload the plugin"""
@@ -171,6 +188,7 @@ class TimeManagerControl(QObject):
 
     def startAnimation(self):
         """kick-start the animation, afterwards the animation will run based on signal chains"""
+        print "aaaaa"
         self.waitAfterRenderComplete()
         
     def waitAfterRenderComplete(self, painter=None):
@@ -179,6 +197,11 @@ class TimeManagerControl(QObject):
             self.playAnimation(painter)
         else:
             QTimer.singleShot(self.animationFrameLength,self.playAnimation)
+
+    def generate_frame_filename(self, path, frame_index, currentTime):
+         return os.path.join(path,"{}{}_{}.png".format(FRAME_FILENAME_PREFIX,
+                                                       str(frame_index).zfill(
+                                                           self.exportNameDigits), currentTime))
         
     def playAnimation(self,painter=None):
         """play animation in map window"""
@@ -190,8 +213,14 @@ class TimeManagerControl(QObject):
         currentTime = self.timeLayerManager.getCurrentTimePosition()
         
         if self.saveAnimation:
-            fileName = os.path.join(self.saveAnimationPath,"frame{}_{}.png".format(str(
-                self.animationFrameCounter).zfill(self.exportNameDigits), currentTime))
+            fileName = self.generate_frame_filename(self.saveAnimationPath,
+                                                    self.animationFrameCounter, currentTime)
+
+            # try accessing the file or fail with informative exception
+            try:
+                 open(fileName, 'a').close()
+            except:
+                raise Exception("Cannot write to file {}".format(fileName))
             self.saveCurrentMap(fileName)
             #self.debug("saving animation for time: {}".format(currentTime))
             self.animationFrameCounter += 1
@@ -221,7 +250,9 @@ class TimeManagerControl(QObject):
     def stopAnimation(self):
         """stop the animation in case it's running"""
         if self.saveAnimation:
-            QMessageBox.information(self.iface.mainWindow(),'Export finished','The export finished successfully!')
+            #FIXME make QMessageBox testable
+            #QMessageBox.information(self.iface.mainWindow(),'Export finished','The export
+            # finished successfully!')
             self.saveAnimation = False
         self.animationActivated = False 
         self.guiControl.turnPlayButtonOff()

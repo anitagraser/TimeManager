@@ -1,7 +1,7 @@
 import time
 import re # for hacking strftime
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from PyQt4.QtCore import QDateTime
 
 
@@ -47,7 +47,11 @@ def datetime_at_end_of_day(dt):
 
 def epoch_to_datetime(seconds_from_epoch):
     """Convert seconds since 1970-1-1 (UNIX epoch) to a datetime"""
-    return datetime.utcfromtimestamp(seconds_from_epoch)
+    #FIXME: Maybe this doesnt work on windows for negative timestamps
+    # http://stackoverflow.com/questions/22082103/on-windows-how-to-convert-a-timestamps-before-1970-into-something-manageable
+    # return datetime.utcfromtimestamp(seconds_from_epoch)
+    # but this should:
+    return datetime.datetime(1970, 1, 1) + timedelta(seconds=seconds_from_epoch)
 
 def datetime_to_epoch(dt):
     """ convert a datetime to seconds after (or possibly before) 1970-1-1 """

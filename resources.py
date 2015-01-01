@@ -5,7 +5,7 @@
 # Created by: The Resource Compiler for PyQt (Qt v4.6.2)
 #
 # WARNING! All changes made in this file will be lost!
-
+from collections import OrderedDict,defaultdict
 from PyQt4 import QtCore
 
 qt_resource_data = "\

@@ -51,6 +51,7 @@ class TimeVectorLayer(TimeLayer):
             QMessageBox.information(self.iface.mainWindow(),'Info', msg)
 
     def getMinMaxValues(self):
+        """Returns str"""
         provider = self.layer.dataProvider()
         fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
         toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
