@@ -136,8 +136,6 @@ class TimeManagerGuiControl(QObject):
             # extents are not set
             realEpochTime = 0
 
-        #self.debug("pct:{}, epoch:{} ".format(pct,realEpochTime))
-
         self.signalCurrentTimeUpdated.emit(epoch_to_datetime(realEpochTime))
         
     def currentTimeChangedDateText(self,qdate):
@@ -155,7 +153,8 @@ class TimeManagerGuiControl(QObject):
         """unload the plugin"""
         self.iface.removeDockWidget(self.dock)
         
-    def showOptionsDialog(self,layerList,animationFrameLength,playBackwards,loopAnimation):
+    def showOptionsDialog(self,layerList,animationFrameLength,playBackwards=False,
+                          loopAnimation=False):
         """show the optionsDialog and populate it with settings from timeLayerManager"""
         
         # check if the dialog is already showing
@@ -206,7 +205,7 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.buttonBox.rejected.connect(self.setOptionsDialogToNone)
         self.optionsDialog.rejected.connect(self.setOptionsDialogToNone)
         self.optionsDialog.buttonBox.helpRequested.connect(self.showHelp)
-        
+
         self.mapLayers=QgsMapLayerRegistry.instance().mapLayers()
         
     def showHelp(self):
@@ -336,6 +335,8 @@ class TimeManagerGuiControl(QObject):
     def getManagedLayers(self):
         """get list of QgsMapLayers listed in optionsDialog.tableWidget"""
         layerList=[]
+        if self.optionsDialog.tableWidget is None:
+            return
             
         for row in range(0,self.optionsDialog.tableWidget.rowCount()):
             # layer

@@ -20,6 +20,7 @@ class TimeManagerControl(QObject):
 
     animationFrameCounter = 0
 
+
     def __init__(self,iface):
         """initialize the plugin control"""
         QObject.__init__(self)
@@ -68,11 +69,15 @@ class TimeManagerControl(QObject):
     def getTimeLayerManager(self):
         return self.timeLayerManager
 
-    def debug(self, msg):
-            QMessageBox.information(self.iface.mainWindow(),'Info', msg)
+    def showMessage(self, msg, msg_type="Info"):
+        if self.showQMessagesEnabled():
+            QMessageBox.information(self.iface.mainWindow(),msg_type, msg)
+
+    def showQMessagesEnabled(self):
+        return True
 
     def initGui(self, test=False):
-        """initialize the plugin dock. If in testing mode, skip the Gui"""
+        """initialize the plugin dock. If in testingb mode, skip the Gui"""
 
         if test:
             from mock import Mock
@@ -81,7 +86,6 @@ class TimeManagerControl(QObject):
         else:
             self.guiControl = TimeManagerGuiControl(self.iface,self.timeLayerManager)
 
-        
         self.guiControl.showOptions.connect(self.showOptionsDialog) 
         self.guiControl.exportVideo.connect(self.exportVideo)
         self.guiControl.toggleTime.connect(self.toggleTimeManagement)
@@ -96,8 +100,6 @@ class TimeManagerControl(QObject):
         self.guiControl.saveOptionsEnd.connect(self.timeLayerManager.refresh) # sets the time restrictions again              
         self.guiControl.signalAnimationOptions.connect(self.setAnimationOptions)
         self.guiControl.registerTimeLayer.connect(self.timeLayerManager.registerTimeLayer)
-
-        print "guiControls initialized"
         
         # create actions
         # F8 button press - show time manager settings
@@ -132,10 +134,7 @@ class TimeManagerControl(QObject):
             self.saveAnimation = True
             self.loopAnimation = False # on export looping has to be deactivated
             self.toggleAnimation()
-        #FIXME make QMessageBox testable
-          #  QMessageBox.information(self.iface.mainWindow(),'Export Video','Image sequence from '
-          #                                                                 'current position
-          # onwards'                                                                           ' is being saved to '+self.saveAnimationPath+'.\n\nPlease wait until the process is finished.')
+            self.showMessage('Image sequence from current position onwards is being saved to '+self.saveAnimationPath+'.\n\nPlease wait until the process is finished.')
 
     def exportVideo(self):
         """export 'video' - currently only image sequence"""
@@ -146,7 +145,6 @@ class TimeManagerControl(QObject):
 
     def unload(self):
         """unload the plugin"""
-        #QMessageBox.information(self.iface.mainWindow(),'Debug','TimeManagerControl.unload()')
         self.timeLayerManager.deactivateTimeManagement() 
         self.iface.unregisterMainWindowAction(self.actionShowSettings) 
         self.guiControl.unload()
@@ -188,7 +186,6 @@ class TimeManagerControl(QObject):
 
     def startAnimation(self):
         """kick-start the animation, afterwards the animation will run based on signal chains"""
-        print "aaaaa"
         self.waitAfterRenderComplete()
         
     def waitAfterRenderComplete(self, painter=None):
@@ -250,9 +247,8 @@ class TimeManagerControl(QObject):
     def stopAnimation(self):
         """stop the animation in case it's running"""
         if self.saveAnimation:
-            #FIXME make QMessageBox testable
-            #QMessageBox.information(self.iface.mainWindow(),'Export finished','The export
-            # finished successfully!')
+
+            self.showMessage('The export finished successfully!')
             self.saveAnimation = False
         self.animationActivated = False 
         self.guiControl.turnPlayButtonOff()
@@ -376,11 +372,11 @@ class TimeManagerControl(QObject):
             try:
                 func(value)
             except TypeError:
-                QMessageBox.information(self.iface.mainWindow(),'Error','An error occured while loading: '+setting+'\nValue: '+str(value)+'\nType: '+str(type(value)))
+                self.showMessage('An error occured while loading: '+setting+'\nValue: '+str(value)+'\nType: '+str(type(value)))
+                #TODO also log
         
         # finally, set the currentMapTimePosition         
         if savedTimePosition:
-            #QMessageBox.information(self.iface.mainWindow(),'Info','savedTimePosition = '+str(savedTimePosition))
             self.restoreSettingCurrentMapTimePosition(savedTimePosition)
         
     def restoreSettingAnimationFrameLength(self,value):
@@ -437,7 +433,8 @@ class TimeManagerControl(QObject):
                 try: # here we use the previously determined class
                     timeLayer = timeLayerClass(layer,startTimeAttribute,endTimeAttribute,isEnabled,timeFormat,offset)
                 except InvalidTimeLayerError, e:
-                    QMessageBox.information(self.iface.mainWindow(),'Error','An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+e.value)
+                    self.showMessage('An error occured while trying to add layer '+layer.name()+' to \
+                            TimeManager.\n'+e.value)
                     return False
 
                 if not timeLayer:
@@ -455,11 +452,11 @@ class TimeManagerControl(QObject):
             try:
                 self.setCurrentTimePosition(value)
             except:
-                QMessageBox.information(self.iface.mainWindow(),'Error','An error occured in self.setCurrentTimePosition')
+                self.showMessage('An error occured in self.setCurrentTimePosition')
             try:        
                 self.guiControl.refreshGuiWithCurrentTime(value,'readSettings')
             except:
-                QMessageBox.information(self.iface.mainWindow(),'Error','An error occured in self.guiControl.refreshTimeRestrictions')
+                self.showMessage('An error occured in self.guiControl.refreshTimeRestrictions')
 
         
     def restoreSettingTimeFrameType(self,value):

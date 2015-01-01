@@ -25,7 +25,7 @@ __email__="karolina.alexiou@teralytics.ch"
 
 
 TEST_DATA_DIR="testdata"
-
+PREFIX_PATH=None # replace with path in case of problems
 
 class RiggedTimeManagerControl(timemanagercontrol.TimeManagerControl):
     """A subclass of TimeManagerControl which makes testing easier (with the downside of not
@@ -46,8 +46,11 @@ class RiggedTimeManagerControl(timemanagercontrol.TimeManagerControl):
         else:
             self.playAnimation()
 
+    def showQMessagesEnabled(self):
+        return False # can't show gui boxes while testing
 
-class Foo(unittest.TestCase):
+
+class testTimeManagerWithoutGui(unittest.TestCase):
 
     def setUp(self):
         iface = Mock()
@@ -58,17 +61,28 @@ class Foo(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # FIXME discover your prefix by loading the Python console from within QGIS and
-        # running QgsApplication.showSettings().split("\t")
-        # and looking for Prefix
-        QgsApplication.setPrefixPath("/usr", True)
+
+        prefix = os_util.get_possible_prefix_path() if PREFIX_PATH is None else PREFIX_PATH
+        QgsApplication.setPrefixPath(prefix, True)
 
         QgsApplication.initQgis()
+
+        if len(QgsProviderRegistry.instance().providerList()) == 0:
+                    raise Exception("Could not detect the QGIS prefix path. Maybe you installed "
+                                    "QGIS in a non standard location. It is possible to figure "
+                                    "this from the Python console within a running QGIS. Type  "
+                                    "QgsApplication.showSettings().split(\"\\t\") and look for a " \
+                                                                            "filepath after the " \
+                                                                            "word Prefix and "
+                                                                            "then set it as "
+                                                                            "PREFIX_PATH='foo' "
+                                                                            "on the top of the "
+                                                                            "file "
+                                                                            "test_functionality.py")
+
         QtCore.QCoreApplication.setOrganizationName('QGIS')
         QtCore.QCoreApplication.setApplicationName('QGIS2')
 
-        if len(QgsProviderRegistry.instance().providerList()) == 0:
-            raise RuntimeError('No data providers available.')
 
     def registerTweetsTimeLayer(self, fromAttr="T", toAttr="T"):
         self.layer = QgsVectorLayer(os.path.join(TEST_DATA_DIR, 'tweets.shp'), 'tweets', 'ogr')
@@ -93,7 +107,7 @@ class Foo(unittest.TestCase):
         self.registerTweetsTimeLayer(fromAttr, toAttr)
         # The currentTimePosition should now be the first date in the shapefile
         start_time = time_util.strToDatetime(self.timeLayer.getMinMaxValues()[0])
-        assert( start_time ==self.tlm.getCurrentTimePosition())
+        assert( start_time == self.tlm.getCurrentTimePosition())
         self.tlm.setTimeFrameType("hours")
         self.tlm.stepForward()
         assert( start_time + timedelta(hours=1)==self.tlm.getCurrentTimePosition())
@@ -101,6 +115,9 @@ class Foo(unittest.TestCase):
         assert( start_time + timedelta(hours=2)==self.tlm.getCurrentTimePosition())
         self.tlm.stepBackward()
         assert( start_time + timedelta(hours=1)==self.tlm.getCurrentTimePosition())
+        self.tlm.setTimeFrameType("seconds")
+        self.tlm.stepForward()
+        assert( start_time + timedelta(hours=1,seconds=1)==self.tlm.getCurrentTimePosition())
 
     def test_export(self):
         self.registerTweetsTimeLayer()
@@ -121,16 +138,39 @@ class Foo(unittest.TestCase):
         pass
 
     def test_with_interval_bigger_than_range(self):
-        #TODO
+        #TODO this seems to have a bug, ie for the tweets, if time frame = 1day, no export,
+        # no warning
         pass
 
-
- #   def test_fail(self):
- #       assert(False)
+    def test_with_two_layers(self):
+        self.registerTweetsTimeLayer("T1765","T1765")
+        self.assertEqual(self.tlm.getCurrentTimePosition().year,1765)
+        self.registerTweetsTimeLayer("T1165","T1165")
+        # the current position doesn't change when adding a new layer
+        self.assertEqual(self.tlm.getCurrentTimePosition().year,1765)
+        # but the extents do
+        start, end = self.tlm.getProjectTimeExtents()
+        self.assertEquals(start.year, 1165)
+        self.assertEquals(end.year, 1765)
+        # now remove the first layer (from 1765)
+        self.tlm.removeTimeLayer(self.tlm.getTimeLayerList()[0].getLayerId())
+        start, end = self.tlm.getProjectTimeExtents()
+        self.assertEquals(start.year, 1165)
+        self.assertEquals(end.year, 1165)
+        # now remove the last one too
+        self.tlm.removeTimeLayer(self.tlm.getTimeLayerList()[0].getLayerId())
+        self.assertAlmostEqual(self.tlm.getProjectTimeExtents(), (None,None))
 
     @classmethod
     def tearDownClass(cls):
         QgsApplication.exitQgis()
+
+# TODOs for more tests
+# Test save string, settings, restoring, disabling timemanager
+#TODO (low prio): Test what happens with impossible events ie:
+#test what happens when trying to setCurrentTimePosition to sth wrong
+#test layers with nulls
+#test loading from postgres (or a mock postgres)
 
 
 if __name__=="__main__":

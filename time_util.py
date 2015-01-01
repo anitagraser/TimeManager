@@ -51,7 +51,7 @@ def epoch_to_datetime(seconds_from_epoch):
     # http://stackoverflow.com/questions/22082103/on-windows-how-to-convert-a-timestamps-before-1970-into-something-manageable
     # return datetime.utcfromtimestamp(seconds_from_epoch)
     # but this should:
-    return datetime.datetime(1970, 1, 1) + timedelta(seconds=seconds_from_epoch)
+    return datetime(1970, 1, 1) + timedelta(seconds=seconds_from_epoch)
 
 def datetime_to_epoch(dt):
     """ convert a datetime to seconds after (or possibly before) 1970-1-1 """

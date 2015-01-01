@@ -14,7 +14,7 @@ from time_util import *
 class TimeLayerManager(QObject):
     """Class manages all layers that can be queried temporally and provides navigation in time. Parenthesized sections are not implemented yet. All functions, besides the get functions, trigger a redraw."""
 
-    # the signal for when the current time position is changed #FIXME naming?
+    # the signal for when the current time position is changed
     timeRestrictionsRefreshed = pyqtSignal(datetime)#object)
     projectTimeExtentsChanged = pyqtSignal(object)#tuple)
     lastLayerRemoved = pyqtSignal()
@@ -38,7 +38,7 @@ class TimeLayerManager(QObject):
     def getManagedLayers(self):
         """get the list of qgsMapLayers managed by the timeManager"""
         layerList = []
-        for timeLayer in self.timeLayerList:
+        for timeLayer in self.getTimeLayerList():
             layerList.append(timeLayer.layer)
         return layerList
 
@@ -79,24 +79,24 @@ class TimeLayerManager(QObject):
 
     def hasLayers(self):
         """returns true if the manager has at least one layer registered"""
-        if len(self.timeLayerList) > 0:
+        if len(self.getTimeLayerList()) > 0:
             return True
         else:
             return False
 
     def hasActiveLayers(self):
         """returns true if the manager has at least one layer registered"""
-        if len(self.timeLayerList) > 0:
-            for layer in self.timeLayerList:
+        if len(self.getTimeLayerList()) > 0:
+            for layer in self.getTimeLayerList():
                 if layer.isEnabled():
                     return True
         return False
 
     def clearTimeLayerList(self):
         """clear the timeLayerList"""
-        for timeLayer in self.timeLayerList:
+        for timeLayer in self.getTimeLayerList():
             timeLayer.deleteTimeRestriction()
-        self.timeLayerList=[]
+        self.timeLayerList = []
 
     def timeFrame(self):
         """returns the current time frame as datetime.timedelta object"""
@@ -124,13 +124,13 @@ class TimeLayerManager(QObject):
         if not self.hasLayers():
             return
         if self.timeManagementEnabled:
-            for timeLayer in self.timeLayerList:
+            for timeLayer in self.getTimeLayerList():
                 #try:
                     timeLayer.setTimeRestriction(self.currentTimePosition,self.timeFrame())
                 #except AttributeError: # if timeLayer is of NoneType
                 #    pass
         else:
-            for timeLayer in self.timeLayerList:
+            for timeLayer in self.getTimeLayerList():
                 if not timeLayer.hasTimeRestriction():
                     return
                 timeLayer.deleteTimeRestriction()
@@ -139,9 +139,9 @@ class TimeLayerManager(QObject):
                 
     def registerTimeLayer( self, timeLayer ):
         """Register a new layer for management and update the project's temporal extent"""
-        self.timeLayerList.append( timeLayer )
+        self.getTimeLayerList().append( timeLayer )
         ##self.debug("registering timelayer")
-        if len( self.timeLayerList ) == 1:
+        if len( self.getTimeLayerList() ) == 1:
             # update projectTimeExtents to first layer's timeExtents
             ##self.debug("will set time extents to {}".format(timeLayer.getTimeExtents()))
             self.setProjectTimeExtents(timeLayer.getTimeExtents())
@@ -159,29 +159,34 @@ class TimeLayerManager(QObject):
             self.updateProjectTimeExtents()
         self.refresh()
 
+
     def removeTimeLayer(self,layerId):
         """remove the timeLayer with the given layerId"""
-        for i in range(0,len(self.timeLayerList)):
-            if self.timeLayerList[i].getLayerId() == layerId:
-                self.timeLayerList.pop(i)
+        for i in range(0,len(self.getTimeLayerList())):
+            if self.getTimeLayerList()[i].getLayerId() == layerId:
+                self.getTimeLayerList().pop(i)
+                break
+
                 
         # if the last layer was removed:
         if not self.hasLayers():
             self.setProjectTimeExtents((None,None))
             #self.emit(SIGNAL('lastLayerRemoved()'),)
             self.lastLayerRemoved.emit()
+        else:
+            self.updateProjectTimeExtents()
         self.refresh()
 
     def updateProjectTimeExtents(self):
         """Loop through all timeLayers and make sure that the projectTimeExtents cover all layers"""
-        for i,timeLayer in enumerate(self.timeLayerList):
+        for i,timeLayer in enumerate(self.getTimeLayerList()):
             try:
                 extents = timeLayer.getTimeExtents()
                 if i==0:
                     self.setProjectTimeExtents(timeLayer.getTimeExtents())
                     continue
             except NotATimeAttributeError:
-                continue # TODO: we should probably do something useful here
+                continue # TODO: we should probably show something informative here
             if extents[0] < self.projectTimeExtents[0]:
                 extents = (extents[0],self.projectTimeExtents[1])
             if extents[1] > self.projectTimeExtents[1]:
@@ -201,7 +206,7 @@ class TimeLayerManager(QObject):
         return self.projectTimeExtents
     
     def getTimeLayerList( self ):
-        """Get the list of managed layers"""
+        """Get the list of time layers"""
         return self.timeLayerList
 
     def setTimeFrameType(self, frameType):
@@ -228,7 +233,7 @@ class TimeLayerManager(QObject):
         if self.isEnabled():
             self.refresh()
 
-    def stepForward(self): #FIXME shouldnt this logic be in the gui?
+    def stepForward(self):
         """Shifts query forward in time by one time frame"""
         if self.currentTimePosition != None:
             self.currentTimePosition += self.timeFrame()
@@ -245,6 +250,7 @@ class TimeLayerManager(QObject):
             self.refresh()
 
     def toggleTimeManagement(self):
+        #FIXME this doesnt work as expected
         """toggle time management on/off"""
         if self.timeManagementEnabled:
             self.deactivateTimeManagement()
@@ -280,7 +286,7 @@ class TimeLayerManager(QObject):
 
             saveString += datetime_to_str(self.currentTimePosition, tdfmt) + ';'            
             ##self.debug("save string:"+saveString)
-            for timeLayer in self.timeLayerList:
+            for timeLayer in self.getTimeLayerList():
                 saveListLayers.append(timeLayer.getSaveString())
         
         return (saveString,saveListLayers)
