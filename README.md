@@ -16,6 +16,7 @@ The aim of '''Time Manager plugin for QGIS''' is to provide comfortable browsing
 
 Time Manager filters your datasets and displays only features with timestamps in the user specified time frame. Timestamps have to be in one of the following formats:
 
+* Integer timestamp in seconds after or before the epoch (1970-1-1) 
 * YYYY-MM-DD HH:MM:SS.ssssss
 * YYYY-MM-DD HH:MM:SS
 * YYYY-MM-DD HH:MM
@@ -66,7 +67,7 @@ The plug-in uses Python's datetime module for calculations. It is therefore limi
 
 * Dates must be according to the formats mentioned above
 * Dates must accord to the Gregorian calendar
-* **The range of years is limited**. The exact range of manageable years is dependent on your platform. This is due to limitations in time.mktime. (Problems have been reported with dates before 1970.)
+* We fully support years from 100 AD to 8000 in the future, however the number of seconds between the first timestamp and the last timestamp needs to fit in an integer. This is over 2 billion seconds, so most use cases should be fine.
 * Limits to the size/resolution of the time frame size
 
 We currently don't support:
@@ -88,3 +89,7 @@ For other known issues check https://github.com/anitagraser/TimeManager/issues?d
 ## Where to download Time Manager
 
 Time Manager is available through QGIS Plugin Repository http://plugins.qgis.org/plugins/timemanager/
+
+## Testing
+
+If you want to contribute, please test your changes. We are using the unittest  framework. If you have nosetests installed (pip install nose), you can run run_tests.sh to see a report about test success and code coverage. Before finalizing a pull request, you are also advised to test manually that the testdata/tweets.shp shapefile loads correctly and exports as a video.
