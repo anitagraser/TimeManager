@@ -364,6 +364,8 @@ class TimeManagerControl(QObject):
          
         # now restore all settings
         for setting,(func,value) in functions.items():
+            if setting =='currentMapTimePosition':
+                continue
             try:
                 value = settings[setting]
             except KeyError:
@@ -371,9 +373,9 @@ class TimeManagerControl(QObject):
             try:
                 func(value)
             except Exception as e:
-                self.showMessage('An error occured while loading: '+setting+'\nValue: '+str(value)+'\nType: '+str(type(value))+" error"+str(e))
+                self.showMessage('An error occured while loading: '+setting+'\nValue: '+str(value)+'\nType: '+str(type(value))+", error"+str(e))
                 #TODO also log
-                #FIXME some bugs lurking here for instance with 'currentMapTimePosition'
+                #FIXME some bugs lurking here
         
         # finally, set the currentMapTimePosition         
         if savedTimePosition:
