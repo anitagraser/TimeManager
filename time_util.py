@@ -11,7 +11,7 @@ __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
 
 DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
-SAVE_STRING_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+SAVE_STRING_FORMAT =  DEFAULT_FORMAT # Used to be: "%Y-%m-%d %H:%M:%S.%f", but this format is not portable in Windows because of the %f directive
 UTC = "UTC"
 SUPPORTED_FORMATS = [
 "%Y-%m-%d %H:%M:%S.%f",
@@ -129,6 +129,9 @@ def getFormatOfStr(datetimeString, hint=DEFAULT_FORMAT):
             pass
     # If all fail, raise an exception
     raise Exception("Could not find a suitable time format for value {}, choices {}".format(datetimeString, formatsToTry))
+
+def str_to_datetime(str, fmt):
+    return strToDatetimeWithFormatHint(str, fmt)
 
 
 def strToDatetime(datetimeString):

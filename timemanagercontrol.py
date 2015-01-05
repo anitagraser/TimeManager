@@ -197,8 +197,7 @@ class TimeManagerControl(QObject):
 
     def generate_frame_filename(self, path, frame_index, currentTime):
          return os.path.join(path,"{}{}_{}.png".format(FRAME_FILENAME_PREFIX,
-                                                       str(frame_index).zfill(
-                                                           self.exportNameDigits), currentTime))
+                                                       str(frame_index).zfill(self.exportNameDigits), str(currentTime).replace(" ","_").replace(":","_")))
         
     def playAnimation(self,painter=None):
         """play animation in map window"""
@@ -371,9 +370,10 @@ class TimeManagerControl(QObject):
                 pass
             try:
                 func(value)
-            except TypeError:
-                self.showMessage('An error occured while loading: '+setting+'\nValue: '+str(value)+'\nType: '+str(type(value)))
+            except Exception as e:
+                self.showMessage('An error occured while loading: '+setting+'\nValue: '+str(value)+'\nType: '+str(type(value))+" error"+str(e))
                 #TODO also log
+                #FIXME some bugs lurking here for instance with 'currentMapTimePosition'
         
         # finally, set the currentMapTimePosition         
         if savedTimePosition:
@@ -447,17 +447,9 @@ class TimeManagerControl(QObject):
     
     def restoreSettingCurrentMapTimePosition(self,value):
         """restore currentMapTimePosition"""
-        ##self.debug("restoer? {}"+value)
         if value:
-            try:
-                self.setCurrentTimePosition(value)
-            except:
-                self.showMessage('An error occured in self.setCurrentTimePosition')
-            try:        
-                self.guiControl.refreshGuiWithCurrentTime(value,'readSettings')
-            except:
-                self.showMessage('An error occured in self.guiControl.refreshTimeRestrictions')
-
+            self.setCurrentTimePosition(value)       
+            self.guiControl.refreshGuiWithCurrentTime(value,'readSettings')
         
     def restoreSettingTimeFrameType(self,value):
         """restore timeFrameType"""

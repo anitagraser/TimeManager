@@ -21,9 +21,9 @@ def get_os():
     else:
         raise Exception("OS not found")
 
-#TODO figure out possible prefix paths for Mac & Windows
-#TODO Make it possible to test against a list of paths (Qt + unittest has some issues)
-os_prefix_paths={LINUX:"/usr", MACOS:None, WINDOWS:None}
+#TODO have people confirm the prefix path for Mac
+#TODO Make it possible to test against a list of paths (Qt + unittest has some issues when looping over paths and re-initializing, unfortunately)
+os_prefix_paths={LINUX:"/usr", MACOS:"/Applications/QGIS.app/Contents", WINDOWS:"C:/PROGRA~1/QGISBR~1/apps/qgis"]
 
 def get_possible_prefix_path():
     return os_prefix_paths[get_os()]

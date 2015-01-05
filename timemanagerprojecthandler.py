@@ -33,7 +33,7 @@ class TimeManagerProjectHandler(QObject):
         if type(value) == datetime:
             value = datetime_to_epoch(value) 
         try: # write plugin settings to QgsProject
-            QgsProject.instance().writeEntry("TimeManager",attribute, value )
+            QgsProject.instance().writeEntry("TimeManager",attribute, value)
         except TypeError:
             QMessageBox.information(self.iface.mainWindow(),'Debug Output','Wrong type for '+attribute+'!\nType: '+str(type(value)))
             
@@ -59,6 +59,7 @@ class TimeManagerProjectHandler(QObject):
                      'QString' : prj.readEntry,
                      'int' : prj.readNumEntry,
                      'float' : prj.readDoubleEntry,
+                     'long' : prj.readDoubleEntry,
                      'bool' : prj.readBoolEntry,
                      'datetime' : prj.readDoubleEntry, # we converted datetimes to float in writeSetting()
                      'QStringList' : prj.readListEntry,

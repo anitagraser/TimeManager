@@ -298,21 +298,21 @@ class TimeLayerManager(QObject):
             self.isFirstRun = False
             saveString = str(saveString).split(';')
             try:
-                timeExtents = (datetime_to_str(saveString[0], tdfmt),
-                               datetime_to_str(saveString[1], tdfmt))
+                timeExtents = (str_to_datetime(saveString[0], tdfmt),
+                               str_to_datetime(saveString[1], tdfmt))
             except ValueError:
                 try:
                     # Try converting without the fractional seconds for
                     # backward compatibility.
                     tdfmt = DEFAULT_FORMAT
-                    timeExtents = (datetime_to_str(saveString[0], tdfmt),
-                                   datetime_to_str(saveString[1], tdfmt))
+                    timeExtents = (str_to_datetime(saveString[0], tdfmt),
+                                   str_to_datetime(saveString[1], tdfmt))
                 except ValueError:
                     # avoid error message for projects without
                     # time-managed layers
                     return
             self.setProjectTimeExtents(timeExtents)
-            pos = datetime_to_str(saveString[2], tdfmt)
+            pos = str_to_datetime(saveString[2], tdfmt)
             ##self.debug("tlmanager: set current time position to:"+str(pos))
             self.setCurrentTimePosition(pos)
             return saveString[3]
