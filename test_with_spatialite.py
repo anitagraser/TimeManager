@@ -1,18 +1,36 @@
 from pyspatialite import dbapi2 as db
+from qgis.core import *
 
 from datetime import datetime
 import os
+import unittest
 from time_util import datetime_to_str, DEFAULT_FORMAT
+from test_functionality import TestWithQGISLauncher
 
 starttime=1420746289 # 8 January 2015
 
-TEST_DB_NAME="test_table"
-DB_DEST="testdata/test_db.sqlite"
+TEST_TABLE="test_table"
+DB_FILE="testdata/test_db.sqlite"
+
+class TestSpatialite(TestWithQGISLauncher):
+
+    def test_spatialite_loading(self):
+        uri = QgsDataSourceURI()
+        uri.setDatabase(DB_FILE)
+        uri.setDataSource('', TEST_TABLE,'geom','')
+        layer = QgsVectorLayer(uri.uri(),'pointz', 'spatialite')
+        self.assertTrue(layer.isValid())
+        self.assertEquals(layer.featureCount(), 100)
+        self.assertEquals(layer.subsetString(),'')
+
+
+if __name__=="__main__":
+    unittest.main()
 
 def create_point_db( dest, dbname, starttime, num_items):
 
-    if os.path.exists(dest):
-        os.remove(dest)
+    #if os.path.exists(dest):
+    #    os.remove(dest)
     # creating/connecting the test_db and getting a cursor
     conn = db.connect(dest)
     cur = conn.cursor()
