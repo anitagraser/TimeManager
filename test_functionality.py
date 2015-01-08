@@ -49,15 +49,10 @@ class RiggedTimeManagerControl(timemanagercontrol.TimeManagerControl):
     def showQMessagesEnabled(self):
         return False # can't show gui boxes while testing
 
-
-class testTimeManagerWithoutGui(unittest.TestCase):
-
-    def setUp(self):
-        iface = Mock()
-        self.ctrl = RiggedTimeManagerControl(iface)
-        self.ctrl.initGui(test=True)
-        self.tlm = self.ctrl.getTimeLayerManager()
-
+class TestWithQGISLauncher(unittest.TestCase):
+    """
+    All test classes who want to have a QGIS application available should inherit this
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -82,6 +77,19 @@ class testTimeManagerWithoutGui(unittest.TestCase):
 
         QtCore.QCoreApplication.setOrganizationName('QGIS')
         QtCore.QCoreApplication.setApplicationName('QGIS2')
+
+    @classmethod
+    def tearDownClass(cls):
+        QgsApplication.exitQgis()
+
+
+class testTimeManagerWithoutGui(TestWithQGISLauncher):
+
+    def setUp(self):
+        iface = Mock()
+        self.ctrl = RiggedTimeManagerControl(iface)
+        self.ctrl.initGui(test=True)
+        self.tlm = self.ctrl.getTimeLayerManager()
 
 
     def registerTweetsTimeLayer(self, fromAttr="T", toAttr="T"):
@@ -161,9 +169,6 @@ class testTimeManagerWithoutGui(unittest.TestCase):
         self.tlm.removeTimeLayer(self.tlm.getTimeLayerList()[0].getLayerId())
         self.assertAlmostEqual(self.tlm.getProjectTimeExtents(), (None,None))
 
-    @classmethod
-    def tearDownClass(cls):
-        QgsApplication.exitQgis()
 
 # TODOs for more tests
 # Test save string, settings, restoring, disabling timemanager
