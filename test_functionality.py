@@ -57,6 +57,11 @@ class TestWithQGISLauncher(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
+        os.environ["QGIS_DEBUG"] = str(-1)
+
+        QtCore.QCoreApplication.setOrganizationName('QGIS')
+        QtCore.QCoreApplication.setApplicationName('QGIS2')
+
         prefix = os_util.get_possible_prefix_path() if PREFIX_PATH is None else PREFIX_PATH
         QgsApplication.setPrefixPath(prefix, True)
 
@@ -74,13 +79,6 @@ class TestWithQGISLauncher(unittest.TestCase):
                                                                             "on the top of the "
                                                                             "file "
                                                                             "test_functionality.py")
-
-        QtCore.QCoreApplication.setOrganizationName('QGIS')
-        QtCore.QCoreApplication.setApplicationName('QGIS2')
-
-    @classmethod
-    def tearDownClass(cls):
-        QgsApplication.exitQgis()
 
 
 class testTimeManagerWithoutGui(TestWithQGISLauncher):
@@ -175,7 +173,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
 #TODO (low prio): Test what happens with impossible events ie:
 #test what happens when trying to setCurrentTimePosition to sth wrong
 #test layers with nulls
-#test loading from postgres (or a mock postgres)
+
 
 
 if __name__=="__main__":

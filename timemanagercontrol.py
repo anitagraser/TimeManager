@@ -280,10 +280,6 @@ class TimeManagerControl(QObject):
         """set timeLayerManager's current time position"""
 
         self.currentMapTimePosition = timePosition
-        ##self.debug('original = '+str(original)+',timePosition = '+str(timePosition)+","
-        #                                                                            " extents
-        # ="+ str(self.timeLayerManager.getProjectTimeExtents()))
-
         self.guiControl.refreshGuiWithCurrentTime(timePosition,
                                                 'timemanagercontrol.setCurrentTimePosition')
         self.timeLayerManager.setCurrentTimePosition(timePosition)
@@ -292,10 +288,6 @@ class TimeManagerControl(QObject):
             self.guiControl.refreshMapCanvas('setCurrentTimePosition'+str(
                 timePosition))
 
-        #if self.timeLayerManager.hasActiveLayers():
-        #    self.guiControl.showLabel = True
-        #else:
-        #    self.guiControl.showLabel = False
     
     def setTimeFrameType(self,timeFrameType):
         """set timeLayerManager's time frame type"""

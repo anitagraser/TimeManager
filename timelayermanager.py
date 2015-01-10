@@ -125,10 +125,7 @@ class TimeLayerManager(QObject):
             return
         if self.timeManagementEnabled:
             for timeLayer in self.getTimeLayerList():
-                #try:
                     timeLayer.setTimeRestriction(self.currentTimePosition,self.timeFrame())
-                #except AttributeError: # if timeLayer is of NoneType
-                #    pass
         else:
             for timeLayer in self.getTimeLayerList():
                 if not timeLayer.hasTimeRestriction():
@@ -143,17 +140,12 @@ class TimeLayerManager(QObject):
         ##self.debug("registering timelayer")
         if len( self.getTimeLayerList() ) == 1:
             # update projectTimeExtents to first layer's timeExtents
-            ##self.debug("will set time extents to {}".format(timeLayer.getTimeExtents()))
             self.setProjectTimeExtents(timeLayer.getTimeExtents())
-
-            ##self.debug("updated project time extents to {}".format(timeLayer.getTimeExtents()))
 
             # Set current time to the earliest time record
             if self.isFirstRun:
 
-                ##self.debug("!!!!!!!current pos:"+str(timeLayer.getTimeExtents()[0]))
                 self.setCurrentTimePosition(timeLayer.getTimeExtents()[0])
-                ##self.debug("start of layer when registering time layer:"+str(self.getCurrentTimePosition()))
                 self.isFirstRun = False
         else:
             self.updateProjectTimeExtents()

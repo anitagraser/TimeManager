@@ -92,4 +92,6 @@ Time Manager is available through QGIS Plugin Repository http://plugins.qgis.org
 
 ## Testing
 
-If you want to contribute, please test your changes. We are using the unittest  framework. If you have nosetests installed (pip install nose), you can run run_tests.sh to see a report about test success and code coverage. Before finalizing a pull request, you are also advised to test manually that the testdata/tweets.shp shapefile loads correctly and exports as a video.
+If you want to contribute, please test your changes. We are using the unittest  framework. If you have nose, mock, pyqt4 and qgis.core  installed in Python, you can run run_tests.sh to see a report about test success and code coverage. Before finalizing a pull request, you are also advised to test manually that the testdata/tweets.shp shapefile loads correctly and exports as a number of frames, for years 1965 and 1165.
+
+TODO: Better instructions for installing the test dependencies, Travis continuous testing setup

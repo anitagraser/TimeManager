@@ -82,6 +82,5 @@ class TestApp(QtGui.QWidget):
     def getGui(self):
         return self.gui
 
-
 if __name__=="__main__":
     unittest.main()
