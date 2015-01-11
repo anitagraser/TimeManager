@@ -12,10 +12,12 @@ from timelayer import *
 from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfStr
 
 class TimeRasterLayer(TimeLayer):
-    def __init__(self,layer,fromTimeAttribute="",toTimeAttribute="",enabled=True,timeFormat=DEFAULT_FORMAT,offset=0):
+    def __init__(self,layer,fromTimeAttribute="",toTimeAttribute="",enabled=True,
+                 timeFormat=DEFAULT_FORMAT,offset=0, iface=None):
         TimeLayer.__init__(self,layer,enabled)
         
         self.layer = layer
+        self.iface = iface
         self.fromTimeAttribute = fromTimeAttribute
         self.toTimeAttribute = toTimeAttribute
         self.timeFormat = getFormatOfStr(fromTimeAttribute, hint=timeFormat)

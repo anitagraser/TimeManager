@@ -9,7 +9,6 @@ import os, sys
 sys.path.append("~/.qgis/python")
 
 from string import replace
-from time import mktime
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -20,6 +19,15 @@ from qgis.core import *
 from timelayer import *
 from timevectorlayer import *
 from timerasterlayer import *
+from time_util import datetime_to_epoch, epoch_to_datetime, QDateTime_to_datetime
+
+# The QTSlider only supports integers as the min and max, therefore the maximum maximum value
+# is whatever can be stored in an int. Making it a signed int to be sure.
+# (http://qt-project.org/doc/qt-4.8/qabstractslider.html)
+MAX_TIME_LENGTH_SECONDS = 2**31-1
+# according to the docs of QDateTime, the minimum date supported is the first day of
+# year 100  (http://qt-project.org/doc/qt-4.8/qdatetimeedit.html#minimumDate-prop)
+MIN_QDATE = QDate(100, 1, 1)
 
 class TimestampLabelConfig(object):
     """Edit configuration for the timestamp label here, in liu of GUI control"""
@@ -40,7 +48,7 @@ class TimeManagerGuiControl(QObject):
     back = pyqtSignal()
     forward = pyqtSignal()
     play = pyqtSignal()
-    signalCurrentTime = pyqtSignal(object)
+    signalCurrentTimeUpdated = pyqtSignal(object)
     signalTimeFrameType = pyqtSignal(str)
     signalTimeFrameSize = pyqtSignal(int)
     signalOptionsStart = pyqtSignal()
@@ -48,6 +56,8 @@ class TimeManagerGuiControl(QObject):
     saveOptionsStart = pyqtSignal()
     saveOptionsEnd = pyqtSignal()
     registerTimeLayer = pyqtSignal(object)
+    propagateGuiChanges = True # propagate qui changes to the layer by emiting
+    # signcalCurrentTimeUpdated
     
     def __init__ (self,iface,timeLayerManager):
         """initialize the GUI control"""
@@ -63,6 +73,7 @@ class TimeManagerGuiControl(QObject):
         path = os.path.dirname( os.path.abspath( __file__ ) )
         self.dock = uic.loadUi( os.path.join( path, "dockwidget2.ui" ) )
         self.iface.addDockWidget( Qt.BottomDockWidgetArea, self.dock )
+
         
         self.dock.pushButtonExportVideo.setEnabled(False) # only enabled if there are managed layers
         self.setTimeFrameType('days') # should be 'days'
@@ -73,12 +84,14 @@ class TimeManagerGuiControl(QObject):
         self.dock.pushButtonBack.clicked.connect(self.backClicked)
         self.dock.pushButtonForward.clicked.connect(self.forwardClicked)
         self.dock.pushButtonPlay.clicked.connect(self.playClicked)   
-        self.dock.dateTimeEditCurrentTime.dateTimeChanged.connect(self.currentTimeChanged)
-        self.dock.horizontalTimeSlider.valueChanged.connect(self.currentTimeChanged)
+        self.dock.dateTimeEditCurrentTime.dateTimeChanged.connect(self.currentTimeChangedDateText)
+        self.dock.dateTimeEditCurrentTime.setMinimumDate(MIN_QDATE)
+        self.dock.horizontalTimeSlider.valueChanged.connect(self.currentTimeChangedSlider)
         self.dock.comboBoxTimeExtent.currentIndexChanged[str].connect(self.currentTimeFrameTypeChanged)
         self.dock.spinBoxTimeExtent.valueChanged.connect(self.currentTimeFrameSizeChanged)          
         self.iface.mapCanvas().renderComplete.connect(self.renderLabel)
-		
+        #self.debug("initiali value:{} ".format(self.dock.horizontalTimeSlider.value()))
+
     def optionsClicked(self):
         self.showOptions.emit()
         
@@ -96,9 +109,39 @@ class TimeManagerGuiControl(QObject):
         
     def playClicked(self):
         self.play.emit()
+
+    def currentTimeChangedSlider(self,sliderVal):
+        """Needs special handling because the Qtslider can only hold integer values, resulting
+        in silent overflow when passing long values from Python.
+        So we see the percentage the slider is at and determine the epoch time (which can be a
+        long if it's sufficiently in the past or in the future)."""
+
+        #self.debug("slider val {}".format(sliderVal))
+
+        if not self.propagateGuiChanges:
+            return
+
+        try:
+
+            pct = (sliderVal - self.dock.horizontalTimeSlider.minimum())*1.0/(
+                self.dock.horizontalTimeSlider.maximum() - self.dock.horizontalTimeSlider.minimum())
+        except:
+            # slider is not properly initialized yet
+            return
+
+        try:
+            realEpochTime = int(pct * (datetime_to_epoch(self.timeExtents[1]) - datetime_to_epoch(
+                self.timeExtents[0])) + datetime_to_epoch(self.timeExtents[0]))
+        except:
+            # extents are not set
+            realEpochTime = 0
+
+        self.signalCurrentTimeUpdated.emit(epoch_to_datetime(realEpochTime))
         
-    def currentTimeChanged(self,datetime):
-        self.signalCurrentTime.emit(datetime)
+    def currentTimeChangedDateText(self,qdate):
+        if not self.propagateGuiChanges:
+            return
+        self.signalCurrentTimeUpdated.emit(QDateTime_to_datetime(qdate))
         
     def currentTimeFrameTypeChanged(self,frameType):
         self.signalTimeFrameType.emit(frameType)
@@ -110,7 +153,8 @@ class TimeManagerGuiControl(QObject):
         """unload the plugin"""
         self.iface.removeDockWidget(self.dock)
         
-    def showOptionsDialog(self,layerList,animationFrameLength,playBackwards,loopAnimation):
+    def showOptionsDialog(self,layerList,animationFrameLength,playBackwards=False,
+                          loopAnimation=False):
         """show the optionsDialog and populate it with settings from timeLayerManager"""
         
         # check if the dialog is already showing
@@ -161,7 +205,7 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.buttonBox.rejected.connect(self.setOptionsDialogToNone)
         self.optionsDialog.rejected.connect(self.setOptionsDialogToNone)
         self.optionsDialog.buttonBox.helpRequested.connect(self.showHelp)
-        
+
         self.mapLayers=QgsMapLayerRegistry.instance().mapLayers()
         
     def showHelp(self):
@@ -200,10 +244,14 @@ class TimeManagerGuiControl(QObject):
                 self.saveOptionsEnd.emit()
             else:
                 break
+
+    def debug(self, msg):
+            QMessageBox.information(self.iface.mainWindow(),'Info', msg)
             
     def createTimeLayer(self,row):
         """create a TimeLayer from options set in the table row"""
         # layer
+        ##self.debug("Creating time layer")
         layer=QgsMapLayerRegistry.instance().mapLayer(self.optionsDialog.tableWidget.item(row,4).text())
         if self.optionsDialog.tableWidget.item(row,3).checkState() == Qt.Checked:
             isEnabled = True
@@ -229,11 +277,13 @@ class TimeManagerGuiControl(QObject):
             timeLayerClass = TimeRasterLayer           
             
         try: # here we use the selected class
-            timeLayer = timeLayerClass(layer,startTimeAttribute,endTimeAttribute,isEnabled,timeFormat,offset)
+            timeLayer = timeLayerClass(layer,startTimeAttribute,endTimeAttribute,isEnabled,
+                                       timeFormat,offset, self.iface)
         except InvalidTimeLayerError, e:
             QMessageBox.information(self.iface.mainWindow(),'Error','An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+e.value)
             return False
-            
+
+        ##self.debug("registering time layer")
         self.registerTimeLayer.emit(timeLayer)
         return True
 
@@ -285,6 +335,8 @@ class TimeManagerGuiControl(QObject):
     def getManagedLayers(self):
         """get list of QgsMapLayers listed in optionsDialog.tableWidget"""
         layerList=[]
+        if self.optionsDialog.tableWidget is None:
+            return
             
         for row in range(0,self.optionsDialog.tableWidget.rowCount()):
             # layer
@@ -362,28 +414,66 @@ class TimeManagerGuiControl(QObject):
         offsetItem.setText(str(offset))
         self.optionsDialog.tableWidget.setItem(row,6,offsetItem)
 
+    def setPropagateGuiChanges(self, val):
+        self.propagateGuiChanges = val
+
     def updateTimeExtents(self,timeExtents):
         """update time extents showing in labels and represented by horizontalTimeSlider"""
-        #QMessageBox.information(self.iface.mainWindow(),'Debug','start: '+str(timeExtents[0])+' \nend: '+str(timeExtents[1]))
+        self.timeExtents = timeExtents
+
+        self.setPropagateGuiChanges(False)
         if timeExtents != (None,None):
+            #self.debug("extents:{}".format(timeExtents))
             self.dock.labelStartTime.setText(str(timeExtents[0])[0:23])
             self.dock.labelEndTime.setText(str(timeExtents[1])[0:23])
-            self.dock.horizontalTimeSlider.setMinimum(mktime(timeExtents[0].timetuple())) 
-            self.dock.horizontalTimeSlider.setMaximum(mktime(timeExtents[1].timetuple())) 
+
+            timeLength = datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(timeExtents[0])
+
+            if timeLength> MAX_TIME_LENGTH_SECONDS:
+                self.debug("Time length of {} seconds is too long for QT Slider to handle ("
+                           "integer overflow). Maximum value allowed: {}".format(timeLength,
+                                                                                 MAX_TIME_LENGTH_SECONDS))
+
+            self.dock.horizontalTimeSlider.setMinimum(0)
+            self.dock.horizontalTimeSlider.setMaximum(timeLength)
+
         else: # set to default values
+            #self.debug("No extents available yet")
             self.dock.labelStartTime.setText('not set')
             self.dock.labelEndTime.setText('not set')
             self.dock.horizontalTimeSlider.setMinimum(0)
             self.dock.horizontalTimeSlider.setMaximum(1)
 
-    def refreshTimeRestrictions(self,currentTimePosition,sender=None):
+        self.setPropagateGuiChanges(True)
+
+    def refreshGuiWithCurrentTime(self,currentTimePosition,sender=None):
         """update current time showing in dateTimeEditCurrentTime and horizontalTimeSlider"""
-        #QMessageBox.information(self.iface.mainWindow(),'Test Output','Refresh!\n'+str(sender)+'\n'+str(currentTimePosition))
+
+        # setting the gui elements should not fire the event for
+        # timeChanged, since they were changed to be in sync with the rest of the system on
+        # purpose, no need to sync the system again
+        self.setPropagateGuiChanges(False)
+        if currentTimePosition is None:
+            self.setPropagateGuiChanges(True)
+            return
+
+        self.dock.dateTimeEditCurrentTime.setDateTime(currentTimePosition)
+        timeval = datetime_to_epoch(currentTimePosition)
         try:
-            self.dock.dateTimeEditCurrentTime.setDateTime(currentTimePosition)
-            self.dock.horizontalTimeSlider.setValue(mktime(currentTimePosition.timetuple())) 
+            pct = (timeval - datetime_to_epoch(self.timeExtents[0]))*1.0 / (datetime_to_epoch(
+                self.timeExtents[1]) - datetime_to_epoch(self.timeExtents[0]))
+
+            sliderVal = self.dock.horizontalTimeSlider.minimum() + int(pct * (
+                self.dock.horizontalTimeSlider.maximum()
+                - self.dock.horizontalTimeSlider.minimum()))
+            #self.debug("Slider val at refresh:{}".format(sliderVal))
+            self.dock.horizontalTimeSlider.setValue(sliderVal)
         except:
             pass
+        finally:
+            self.setPropagateGuiChanges(True)
+
+
 
     def disableAnimationExport(self):
         """disable the animation export button"""

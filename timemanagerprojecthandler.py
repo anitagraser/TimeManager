@@ -6,10 +6,10 @@ Created on Fri Oct 29 17:22:52 2010
 """
 
 from datetime import datetime
-from time import mktime 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
+from time_util import datetime_to_epoch
 
 class TimeManagerProjectHandler(QObject):
     """This class manages reading from and writing to the QgsProject instance. 
@@ -31,9 +31,9 @@ class TimeManagerProjectHandler(QObject):
         """write plugin settings to QgsProject instance"""
         # there is no writeEntry() for datetime!
         if type(value) == datetime:
-            value = mktime(value.timetuple()) # convert datetime to float 
+            value = datetime_to_epoch(value) 
         try: # write plugin settings to QgsProject
-            QgsProject.instance().writeEntry("TimeManager",attribute, value )
+            QgsProject.instance().writeEntry("TimeManager",attribute, value)
         except TypeError:
             QMessageBox.information(self.iface.mainWindow(),'Debug Output','Wrong type for '+attribute+'!\nType: '+str(type(value)))
             
@@ -59,6 +59,7 @@ class TimeManagerProjectHandler(QObject):
                      'QString' : prj.readEntry,
                      'int' : prj.readNumEntry,
                      'float' : prj.readDoubleEntry,
+                     'long' : prj.readDoubleEntry,
                      'bool' : prj.readBoolEntry,
                      'datetime' : prj.readDoubleEntry, # we converted datetimes to float in writeSetting()
                      'QStringList' : prj.readListEntry,
