@@ -9,7 +9,7 @@ Created on Thu Mar 22 18:33:13 2012
 from datetime import datetime, timedelta
 from qgis.core import *
 from timelayer import *
-from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfStr
+from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfDatetimeValue
 
 class TimeRasterLayer(TimeLayer):
     def __init__(self,layer,fromTimeAttribute="",toTimeAttribute="",enabled=True,
@@ -20,7 +20,7 @@ class TimeRasterLayer(TimeLayer):
         self.iface = iface
         self.fromTimeAttribute = fromTimeAttribute
         self.toTimeAttribute = toTimeAttribute
-        self.timeFormat = getFormatOfStr(fromTimeAttribute, hint=timeFormat)
+        self.timeFormat = getFormatOfDatetimeValue(fromTimeAttribute, hint=timeFormat)
         self.supportedFormats = SUPPORTED_FORMATS
         self.offset = int(offset)
         

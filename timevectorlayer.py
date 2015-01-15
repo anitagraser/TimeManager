@@ -11,8 +11,10 @@ from qgis.core import *
 from PyQt4.QtGui import QMessageBox
 from timelayer import *
 from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, \
-    getFormatOfStr, UTC, datetime_to_epoch, datetime_to_str, datetime_at_start_of_day, \
-    datetime_at_end_of_day, QDateTime_to_datetime
+    getFormatOfDatetimeValue, UTC, datetime_to_epoch, datetime_to_str, datetime_at_start_of_day, \
+    datetime_at_end_of_day, QDateTime_to_datetime, OGR_DATE_FORMAT, OGR_DATETIME_FORMAT
+
+POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
 
 class TimeVectorLayer(TimeLayer):
     def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,
@@ -25,7 +27,7 @@ class TimeVectorLayer(TimeLayer):
         self.toTimeAttribute = toTimeAttribute
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
-        self.timeFormat = getFormatOfStr(self.getMinMaxValues()[0], hint=str(timeFormat))
+        self.timeFormat = getFormatOfDatetimeValue(self.getMinMaxValues()[0], hint=str(timeFormat))
         self.supportedFormats = SUPPORTED_FORMATS
         self.offset = int(offset)
         try:
@@ -57,31 +59,26 @@ class TimeVectorLayer(TimeLayer):
         toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
         minValue =  provider.minimumValue(fromTimeAttributeIndex)
         maxValue = provider.maximumValue(toTimeAttributeIndex)
+        if type(minValue) in [QtCore.QDate, QtCore.QDateTime]:
+            minValue = str(QDateTime_to_datetime(minValue))
+            maxValue = str(QDateTime_to_datetime(maxValue))
         return minValue, maxValue
 
     def getTimeExtents(self):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
-        minValue, maxValue = self.getMinMaxValues()
-        ###self.debug("vector layer min {} max{}".format(minValue, maxValue))
-        if type(minValue) is QtCore.QDate:
-            startTime = datetime_at_start_of_day(QDateTime_to_datetime(minValue))
-            endTime = datetime_at_end_of_day(QDateTime_to_datetime(maxValue))
-        else:
-            startStr = str(minValue)
-            endStr = str(maxValue)
-            try:
-                startTime = strToDatetimeWithFormatHint(startStr,  self.getTimeFormat())
-            except ValueError:
-                raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
-            try:
-                endTime = strToDatetimeWithFormatHint(endStr,  self.getTimeFormat())
-            except ValueError:
-                raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+endStr)
+        startStr, endStr = self.getMinMaxValues()
+        try:
+            startTime = strToDatetimeWithFormatHint(startStr,  self.getTimeFormat())
+        except ValueError:
+            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
+        try:
+            endTime = strToDatetimeWithFormatHint(endStr,  self.getTimeFormat())
+        except ValueError:
+            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+endStr)
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
-        ###self.debug("vector layer starttime {} endtime{}".format(startTime, endTime))
-        return (startTime, endTime)
+        return startTime, endTime
 
 
     def setTimeRestrictionInts(self, timePosition, timeFrame):
@@ -111,22 +108,30 @@ class TimeVectorLayer(TimeLayer):
         if self.timeFormat==UTC:
            self.setTimeRestrictionInts(timePosition, timeFrame)
            return
-        startTime = datetime_to_str(timePosition + timedelta(seconds=self.offset), self.getTimeFormat())
+        startTime = timePosition + timedelta(seconds=self.offset)
+        startTimeStr = datetime_to_str(startTime, self.getTimeFormat())
         if self.toTimeAttribute != self.fromTimeAttribute:
             """If an end time attribute is set for the layer, then only show features where the current time position
             falls between the feature'sget time from and time to attributes """
             endTime = startTime
+            endTimeStr = startTimeStr
         else:
             """If no end time attribute has been set for this layer, then show features with a time attribute
             which falls somewhere between the current time position and the start position of the next frame"""   
-            endTime = datetime_to_str((timePosition + timeFrame + timedelta(seconds=self.offset)),  self.getTimeFormat())
+            endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
+            endTimeStr = datetime_to_str(endTime,  self.getTimeFormat())
 
-        if self.layer.dataProvider().storageType() == 'PostgreSQL database with PostGIS extension':
+        if self.layer.dataProvider().storageType() == POSTGRES_TYPE:
             # Use PostGIS query syntax (incompatible with OGR syntax)
-            subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % (self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+            subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % (self.fromTimeAttribute,
+                                                                  endTimeStr,
+                                                                  self.toTimeAttribute,
+                                                                  startTimeStr)
         else:
             # Use OGR query syntax
-            subsetString = self.constructOGRSubsetString(startTime, endTime)
+            subsetString = self.constructOGRSubsetString(startTime, startTimeStr, endTime, endTimeStr)
+
+
         if self.toTimeAttribute != self.fromTimeAttribute:
             """Change < to <= when and end time is specified, otherwise features starting at 15:00 would only 
             be displayed starting from 15:01"""
@@ -137,42 +142,28 @@ class TimeVectorLayer(TimeLayer):
         self.layer.setSubsetString(subsetString)
         #QMessageBox.information(self.iface.mainWindow(),"Test Output",subsetString)
 
-    def constructOGRSubsetString(self, startTime, endTime):
+    def constructOGRSubsetString(self, startTime, startTimeStr, endTime, endTimeStr):
         """Constructs the subset query depending on which time format was detected"""
 
+        # modify startTimeStr/endTimeStr to account for OGR behaviour
+        # QDate in QGIS detects a format of YYYY-MM-DD, but OGR serializes its Date type 
+        # as YYYY/MM/DD
+        # See: https://github.com/anitagraser/TimeManager/issues/71
+        # Also, when seconds are presents it serializes it with T between the date and time
+        # FIXME: general logic here should be refactored as soon as we have a good collection of
+        # different test files
         if self.fromTimeAttributeType == 'Date':
-            # QDate in QGIS detects a format of YYYY-MM-DD, but OGR serializes its Date type as YYYY/MM/DD
-            # See: https://github.com/anitagraser/TimeManager/issues/71
-            startTime = startTime.replace('-', '/')
+            startTimeStr = datetime_to_str(startTime,OGR_DATE_FORMAT)
         if self.toTimeAttributeType == 'Date':
-            endTime = endTime.replace('-', '/')
+             endTimeStr = datetime_to_str(endTime,OGR_DATE_FORMAT)
+        if self.fromTimeAttributeType == 'DateTime':
+            startTimeStr = datetime_to_str(startTime,OGR_DATETIME_FORMAT)
+        if self.toTimeAttributeType == 'DateTime':
+             endTimeStr = datetime_to_str(endTime,OGR_DATETIME_FORMAT)
 
-        if self.timeFormat[0:2] == '%Y' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%d':
-            # Y-M-D format
-            return "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % \
-                   (self.fromTimeAttribute, endTime, self.toTimeAttribute, startTime)
+        return "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % \
+                   (self.fromTimeAttribute, endTimeStr, self.toTimeAttribute, startTimeStr)
 
-        elif self.timeFormat[0:2] == '%d' and self.timeFormat[3:5] == '%m' and self.timeFormat[6:8] == '%Y':
-            # D-M-Y format
-            s = "CONCAT(SUBSTR(cast(\"{0:s}\" as character),7,10),"\
-                "SUBSTR(cast(\"{0:s}\" as character),4,5),"\
-                "SUBSTR(cast(\"{0:s}\" as character),1,2)"\
-                +(",SUBSTR(cast(\"{0:s}\" as character),11))", ")")[ len(self.timeFormat) <= 8]+\
-                " < "\
-                "CONCAT(SUBSTR('{1:s}',7,10),SUBSTR('{1:s}',4,5),SUBSTR('{1:s}',1,2)"\
-                +(",SUBSTR('{1:s}',11))", ")")[len(self.timeFormat) <= 8]+\
-                " AND "\
-                "CONCAT(SUBSTR(cast(\"{2:s}\" as character),7,10),"\
-                "SUBSTR(cast(\"{2:s}\" as character),4,5),"\
-                "SUBSTR(cast(\"{2:s}\" as character),1,2)"\
-                +(",SUBSTR(cast(\"{2:s}\" as character),11))", ")")[len(self.timeFormat) <= 8]+\
-                " >= "\
-                "CONCAT(SUBSTR('{3:s}',7,10),SUBSTR('{3:s}',4,5),SUBSTR('{3:s}',1,2)"\
-                +(",SUBSTR('{3:s}',11))", ")")[len(self.timeFormat) <= 8]
-            return s.format( self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
-
-        else:
-            raise Exception('Unable to construct OGR subset query for time format: %s' % (self.timeFormat))
 
     def deleteTimeRestriction(self):
         """Restore original subset"""

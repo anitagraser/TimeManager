@@ -10,6 +10,9 @@ from PyQt4.QtCore import QDateTime
 __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
 
+
+OGR_DATE_FORMAT="%Y/%m/%d"
+OGR_DATETIME_FORMAT="%Y-%m-%dT%H:%M:%S" # FIXME so date has slashes and datetime dashes???
 DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
 SAVE_STRING_FORMAT =  DEFAULT_FORMAT # Used to be: "%Y-%m-%d %H:%M:%S.%f", but this format is not portable in Windows because of the %f directive
 UTC = "UTC"
@@ -110,12 +113,12 @@ def fixed_strftime(dt, fmt):
         s = s[:site] + syear + s[site+4:]
     return s
 
-
-def getFormatOfStr(datetimeString, hint=DEFAULT_FORMAT):
-    datetimeString = str(datetimeString)
+def getFormatOfDatetimeValue(datetimeValue, hint=DEFAULT_FORMAT):
+    #FIXME, here we can see if the type is QDate and handle it accordingly
+    datetimeValue = str(datetimeValue)
     # is it an integer representing seconds?
     try:
-        seconds = int(datetimeString)
+        seconds = int(datetimeValue)
         return UTC
     except:
         pass
@@ -123,12 +126,12 @@ def getFormatOfStr(datetimeString, hint=DEFAULT_FORMAT):
     formatsToTry = [hint] + SUPPORTED_FORMATS
     for format in formatsToTry:
         try:
-            datetime.strptime(datetimeString, format)
+            datetime.strptime(datetimeValue, format)
             return format
         except:
             pass
     # If all fail, raise an exception
-    raise Exception("Could not find a suitable time format for value {}, choices {}".format(datetimeString, formatsToTry))
+    raise Exception("Could not find a suitable time format for value {}, choices {}".format(datetimeValue, formatsToTry))
 
 def str_to_datetime(str, fmt):
     return strToDatetimeWithFormatHint(str, fmt)
@@ -136,7 +139,7 @@ def str_to_datetime(str, fmt):
 
 def strToDatetime(datetimeString):
     """convert a date/time string into a Python datetime object"""
-    return strToDatetimeWithFormatHint(datetimeString, hint=getFormatOfStr(datetimeString))
+    return strToDatetimeWithFormatHint(datetimeString, hint=getFormatOfDatetimeValue(datetimeString))
 
 
 def strToDatetimeWithFormatHint(datetimeString, hint=DEFAULT_FORMAT):
