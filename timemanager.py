@@ -77,6 +77,8 @@ class timemanager:
             # QgsMessageLog.logMessage("Setting translator...{}".format(new_lang))
             if  qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
+            else:
+                QgsMessageLog.logMessage("Translation not supported for Qt <= {}".format(qVersion()))
         else:
              QgsMessageLog.logMessage("Timemanager: No translation found for locale {}, "
                                       "using English".format(new_lang))
