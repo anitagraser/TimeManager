@@ -273,7 +273,7 @@ class TimeManagerControl(QObject):
         self.writeSettings()
         
     def getCurrentTimePosition(self):
-        """get timeLayerManager's current time position"""
+        """get timeLayerManager's current time position in datetime"""
         return self.timeLayerManager.getCurrentTimePosition()
 
     def setCurrentTimePosition(self,timePosition):

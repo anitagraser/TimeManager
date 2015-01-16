@@ -3,10 +3,12 @@ import unittest
 from mock import Mock, patch
 from PyQt4.QtGui import QApplication
 from PyQt4.QtTest import QTest
-from PyQt4.QtCore import Qt, QDate, QDateTime
+from PyQt4.QtCore import Qt, QDate, QDateTime, QCoreApplication, QTranslator
 import timemanagerguicontrol as guicontrol
+import translation
 import time_util
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
+import os
 
 
 from datetime import datetime, timedelta
@@ -14,12 +16,19 @@ from datetime import datetime, timedelta
 __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
 
+EN_LOCALE=QtCore.QLocale("en_US")
+DE_LOCALE=QtCore.QLocale("de_CH")
+
 
 class testGuiControl(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
         self.app = QtGui.QApplication([])
+
+    def test_UI_raw_text(self):
+        gui = self.window.getGui()
+        self.assertTrue(gui.dock.pushButtonOptions.text() == "Settings")
 
     def setUp(self):
         self.window = TestApp()

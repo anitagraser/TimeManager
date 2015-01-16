@@ -43,7 +43,7 @@ class TimeLayerManager(QObject):
         return layerList
 
     def getCurrentTimePosition(self):
-        """returns the manager's currentTimePosition"""
+        """returns the manager's currentTimePosition in datetime format"""
         return self.currentTimePosition
         
     def debug(self, msg):
