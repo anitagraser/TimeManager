@@ -5,7 +5,6 @@ from PyQt4.QtGui import QApplication
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt, QDate, QDateTime, QCoreApplication, QTranslator
 import timemanagerguicontrol as guicontrol
-import translation
 import time_util
 from PyQt4 import QtGui, QtCore
 import os
@@ -16,9 +15,6 @@ from datetime import datetime, timedelta
 __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
 
-EN_LOCALE=QtCore.QLocale("en_US")
-DE_LOCALE=QtCore.QLocale("de_CH")
-
 
 class testGuiControl(unittest.TestCase):
 
@@ -26,9 +22,17 @@ class testGuiControl(unittest.TestCase):
     def setUpClass(self):
         self.app = QtGui.QApplication([])
 
-    def test_UI_raw_text(self):
+    def test_UI_raw_text_and_translations(self):
         gui = self.window.getGui()
-        self.assertTrue(gui.dock.pushButtonOptions.text() == "Settings")
+        settingsText = gui.dock.pushButtonOptions.text()
+        self.assertEqual(settingsText,"Settings")
+        for lang,expected_translation in zip(["de","pl"],["Einrichten","Ustawienia"]):
+            path = os.path.join("i18n","timemanager_{}.qm".format(lang))
+            translator = QTranslator()
+            result = translator.load(path)
+            translation = translator.translate(gui.dock.objectName(),settingsText)
+            self.assertEqual(translation, expected_translation)
+
 
     def setUp(self):
         self.window = TestApp()

@@ -114,6 +114,18 @@ For other known issues check https://github.com/anitagraser/TimeManager/issues?d
 
 Time Manager is available through QGIS Plugin Repository http://plugins.qgis.org/plugins/timemanager/
 
+##Contributing translation files
+
+If you want to create a translation for a language
+* Go to http://www.loc.gov/standards/iso639-2/php/code_list.php and find the 2-character ISO 639-1
+code of the language you want to contribute for, let's say 'it' for Italian
+* go to folder i18n
+* create a copy of timemanager_de.ts and rename it to timemanager_it.ts
+* edit the text file with your translations
+* (optional) If you can install lrelease on yor system, install it and run lrelease
+timemanager_it.ts to create timemanager_it.qm. Add this file to git
+* Create a pull request with your translation file(s)
+
 ## Testing
 
 If you want to contribute, please test your changes. We are using the unittest  framework. If you have nose, mock, pyqt4 and qgis.core  installed in Python, you can run run_tests.sh to see a report about test success and code coverage. Before finalizing a pull request, you are also advised to test manually that the testdata/tweets.shp shapefile loads correctly and exports as a number of frames, for years 1965 and 1165.
