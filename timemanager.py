@@ -72,7 +72,7 @@ class timemanager:
             result = self.translator.load(translation_path)
             if not result:
                 QgsMessageLog.logMessage(translation_path+" was not loaded properly, "
-                                                          "using English")
+                                                          "using English" )
                 return
             # QgsMessageLog.logMessage("Setting translator...{}".format(new_lang))
             QCoreApplication.installTranslator(self.translator)
