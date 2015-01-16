@@ -15,6 +15,10 @@ from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormat
     datetime_at_end_of_day, QDateTime_to_datetime, OGR_DATE_FORMAT, OGR_DATETIME_FORMAT
 
 POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
+DELIMITED_TEXT_TYPE='Delimited text file'
+
+class SubstringException(Exception):
+    pass
 
 class TimeVectorLayer(TimeLayer):
     def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,
@@ -111,18 +115,23 @@ class TimeVectorLayer(TimeLayer):
         startTime = timePosition + timedelta(seconds=self.offset)
         startTimeStr = datetime_to_str(startTime, self.getTimeFormat())
         if self.toTimeAttribute != self.fromTimeAttribute:
-            """If an end time attribute is set for the layer, then only show features where the current time position
-            falls between the feature'sget time from and time to attributes """
+            # If an end time attribute is set for the layer, then only show features where the \
+            # current time position falls between the feature'sget time from and time to
+            # attributes
             endTime = startTime
             endTimeStr = startTimeStr
         else:
-            """If no end time attribute has been set for this layer, then show features with a time attribute
-            which falls somewhere between the current time position and the start position of the next frame"""   
+            # If no end time attribute has been set for this layer, then show features with a time\
+            # attribute which falls somewhere between the current time position and the start
+            # position of the next frame"""
             endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
             endTimeStr = datetime_to_str(endTime,  self.getTimeFormat())
 
-        if self.layer.dataProvider().storageType() == POSTGRES_TYPE:
+        # TODO redesign without need for explicit if?
+        if self.layer.dataProvider().storageType() == POSTGRES_TYPE or \
+                        self.layer.dataProvider().storageType()== DELIMITED_TEXT_TYPE:
             # Use PostGIS query syntax (incompatible with OGR syntax)
+            # Works also on delimited text layers
             subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % (self.fromTimeAttribute,
                                                                   endTimeStr,
                                                                   self.toTimeAttribute,
@@ -131,7 +140,6 @@ class TimeVectorLayer(TimeLayer):
             # Use OGR query syntax
             subsetString = self.constructOGRSubsetString(startTime, startTimeStr, endTime, endTimeStr)
 
-
         if self.toTimeAttribute != self.fromTimeAttribute:
             """Change < to <= when and end time is specified, otherwise features starting at 15:00 would only 
             be displayed starting from 15:01"""
@@ -139,8 +147,10 @@ class TimeVectorLayer(TimeLayer):
         if self.originalSubsetString != "":
             # Prepend original subset string 
             subsetString = "%s AND %s" % (self.originalSubsetString, subsetString)
-        self.layer.setSubsetString(subsetString)
-        #QMessageBox.information(self.iface.mainWindow(),"Test Output",subsetString)
+        #self.debug("Generated subsetString:"+subsetString)
+        success = self.layer.setSubsetString(subsetString)
+        if not success:
+            raise SubstringException("Could not set substring to".format(subsetString))
 
     def constructOGRSubsetString(self, startTime, startTimeStr, endTime, endTimeStr):
         """Constructs the subset query depending on which time format was detected"""
@@ -167,7 +177,10 @@ class TimeVectorLayer(TimeLayer):
 
     def deleteTimeRestriction(self):
         """Restore original subset"""
-        self.layer.setSubsetString( self.originalSubsetString )
+        success = self.layer.setSubsetString( self.originalSubsetString )
+        if not success:
+            raise SubstringException("Could not set substring  to {}".format(
+                self.originalSubsetString))
 
     def hasTimeRestriction(self):
         """returns true if current layer.subsetString is not equal to originalSubsetString"""
