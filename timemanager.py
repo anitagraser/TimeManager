@@ -17,7 +17,7 @@
 
 from qgis.core import *
 from qgis.utils import qgsfunction
-from PyQt4.QtCore import QTranslator, QCoreApplication
+from PyQt4.QtCore import QTranslator, QCoreApplication, qVersion
 from timemanagercontrol import TimeManagerControl
 import resources # loads the icons
 import os
@@ -75,7 +75,8 @@ class timemanager:
                                                           "using English" )
                 return
             # QgsMessageLog.logMessage("Setting translator...{}".format(new_lang))
-            QCoreApplication.installTranslator(self.translator)
+            if  qVersion() > '4.3.3':
+                QCoreApplication.installTranslator(self.translator)
         else:
              QgsMessageLog.logMessage("Timemanager: No translation found for locale {}, "
                                       "using English".format(new_lang))
