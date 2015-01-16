@@ -5,4 +5,7 @@ options.ui \
 dockwidget2.ui \
 addLayer.ui
 
-TRANSLATIONS = timemanager_de.ts
+TRANSLATIONS = TRANSLATIONS = i18n/timemanager_de.ts \
+i18n/timemanager_pl.ts \
+i18n/timemanager_cn.ts \
+i18n/timemanager_fr.ts
