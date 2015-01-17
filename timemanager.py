@@ -42,7 +42,11 @@ class timemanager:
         try:
             control
         except NameError:
-            lang=locale.getdefaultlocale()[0].split("_")[0]
+            try:
+                lang=locale.getdefaultlocale()[0].split("_")[0]
+            except:
+                lang="en" # could not get locale, OSX may have this bug
+                
             self.change_i18n(lang)
             control = TimeManagerControl(iface)
         
