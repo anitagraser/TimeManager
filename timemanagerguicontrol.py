@@ -11,6 +11,7 @@ sys.path.append("~/.qgis/python")
 from string import replace
 
 from PyQt4.QtCore import *
+import PyQt4.QtGui as QtGui
 from PyQt4.QtGui import *
 from PyQt4 import uic
 
@@ -28,6 +29,8 @@ MAX_TIME_LENGTH_SECONDS = 2**31-1
 # according to the docs of QDateTime, the minimum date supported is the first day of
 # year 100  (http://qt-project.org/doc/qt-4.8/qdatetimeedit.html#minimumDate-prop)
 MIN_QDATE = QDate(100, 1, 1)
+
+DOCK_WIDGET_FILE = "dockwidget2.ui"
 
 class TimestampLabelConfig(object):
     """Edit configuration for the timestamp label here, in liu of GUI control"""
@@ -66,14 +69,12 @@ class TimeManagerGuiControl(QObject):
         self.timeLayerManager = timeLayerManager
         self.showLabel = False
         self.labelOptions = TimestampLabelConfig()  # placeholder until config is in GUI
-        
         self.optionsDialog = None
         
         # load the form
         path = os.path.dirname( os.path.abspath( __file__ ) )
-        self.dock = uic.loadUi( os.path.join( path, "dockwidget2.ui" ) )
+        self.dock = uic.loadUi( os.path.join( path, DOCK_WIDGET_FILE ) )
         self.iface.addDockWidget( Qt.BottomDockWidgetArea, self.dock )
-
         
         self.dock.pushButtonExportVideo.setEnabled(False) # only enabled if there are managed layers
         self.setTimeFrameType('days') # should be 'days'
@@ -90,7 +91,12 @@ class TimeManagerGuiControl(QObject):
         self.dock.comboBoxTimeExtent.currentIndexChanged[str].connect(self.currentTimeFrameTypeChanged)
         self.dock.spinBoxTimeExtent.valueChanged.connect(self.currentTimeFrameSizeChanged)          
         self.iface.mapCanvas().renderComplete.connect(self.renderLabel)
-        #self.debug("initiali value:{} ".format(self.dock.horizontalTimeSlider.value()))
+
+        # create shortcuts
+        self.focusSC = QShortcut(QKeySequence("Ctrl+Space"), self.dock);
+        self.connect(self.focusSC, QtCore.SIGNAL('activated()'),
+                     self.dock.horizontalTimeSlider.setFocus)
+
 
     def optionsClicked(self):
         self.showOptions.emit()
