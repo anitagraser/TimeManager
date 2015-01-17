@@ -37,7 +37,7 @@ class TimeManagerControl(QObject):
         self.iface.newProjectCreated.connect(self.disableAnimationExport)
 
         # this signal is responsible for keeping the animation running
-        self.iface.mapCanvas().renderComplete.connect(self.waitAfterRenderComplete)
+        self.iface.mapCanvas().mapCanvasRefreshed.connect(self.waitAfterRenderComplete)
 
         # establish connections to QgsMapLayerRegistry
         QgsMapLayerRegistry.instance().layerWillBeRemoved.connect(self.timeLayerManager.removeTimeLayer)
