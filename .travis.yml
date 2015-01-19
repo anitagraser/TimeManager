@@ -1,0 +1,23 @@
+language: python
+
+python:
+        - "2.7"
+
+virtualenv:
+      system_site_packages: true
+
+install:
+        - sudo apt-get install python-qt4
+        - sudo apt-get install qgis
+        - sudo apt-get install python-qgis
+        - sudo apt-get install vnc4server # to mock an X Server
+        - pip install mock
+        - pip install nose
+        - pip install coverage
+
+before_script:
+        - echo -e "p4ssw0rd\np4ssw0rd\n" | vncserver -geometry 1024x768 :99
+        - export DISPLAY=:99.0
+script:  sh run_tests.sh
+
+
