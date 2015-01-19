@@ -89,12 +89,14 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.ctrl.initGui(test=True)
         self.tlm = self.ctrl.getTimeLayerManager()
 
-
     def registerTweetsTimeLayer(self, fromAttr="T", toAttr="T"):
         self.layer = QgsVectorLayer(os.path.join(TEST_DATA_DIR, 'tweets.shp'), 'tweets', 'ogr')
         self.timeLayer = timevectorlayer.TimeVectorLayer(self.layer,fromAttr,toAttr,True,
                                                     time_util.DEFAULT_FORMAT,0)
+        self.assertTrue(not self.timeLayer.hasTimeRestriction())
         self.tlm.registerTimeLayer(self.timeLayer)
+        #TODO: Why? Where is it set?
+        self.assertTrue(self.timeLayer.hasTimeRestriction())
 
     def test_go_back_and_forth_2011(self):
         self.go_back_and_forth("T","T")

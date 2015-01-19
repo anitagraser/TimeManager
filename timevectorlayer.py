@@ -22,6 +22,38 @@ STRINGCAST_FORMAT='cast("{}" as character) < \'{}\' AND cast("{}" as character) 
 INT_FORMAT="{} < {} AND {} >= {} "
 STRING_FORMAT="\"{}\" < '{}' AND \"{}\" >= '{}' "
 
+class DateTypes:
+    IntegerTimestamps="IntegerTimestamps"
+    DatesAsStrings="DatesAsStrings"
+    DatesAsQDates="DatesAsQDates"
+    DatesAsQDateTimes="DatesAsQDateTimes"
+
+    nonQDateTypes = [IntegerTimestamps,DatesAsStrings]
+
+    @classmethod
+    def determine_type(cls, val):
+        try:
+            int(val)
+            return cls.IntegerTimestamps
+        except:
+            if type(val) is QtCore.QDate:
+                return cls.DatesAsQDates
+            if type(val) is QtCore.QDateTime:
+                return cls.DatesAsQDateTimes
+            return cls.DatesAsStrings
+
+    @classmethod
+    def get_type_format(cls, typ):
+        if typ in cls.nonQDateTypes:
+            raise Exception
+        else:
+            if typ==cls.DatesAsQDates:
+                return OGR_DATE_FORMAT
+            if typ==cls.DatesAsQDateTimes:
+                return OGR_DATETIME_FORMAT
+        raise Exception
+
+
 class SubstringException(Exception):
     pass
 
@@ -36,7 +68,12 @@ class TimeVectorLayer(TimeLayer):
         self.toTimeAttribute = toTimeAttribute
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
-        self.timeFormat = getFormatOfDatetimeValue(self.getMinMaxValues()[0], hint=str(timeFormat))
+        self.type = DateTypes.determine_type(self.getRawMinValue())
+        if self.type in DateTypes.nonQDateTypes:
+            self.timeFormat = getFormatOfDatetimeValue(self.getMinMaxValues()[0], hint=str(timeFormat))
+        else:
+            self.timeFormat = DateTypes.get_type_format(self.type)
+
         self.supportedFormats = SUPPORTED_FORMATS
         self.offset = int(offset)
         try:
@@ -45,6 +82,10 @@ class TimeVectorLayer(TimeLayer):
             raise InvalidTimeLayerError(e.value)
         self.fromTimeAttributeType = layer.dataProvider().fields().field(fromTimeAttribute).typeName()
         self.toTimeAttributeType = layer.dataProvider().fields().field(toTimeAttribute).typeName()
+
+    def getDateType(self):
+        """return the type of dates this layer has stored"""
+        return self.type
 
     def getTimeAttributes(self):
         """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""
@@ -60,6 +101,12 @@ class TimeVectorLayer(TimeLayer):
 
     def debug(self, msg):
             QMessageBox.information(self.iface.mainWindow(),'Info', msg)
+
+    def getRawMinValue(self):
+        provider = self.layer.dataProvider()
+        fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
+        minValue =  provider.minimumValue(fromTimeAttributeIndex)
+        return minValue
 
     def getMinMaxValues(self):
         """Returns str"""
@@ -124,7 +171,6 @@ class TimeVectorLayer(TimeLayer):
             # If an end time attribute is set for the layer, then only show features where the \
             # current time position falls between the feature'sget time from and time to
             # attributes
-            endTime = startTime
             endTimeStr = startTimeStr
         else:
             # If no end time attribute has been set for this layer, then show features with a time\
@@ -134,6 +180,7 @@ class TimeVectorLayer(TimeLayer):
             endTimeStr = datetime_to_str(endTime,  self.getTimeFormat())
 
         # TODO redesign without need for explicit if?
+        # TODO: Postgresql test here
         if self.layer.dataProvider().storageType() == POSTGRES_TYPE or \
                         self.layer.dataProvider().storageType()== DELIMITED_TEXT_TYPE:
             # Use PostGIS query syntax (incompatible with OGR syntax)
@@ -144,53 +191,34 @@ class TimeVectorLayer(TimeLayer):
                                                                   startTimeStr)
         else:
             # Use OGR query syntax
-            subsetString = self.constructOGRSubsetString(startTime, startTimeStr, endTime, endTimeStr)
+            subsetString = self.constructOGRSubsetString(startTimeStr, endTimeStr)
 
         if self.toTimeAttribute != self.fromTimeAttribute:
             """Change < to <= when and end time is specified, otherwise features starting at 15:00 would only 
             be displayed starting from 15:01"""
             subsetString = subsetString.replace('<','<=')
         if self.originalSubsetString != "":
-            # Prepend original subset string 
+            # Prepend original subset string
             subsetString = "%s AND %s" % (self.originalSubsetString, subsetString)
-        #self.debug("Generated subsetString:"+subsetString)
         success = self.layer.setSubsetString(subsetString)
         if not success:
             raise SubstringException("Could not set substring to".format(subsetString))
 
-    def constructOGRSubsetString(self, startTime, startTimeStr, endTime, endTimeStr):
+    def constructOGRSubsetString(self, startTimeStr, endTimeStr):
         """Constructs the subset query depending on which time format was detected"""
-
-        # modify startTimeStr/endTimeStr to account for OGR behaviour
-        # QDate in QGIS detects a format of YYYY-MM-DD, but OGR serializes its Date type 
-        # as YYYY/MM/DD
-        # See: https://github.com/anitagraser/TimeManager/issues/71
-        # Also, when seconds are presents it serializes it with T between the date and time
-        # FIXME: general logic here should be refactored as soon as we have a good collection of
-        # different test files
-        if self.fromTimeAttributeType == 'Date':
-            startTimeStr = datetime_to_str(startTime,OGR_DATE_FORMAT)
-        if self.toTimeAttributeType == 'Date':
-             endTimeStr = datetime_to_str(endTime,OGR_DATE_FORMAT)
-        if self.fromTimeAttributeType == 'DateTime':
-            startTimeStr = datetime_to_str(startTime,OGR_DATETIME_FORMAT)
-        if self.toTimeAttributeType == 'DateTime':
-             endTimeStr = datetime_to_str(endTime,OGR_DATETIME_FORMAT)
-
         return STRINGCAST_FORMAT.format(self.fromTimeAttribute, endTimeStr, self.toTimeAttribute,
                                   startTimeStr)
 
-
     def deleteTimeRestriction(self):
         """Restore original subset"""
-        success = self.layer.setSubsetString( self.originalSubsetString )
+        success = self.layer.setSubsetString(self.originalSubsetString)
         if not success:
             raise SubstringException("Could not set substring  to {}".format(
                 self.originalSubsetString))
 
     def hasTimeRestriction(self):
         """returns true if current layer.subsetString is not equal to originalSubsetString"""
-        return self.layer.subsetString != self.originalSubsetString
+        return self.layer.subsetString() != self.originalSubsetString
         
     def getSaveString(self):
         """get string to save in project file"""
