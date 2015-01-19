@@ -17,6 +17,11 @@ from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormat
 POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
 DELIMITED_TEXT_TYPE='Delimited text file'
 
+# Queries
+STRINGCAST_FORMAT='cast("{}" as character) < \'{}\' AND cast("{}" as character) >= \'{}\' '
+INT_FORMAT="{} < {} AND {} >= {} "
+STRING_FORMAT="\"{}\" < '{}' AND \"{}\" >= '{}' "
+
 class SubstringException(Exception):
     pass
 
@@ -93,7 +98,8 @@ class TimeVectorLayer(TimeLayer):
         else:
             endTime =  datetime_to_epoch(timePosition + timeFrame + timedelta(seconds=self.offset))
 
-        subsetString = "%s < %s AND %s >= %s " % (self.fromTimeAttribute,endTime,self.toTimeAttribute,startTime)
+        subsetString = INT_FORMAT.format(self.fromTimeAttribute,endTime,self.toTimeAttribute,
+                                      startTime)
         if self.toTimeAttribute != self.fromTimeAttribute:
             """Change < to <= when and end time is specified, otherwise features starting at 15:00 would only 
             be displayed starting from 15:01"""
@@ -132,7 +138,7 @@ class TimeVectorLayer(TimeLayer):
                         self.layer.dataProvider().storageType()== DELIMITED_TEXT_TYPE:
             # Use PostGIS query syntax (incompatible with OGR syntax)
             # Works also on delimited text layers
-            subsetString = "\"%s\" < '%s' AND \"%s\" >= '%s' " % (self.fromTimeAttribute,
+            subsetString = STRING_FORMAT.format(self.fromTimeAttribute,
                                                                   endTimeStr,
                                                                   self.toTimeAttribute,
                                                                   startTimeStr)
@@ -171,8 +177,8 @@ class TimeVectorLayer(TimeLayer):
         if self.toTimeAttributeType == 'DateTime':
              endTimeStr = datetime_to_str(endTime,OGR_DATETIME_FORMAT)
 
-        return "cast(\"%s\" as character) < '%s' AND cast(\"%s\" as character) >= '%s' " % \
-                   (self.fromTimeAttribute, endTimeStr, self.toTimeAttribute, startTimeStr)
+        return STRINGCAST_FORMAT.format(self.fromTimeAttribute, endTimeStr, self.toTimeAttribute,
+                                  startTimeStr)
 
 
     def deleteTimeRestriction(self):

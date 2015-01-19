@@ -12,7 +12,7 @@ __email__="karolina.alexiou@teralytics.ch"
 
 
 OGR_DATE_FORMAT="%Y/%m/%d"
-OGR_DATETIME_FORMAT="%Y-%m-%dT%H:%M:%S" # FIXME so date has slashes and datetime dashes???
+OGR_DATETIME_FORMAT="%Y-%m-%dT%H:%M:%S"
 DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
 SAVE_STRING_FORMAT =  DEFAULT_FORMAT # Used to be: "%Y-%m-%d %H:%M:%S.%f", but this format is not portable in Windows because of the %f directive
 UTC = "UTC"

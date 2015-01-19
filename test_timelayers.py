@@ -1,9 +1,10 @@
 from mock import Mock
 from timerasterlayer import TimeRasterLayer
-from timevectorlayer import TimeVectorLayer
+from timevectorlayer import TimeVectorLayer,INT_FORMAT, STRING_FORMAT
 from time_util import DEFAULT_FORMAT, UTC
 from datetime import datetime, timedelta
 import unittest
+
 
 __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
@@ -55,10 +56,16 @@ class TestLayers(unittest.TestCase):
 
         assert(vector.getTimeFormat() == DEFAULT_FORMAT)
         vector.setTimeRestriction(datetime(1970,1,1,0,0,2),timedelta(minutes=5))
-        layer.setSubsetString.assert_called_with('"1970-01-01 00:01:00" <= \'1970-01-01 00:00:02\' AND "1970-01-01 00:04:20" >= \'1970-01-01 00:00:02\' ')
+        layer.setSubsetString.assert_called_with(STRING_FORMAT.format("1970-01-01 00:01:00",
+                                                               "1970-01-01 00:00:02",
+                                                               "1970-01-01 00:04:20","1970-01-01 00:00:02").replace('<','<='))
 
         vector.setTimeRestriction(datetime(1980,1,1,0,0,2),timedelta(minutes=5))
-        layer.setSubsetString.assert_called_with('"1970-01-01 00:01:00" <= \'1980-01-01 00:00:02\' AND "1970-01-01 00:04:20" >= \'1980-01-01 00:00:02\' ')
+        layer.setSubsetString.assert_called_with(STRING_FORMAT.format("1970-01-01 00:01:00",
+                                                                   "1980-01-01 00:00:02",
+                                                                   "1970-01-01 00:04:20",
+                                                                   "1980-01-01 "
+                                                                   "00:00:02").replace('<','<='))
 
 
     def test_vector_with_int_timestamps(self):
@@ -75,10 +82,10 @@ class TestLayers(unittest.TestCase):
 
         assert(vector.getTimeFormat() == UTC)
         vector.setTimeRestriction(datetime(1970,1,1,0,3,0),timedelta(minutes=5))
-        layer.setSubsetString.assert_called_with('60 <= 180 AND 260 >= 180 ')
+        layer.setSubsetString.assert_called_with(INT_FORMAT.format(60,180,260,180).replace('<','<='))
 
         vector.setTimeRestriction(datetime(1980,1,1,0,0,2),timedelta(minutes=5))
-        layer.setSubsetString.assert_called_with('60 <= 315532802 AND 260 >= 315532802 ')
+        layer.setSubsetString.assert_called_with(INT_FORMAT.format(60,315532802,260,315532802).replace('<','<='))
 
 
 if __name__=="__main__":
