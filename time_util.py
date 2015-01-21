@@ -16,6 +16,10 @@ OGR_DATETIME_FORMAT="%Y-%m-%dT%H:%M:%S"
 DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
 SAVE_STRING_FORMAT =  DEFAULT_FORMAT # Used to be: "%Y-%m-%d %H:%M:%S.%f", but this format is not portable in Windows because of the %f directive
 UTC = "UTC"
+
+class UnsupportedFormatException(Exception):
+    pass
+
 SUPPORTED_FORMATS = [
 "%Y-%m-%d %H:%M:%S.%f",
 "%Y-%m-%d %H:%M:%S",
@@ -132,7 +136,8 @@ def getFormatOfDatetimeValue(datetimeValue, hint=DEFAULT_FORMAT):
         except:
             pass
     # If all fail, raise an exception
-    raise Exception("Could not find a suitable time format for value {}, choices {}".format(datetimeValue, formatsToTry))
+    raise UnsupportedFormatException("Could not find a suitable time format for value {}, choices {}".format(
+        datetimeValue, formatsToTry))
 
 def str_to_datetime(str, fmt):
     return strToDatetimeWithFormatHint(str, fmt)
