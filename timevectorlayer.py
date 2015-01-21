@@ -16,7 +16,8 @@ from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormat
 
 POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
 DELIMITED_TEXT_TYPE='Delimited text file'
-
+SHAPEFILE_TYPE='ESRI Shapefile'
+PSQL_TYPES=[POSTGRES_TYPE, DELIMITED_TEXT_TYPE, SHAPEFILE_TYPE]
 # Queries
 STRINGCAST_FORMAT='cast("{}" as character) < \'{}\' AND cast("{}" as character) >= \'{}\' '
 INT_FORMAT="{} < {} AND {} >= {} "
@@ -181,8 +182,7 @@ class TimeVectorLayer(TimeLayer):
 
         # TODO redesign without need for explicit if?
         # TODO: Postgresql test here
-        if self.layer.dataProvider().storageType() == POSTGRES_TYPE or \
-                        self.layer.dataProvider().storageType()== DELIMITED_TEXT_TYPE:
+        if self.layer.dataProvider().storageType() in PSQL_TYPES:
             # Use PostGIS query syntax (incompatible with OGR syntax)
             # Works also on delimited text layers
             subsetString = STRING_FORMAT.format(self.fromTimeAttribute,
