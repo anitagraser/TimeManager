@@ -150,9 +150,6 @@ class TestSpatialite(TestWithQGISLauncher):
         self.assertEquals(layer.featureCount(), FS)
 
 
-if __name__=="__main__":
-    unittest.main()
-    QgsApplication.exitQgis() #FIXME nosetests is brittle that way
 
 def create_point_db( dest, dbname, starttime, num_items):
     """
@@ -197,3 +194,7 @@ def create_point_db( dest, dbname, starttime, num_items):
         sql += "VALUES (%d, '%s', %s, '%s')" % (curr_time_epoch, name, geom,datetime_to_str(curr_datetime, DEFAULT_FORMAT))
         cur.execute(sql)
         conn.commit()
+
+if __name__=="__main__":
+    unittest.main()
+    QgsApplication.exitQgis() #FIXME nosetests is brittle that way
