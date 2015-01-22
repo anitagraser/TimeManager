@@ -1,7 +1,7 @@
 from mock import Mock
-from timerasterlayer import TimeRasterLayer
-from timevectorlayer import TimeVectorLayer,INT_FORMAT, STRING_FORMAT
-from time_util import DEFAULT_FORMAT, UTC
+from TimeManager.timerasterlayer import TimeRasterLayer
+from TimeManager.timevectorlayer import TimeVectorLayer,INT_FORMAT, STRING_FORMAT
+from TimeManager.time_util import DEFAULT_FORMAT, UTC
 from datetime import datetime, timedelta
 import unittest
 

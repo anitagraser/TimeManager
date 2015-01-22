@@ -24,6 +24,9 @@ INTEGER_TIMESTAMP ="epoch_seconds"
 STRING_TIMESTAMP="datetime"
 NUM_PTS = 100
 
+"""Some test cases for Spatialite which do not build on Travis at the moment"""
+
+
 class TestSpatialite(TestWithQGISLauncher):
 
     @classmethod

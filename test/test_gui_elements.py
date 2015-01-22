@@ -1,11 +1,10 @@
-import sys
 import unittest
 from mock import Mock, patch
 from PyQt4.QtGui import QApplication
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt, QDate, QDateTime, QCoreApplication, QTranslator
-import timemanagerguicontrol as guicontrol
-import time_util
+import TimeManager.timemanagerguicontrol as guicontrol
+import TimeManager.time_util as time_util
 from PyQt4 import QtGui, QtCore
 import os
 

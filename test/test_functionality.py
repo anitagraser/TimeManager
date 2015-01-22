@@ -8,11 +8,12 @@ import os
 from mock import Mock
 from datetime import datetime, timedelta
 from PyQt4 import QtCore, QtGui, QtTest
-import timemanagercontrol
-from timemanagercontrol import FRAME_FILENAME_PREFIX
-import timevectorlayer
-import time_util
-import os_util
+import TimeManager.timemanagercontrol as timemanagercontrol
+from TimeManager.timemanagercontrol import FRAME_FILENAME_PREFIX
+import TimeManager.timevectorlayer as timevectorlayer
+import testcfg
+import TimeManager.time_util as time_util
+import TimeManager.os_util as os_util
 
 import tempfile
 import shutil
@@ -24,7 +25,7 @@ __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
 
 
-TEST_DATA_DIR="testdata"
+
 PREFIX_PATH=None # replace with path in case of problems
 
 class RiggedTimeManagerControl(timemanagercontrol.TimeManagerControl):
@@ -90,7 +91,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.tlm = self.ctrl.getTimeLayerManager()
 
     def registerTweetsTimeLayer(self, fromAttr="T", toAttr="T"):
-        self.layer = QgsVectorLayer(os.path.join(TEST_DATA_DIR, 'tweets.shp'), 'tweets', 'ogr')
+        self.layer = QgsVectorLayer(os.path.join(testcfg.TEST_DATA_DIR, 'tweets.shp'), 'tweets', 'ogr')
         self.timeLayer = timevectorlayer.TimeVectorLayer(self.layer,fromAttr,toAttr,True,
                                                     time_util.DEFAULT_FORMAT,0)
         self.assertTrue(not self.timeLayer.hasTimeRestriction())

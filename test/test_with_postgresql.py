@@ -8,11 +8,11 @@ from qgis.core import *
 from datetime import datetime, timedelta
 import os
 import unittest
-from time_util import datetime_to_str, DEFAULT_FORMAT
+from TimeManager.time_util import datetime_to_str, DEFAULT_FORMAT
 from test_functionality import TestWithQGISLauncher, RiggedTimeManagerControl
-import time_util
-import timevectorlayer
-from timevectorlayer import  STRINGCAST_FORMAT,INT_FORMAT
+import TimeManager.time_util as time_util
+import TimeManager.timevectorlayer as timevectorlayer
+from TimeManager.timevectorlayer import  STRINGCAST_FORMAT,INT_FORMAT
 from mock import Mock
 
 import psycopg2
