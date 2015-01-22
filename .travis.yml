@@ -34,7 +34,7 @@ before_script:
         - psql -U postgres  mydb -c "create extension postgis"
         - psql -U postgres -c "ALTER USER postgres WITH PASSWORD 'postgres'"; 
 
-script:  sh run_tests.sh # this runs tests with coverage
+script:  bash run_tests.sh # this runs tests with coverage
 
 after_success:
     coveralls
