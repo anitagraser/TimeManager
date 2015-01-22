@@ -45,7 +45,10 @@ SUPPORTED_FORMATS = [
 ]
 
 def QDateTime_to_datetime(date):
-    return date.toPyDateTime()
+    try:
+        return date.toPyDateTime()
+    except:
+        return datetime_at_start_of_day(date.toPyDate())
 
 def datetime_at_start_of_day(dt):
     return datetime.combine(dt, datetime.min.time())

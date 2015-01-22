@@ -14,10 +14,6 @@ from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormat
     getFormatOfDatetimeValue, UTC, datetime_to_epoch, datetime_to_str, datetime_at_start_of_day, \
     datetime_at_end_of_day, QDateTime_to_datetime, OGR_DATE_FORMAT, OGR_DATETIME_FORMAT
 
-POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
-DELIMITED_TEXT_TYPE='Delimited text file'
-SHAPEFILE_TYPE='ESRI Shapefile'
-PSQL_TYPES=[POSTGRES_TYPE, DELIMITED_TEXT_TYPE, SHAPEFILE_TYPE]
 # Queries
 STRINGCAST_FORMAT='cast("{}" as character) < \'{}\' AND cast("{}" as character) >= \'{}\' '
 INT_FORMAT="{} < {} AND {} >= {} "
@@ -180,26 +176,37 @@ class TimeVectorLayer(TimeLayer):
             endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
             endTimeStr = datetime_to_str(endTime,  self.getTimeFormat())
 
-        # TODO redesign without need for explicit if?
-        # TODO: Postgresql test here
-        if self.layer.dataProvider().storageType() in PSQL_TYPES:
-            # Use PostGIS query syntax (incompatible with OGR syntax)
-            # Works also on delimited text layers
-            subsetString = STRING_FORMAT.format(self.fromTimeAttribute,
-                                                                  endTimeStr,
-                                                                  self.toTimeAttribute,
-                                                                  startTimeStr)
-        else:
-            # Use OGR query syntax
-            subsetString = self.constructOGRSubsetString(startTimeStr, endTimeStr)
+        # Try both postgres and OGR syntax
 
-        if self.toTimeAttribute != self.fromTimeAttribute:
-            """Change < to <= when and end time is specified, otherwise features starting at 15:00 would only 
-            be displayed starting from 15:01"""
-            subsetString = subsetString.replace('<','<=')
-        if self.originalSubsetString != "":
-            # Prepend original subset string
-            subsetString = "%s AND %s" % (self.originalSubsetString, subsetString)
+        subsetString_psql = STRING_FORMAT.format(self.fromTimeAttribute,endTimeStr,
+                                             self.toTimeAttribute,startTimeStr)
+
+
+        subsetString_ogr = STRINGCAST_FORMAT.format(self.fromTimeAttribute, endTimeStr,
+                                                    self.toTimeAttribute,startTimeStr)
+
+        for subsetString in [subsetString_psql, subsetString_ogr]:
+
+            if self.toTimeAttribute != self.fromTimeAttribute:
+                """Change < to <= when and end time is specified, otherwise features starting at 15:00 would only
+                be displayed starting from 15:01"""
+                subsetString = subsetString.replace('<','<=')
+            if self.originalSubsetString != "":
+                # Prepend original subset string
+                subsetString = "%s AND %s" % (self.originalSubsetString, subsetString)
+            try:
+                self.setSubsetString(subsetString)
+            except SubstringException:
+                # try the other one
+                # not sure if this could make the screen flash
+                continue
+            return
+
+        raise SubstringException
+
+
+
+    def setSubsetString(self,subsetString):
         success = self.layer.setSubsetString(subsetString)
         if not success:
             raise SubstringException("Could not set substring to".format(subsetString))

@@ -12,7 +12,7 @@ from TimeManager.time_util import datetime_to_str, DEFAULT_FORMAT
 from test_functionality import TestWithQGISLauncher, RiggedTimeManagerControl
 import TimeManager.time_util as time_util
 import TimeManager.timevectorlayer as timevectorlayer
-from TimeManager.timevectorlayer import  STRINGCAST_FORMAT,INT_FORMAT
+from TimeManager.timevectorlayer import  STRINGCAST_FORMAT,INT_FORMAT, STRING_FORMAT
 from mock import Mock
 
 
@@ -88,7 +88,7 @@ class TestSpatialite(TestWithQGISLauncher):
         self.tlm.setTimeFrameType("minutes")
         self.tlm.stepForward()
         subsetString = layer.subsetString()
-        expectedSubsetString = STRINGCAST_FORMAT.format(attr,
+        expectedSubsetString = STRING_FORMAT.format(attr,
                                     time_util.datetime_to_str(self.tlm.getCurrentTimePosition()+timedelta(minutes=1)
                                     ,timeLayer.getTimeFormat()),attr,
                                     time_util.datetime_to_str(self.tlm.getCurrentTimePosition(),
@@ -141,7 +141,7 @@ class TestSpatialite(TestWithQGISLauncher):
                 minimum_bound_seconds))
         if not is_int:
             self.assertEqual(timeLayer.getTimeFormat(), time_util.DEFAULT_FORMAT)
-            expectedSubsetString = STRINGCAST_FORMAT.format(attr,
+            expectedSubsetString = STRING_FORMAT.format(attr,
                                     time_util.datetime_to_str(self.tlm.getCurrentTimePosition()+timedelta(minutes=FS)
                                     ,timeLayer.getTimeFormat()),attr,
                                     time_util.datetime_to_str(self.tlm.getCurrentTimePosition(),
