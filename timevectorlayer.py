@@ -24,8 +24,8 @@ class DateTypes:
     DatesAsStrings="DatesAsStrings"
     DatesAsQDates="DatesAsQDates"
     DatesAsQDateTimes="DatesAsQDateTimes"
-
     nonQDateTypes = [IntegerTimestamps,DatesAsStrings]
+    QDateTypes = [DatesAsQDates, DatesAsQDateTimes]
 
     @classmethod
     def determine_type(cls, val):
@@ -176,8 +176,6 @@ class TimeVectorLayer(TimeLayer):
             endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
             endTimeStr = datetime_to_str(endTime,  self.getTimeFormat())
 
-        # Try both postgres and OGR syntax
-
         subsetString_psql = STRING_FORMAT.format(self.fromTimeAttribute,endTimeStr,
                                              self.toTimeAttribute,startTimeStr)
 
@@ -185,7 +183,12 @@ class TimeVectorLayer(TimeLayer):
         subsetString_ogr = STRINGCAST_FORMAT.format(self.fromTimeAttribute, endTimeStr,
                                                     self.toTimeAttribute,startTimeStr)
 
-        for subsetString in [subsetString_psql, subsetString_ogr]:
+        formats_to_try = [subsetString_psql, subsetString_ogr]
+
+        if self.getDateType() in DateTypes.QDateTypes:
+            formats_to_try = [subsetString_ogr]
+
+        for subsetString in formats_to_try:
 
             if self.toTimeAttribute != self.fromTimeAttribute:
                 """Change < to <= when and end time is specified, otherwise features starting at 15:00 would only

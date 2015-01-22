@@ -88,7 +88,7 @@ class TestSpatialite(TestWithQGISLauncher):
         self.tlm.setTimeFrameType("minutes")
         self.tlm.stepForward()
         subsetString = layer.subsetString()
-        expectedSubsetString = STRING_FORMAT.format(attr,
+        expectedSubsetString = STRINGCAST_FORMAT.format(attr,
                                     time_util.datetime_to_str(self.tlm.getCurrentTimePosition()+timedelta(minutes=1)
                                     ,timeLayer.getTimeFormat()),attr,
                                     time_util.datetime_to_str(self.tlm.getCurrentTimePosition(),
