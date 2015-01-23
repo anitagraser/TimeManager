@@ -24,33 +24,43 @@ DATE_COL="_date"
 DATE_TZ_COL="_datetz"
 EPOCH_COL="epoch"
 DATE_STR_COL="datestr"
+DATE_STR_COL_DMY="datestr_dmy"
 
 STARTTIME=1421676080
 
 SQL_STATEMENT="""
-DROP TABLE IF EXISTS {};
-CREATE TABLE {} (
+DROP TABLE IF EXISTS {0:s};
+CREATE TABLE {0:s} (
 
-   {} geometry,
-   {} timestamp, -- date with time of day without timezone
-   {} timestamp with time zone, -- has timezone in format +xx
-   {} integer,
-   {} text
+   {1:s} geometry,
+   {2:s} timestamp, -- date with time of day without timezone
+   {3:s} timestamp with time zone, -- has timezone in format +xx
+   {4:s} integer,
+   {5:s} text,
+   {6:s} text
 
 );
 
-insert into pts (geom,_date,_datetz, epoch,datestr) values (ST_MakePoint(1.0,1.02),NULL,NULL,{},NULL);
-insert into pts (geom,_date,_datetz, epoch,datestr) values (ST_MakePoint(1.01,1.01),NULL,NULL,1421676080,NULL);
-insert into pts (geom,_date,_datetz, epoch,datestr) values (ST_MakePoint(1.02,1.01),NULL,NULL,1421676081,NULL);
-insert into pts (geom,_date,_datetz, epoch,datestr) values (ST_MakePoint(1.00,1.03),NULL,NULL,1421676082,NULL);
-insert into pts (geom,_date,_datetz, epoch,datestr) values (ST_MakePoint(1.0,1.04),NULL,NULL,1421676083,NULL);
+insert into pts (geom,_date,_datetz, epoch,datestr) values (ST_MakePoint(1.0,1.02),NULL,NULL,
+{7},NULL);
+insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s}) values (ST_MakePoint(1.01,1.01),NULL,NULL,
+1421676080,NULL,NULL);
+insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s}) values (ST_MakePoint(1.02,1.01),NULL,NULL,
+1421676081,NULL,NULL);
+insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s}) values (ST_MakePoint(1.00,1.03),NULL,NULL,
+1421676082,NULL,NULL);
+insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s}) values (ST_MakePoint(1.0,1.04),NULL,NULL,
+1421676083,NULL,NULL);
 set timezone='UTC';
-update pts set _date = to_timestamp(epoch);
-update pts set datestr = to_char(_date,'YYYY/MM/DD HH24:MI:SS');
-update pts set _datetz = to_timestamp(epoch);
-""".format(TABLE,TABLE,GEOMETRY_COL,DATE_COL,DATE_TZ_COL,EPOCH_COL, DATE_STR_COL,STARTTIME)
+update pts set {2:s} = to_timestamp(epoch);
+update pts set {3:s} = to_timestamp(epoch);
+update pts set {5:s} = to_char(_date,'YYYY/MM/DD HH24:MI:SS');
+update pts set {6:s} = to_char(_date,'DD.MM.YYYY HH24:MI:SS');
+""".format(TABLE,GEOMETRY_COL,DATE_COL,DATE_TZ_COL,EPOCH_COL, DATE_STR_COL,
+           DATE_STR_COL_DMY,STARTTIME)
 
 CUSTOM_FORMAT="%Y/%m/%d %H:%M:%S"
+CUSTOM_FORMAT_DMY="%d.%m.%Y %H:%M:%S"
 
 class TestPostgreSQL(TestWithQGISLauncher):
 
@@ -91,6 +101,9 @@ class TestPostgreSQL(TestWithQGISLauncher):
 
     def test_date_str(self):
         self._test_layer(DATE_STR_COL,timevectorlayer.DateTypes.DatesAsStrings, CUSTOM_FORMAT)
+
+    def test_date_str_dmy(self):
+        self._test_layer(DATE_STR_COL_DMY,timevectorlayer.DateTypes.DatesAsStrings, CUSTOM_FORMAT_DMY)
 
     def test_date(self):
         self._test_layer(DATE_COL,timevectorlayer.DateTypes.DatesAsStrings, time_util.DEFAULT_FORMAT)
