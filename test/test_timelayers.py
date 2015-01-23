@@ -1,7 +1,8 @@
 from mock import Mock
 from TimeManager.timerasterlayer import TimeRasterLayer
-from TimeManager.timevectorlayer import TimeVectorLayer,INT_FORMAT, STRING_FORMAT
-from TimeManager.time_util import DEFAULT_FORMAT, UTC
+from TimeManager.timevectorlayer import TimeVectorLayer
+from TimeManager.query_builder import INT_FORMAT, STRING_FORMAT
+from TimeManager.time_util import DEFAULT_FORMAT, UTC, datetime_to_epoch
 from datetime import datetime, timedelta
 import unittest
 
@@ -10,6 +11,10 @@ __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
 
 class TestLayers(unittest.TestCase):
+
+    to_attr="foo"
+    from_attr="bar"
+    comparison_op="<="
 
     def test_raster(self):
         layer = Mock()
@@ -51,21 +56,25 @@ class TestLayers(unittest.TestCase):
         provider.maximumValue.return_value = "1970-01-01 00:04:20"
         provider.storageType.return_value ='PostgreSQL database with PostGIS extension'
 
-        vector = TimeVectorLayer(layer,fromTimeAttribute="1970-01-01 00:01:00",
-                             toTimeAttribute="1970-01-01 00:04:20",enabled=True,timeFormat=DEFAULT_FORMAT,offset=0)
+        vector = TimeVectorLayer(layer,fromTimeAttribute=self.from_attr,
+                             toTimeAttribute=self.to_attr,enabled=True,timeFormat=DEFAULT_FORMAT,
+                             offset=0)
 
         assert(vector.getTimeFormat() == DEFAULT_FORMAT)
         vector.setTimeRestriction(datetime(1970,1,1,0,0,2),timedelta(minutes=5))
-        layer.setSubsetString.assert_called_with(STRING_FORMAT.format("1970-01-01 00:01:00",
+        layer.setSubsetString.assert_called_with(STRING_FORMAT.format(self.from_attr,
+                                                                      self.comparison_op,
                                                                "1970-01-01 00:00:02",
-                                                               "1970-01-01 00:04:20","1970-01-01 00:00:02").replace('<','<='))
+                                                               self.to_attr,"1970-01-01 "
+                                                                     "00:00:02"))
 
         vector.setTimeRestriction(datetime(1980,1,1,0,0,2),timedelta(minutes=5))
-        layer.setSubsetString.assert_called_with(STRING_FORMAT.format("1970-01-01 00:01:00",
+        layer.setSubsetString.assert_called_with(STRING_FORMAT.format(self.from_attr,
+                                                                      self.comparison_op,
                                                                    "1980-01-01 00:00:02",
-                                                                   "1970-01-01 00:04:20",
+                                                                   self.to_attr,
                                                                    "1980-01-01 "
-                                                                   "00:00:02").replace('<','<='))
+                                                                   "00:00:02"))
 
 
     def test_vector_with_int_timestamps(self):
@@ -77,15 +86,25 @@ class TestLayers(unittest.TestCase):
         provider.maximumValue.return_value = 260
         provider.storageType.return_value ='PostgreSQL database with PostGIS extension'
 
-        vector = TimeVectorLayer(layer,fromTimeAttribute=60,
-                             toTimeAttribute=260,enabled=True,timeFormat=DEFAULT_FORMAT,offset=0)
+        vector = TimeVectorLayer(layer,fromTimeAttribute=self.from_attr,
+                             toTimeAttribute=self.to_attr,enabled=True,timeFormat=DEFAULT_FORMAT,
+                             offset=0)
 
         assert(vector.getTimeFormat() == UTC)
-        vector.setTimeRestriction(datetime(1970,1,1,0,3,0),timedelta(minutes=5))
-        layer.setSubsetString.assert_called_with(INT_FORMAT.format(60,180,260,180).replace('<','<='))
+        currTime = datetime(1970,1,1,0,3,0)
+        vector.setTimeRestriction(currTime,timedelta(minutes=5))
+        layer.setSubsetString.assert_called_with(INT_FORMAT.format(self.from_attr,
+                                                                   self.comparison_op,datetime_to_epoch(currTime),
+                                                                   self.to_attr,
+                                                                   datetime_to_epoch(currTime)))
 
-        vector.setTimeRestriction(datetime(1980,1,1,0,0,2),timedelta(minutes=5))
-        layer.setSubsetString.assert_called_with(INT_FORMAT.format(60,315532802,260,315532802).replace('<','<='))
+        currTime = datetime(1980,1,1,0,0,2)
+        vector.setTimeRestriction(currTime, timedelta(minutes=5))
+        layer.setSubsetString.assert_called_with(INT_FORMAT.format(self.from_attr,
+                                                                   self.comparison_op,
+                                                                   datetime_to_epoch(currTime),
+                                                                   self.to_attr,
+                                                                   datetime_to_epoch(currTime)))
 
 
 if __name__=="__main__":

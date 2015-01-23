@@ -6,50 +6,18 @@ Created on Thu Mar 22 17:28:19 2012
 """
 
 from PyQt4 import QtCore
-from datetime import datetime, timedelta
-from qgis.core import *
+
 from PyQt4.QtGui import QMessageBox
 from timelayer import *
 from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, \
     getFormatOfDatetimeValue, UTC, datetime_to_epoch, datetime_to_str, datetime_at_start_of_day, \
     datetime_at_end_of_day, QDateTime_to_datetime, OGR_DATE_FORMAT, OGR_DATETIME_FORMAT
+from query_builder import  QueryIdioms, DateTypes
+import query_builder
 
-# Queries
-STRINGCAST_FORMAT='cast("{}" as character) < \'{}\' AND cast("{}" as character) >= \'{}\' '
-INT_FORMAT="{} < {} AND {} >= {} "
-STRING_FORMAT="\"{}\" < '{}' AND \"{}\" >= '{}' "
-
-class DateTypes:
-    IntegerTimestamps="IntegerTimestamps"
-    DatesAsStrings="DatesAsStrings"
-    DatesAsQDates="DatesAsQDates"
-    DatesAsQDateTimes="DatesAsQDateTimes"
-    nonQDateTypes = [IntegerTimestamps,DatesAsStrings]
-    QDateTypes = [DatesAsQDates, DatesAsQDateTimes]
-
-    @classmethod
-    def determine_type(cls, val):
-        try:
-            int(val)
-            return cls.IntegerTimestamps
-        except:
-            if type(val) is QtCore.QDate:
-                return cls.DatesAsQDates
-            if type(val) is QtCore.QDateTime:
-                return cls.DatesAsQDateTimes
-            return cls.DatesAsStrings
-
-    @classmethod
-    def get_type_format(cls, typ):
-        if typ in cls.nonQDateTypes:
-            raise Exception
-        else:
-            if typ==cls.DatesAsQDates:
-                return OGR_DATE_FORMAT
-            if typ==cls.DatesAsQDateTimes:
-                return OGR_DATETIME_FORMAT
-        raise Exception
-
+POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
+DELIMITED_TEXT_TYPE='Delimited text file'
+STORAGE_TYPES_WITH_SQL=[POSTGRES_TYPE, DELIMITED_TEXT_TYPE]
 
 class SubstringException(Exception):
     pass
@@ -133,75 +101,43 @@ class TimeVectorLayer(TimeLayer):
         endTime += timedelta(seconds=self.offset)
         return startTime, endTime
 
-
-    def setTimeRestrictionInts(self, timePosition, timeFrame):
-        """Constucts the query on integer attributes (ie time represented as seconds since the epoch)"""
-        startTime = datetime_to_epoch(timePosition + timedelta(seconds=self.offset))
-        if self.toTimeAttribute != self.fromTimeAttribute:
-            endTime = startTime
-        else:
-            endTime =  datetime_to_epoch(timePosition + timeFrame + timedelta(seconds=self.offset))
-
-        subsetString = INT_FORMAT.format(self.fromTimeAttribute,endTime,self.toTimeAttribute,
-                                      startTime)
-        if self.toTimeAttribute != self.fromTimeAttribute:
-            """Change < to <= when and end time is specified, otherwise features starting at 15:00 would only 
-            be displayed starting from 15:01"""
-            subsetString = subsetString.replace('<','<=')
-        if self.originalSubsetString != "":
-            # Prepend original subset string 
-            subsetString = "%s AND %s" % (self.originalSubsetString, subsetString)
-        self.layer.setSubsetString(subsetString)
-
-
     def setTimeRestriction(self, timePosition, timeFrame):
         """Constructs the query, including the original subset"""
         if not self.timeEnabled:
             self.deleteTimeRestriction()
             return
-        if self.timeFormat==UTC:
-           self.setTimeRestrictionInts(timePosition, timeFrame)
-           return
+
         startTime = timePosition + timedelta(seconds=self.offset)
-        startTimeStr = datetime_to_str(startTime, self.getTimeFormat())
+
         if self.toTimeAttribute != self.fromTimeAttribute:
             # If an end time attribute is set for the layer, then only show features where the \
             # current time position falls between the feature'sget time from and time to
             # attributes
-            endTimeStr = startTimeStr
+            endTime = startTime
         else:
             # If no end time attribute has been set for this layer, then show features with a time\
             # attribute which falls somewhere between the current time position and the start
             # position of the next frame"""
             endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
-            endTimeStr = datetime_to_str(endTime,  self.getTimeFormat())
 
-        subsetString_psql = STRING_FORMAT.format(self.fromTimeAttribute,endTimeStr,
-                                             self.toTimeAttribute,startTimeStr)
-
-
-        subsetString_ogr = STRINGCAST_FORMAT.format(self.fromTimeAttribute, endTimeStr,
-                                                    self.toTimeAttribute,startTimeStr)
-
-        formats_to_try = [subsetString_psql, subsetString_ogr]
+        idioms_to_try = [QueryIdioms.SQL, QueryIdioms.OGR]
 
         if self.getDateType() in DateTypes.QDateTypes:
-            formats_to_try = [subsetString_ogr]
+            idioms_to_try = [QueryIdioms.OGR]
 
-        for subsetString in formats_to_try:
+        if self.layer.dataProvider().storageType() in STORAGE_TYPES_WITH_SQL:
+            idioms_to_try = [QueryIdioms.SQL]
 
-            if self.toTimeAttribute != self.fromTimeAttribute:
-                """Change < to <= when and end time is specified, otherwise features starting at 15:00 would only
-                be displayed starting from 15:01"""
-                subsetString = subsetString.replace('<','<=')
-            if self.originalSubsetString != "":
-                # Prepend original subset string
-                subsetString = "%s AND %s" % (self.originalSubsetString, subsetString)
+        for idiom in idioms_to_try:
+
+            subsetString = query_builder.build_query(startTime, endTime, self.fromTimeAttribute,
+                                                     self.toTimeAttribute, date_type =
+                self.getDateType(), date_format=self.getTimeFormat(), query_idiom=idiom)
             try:
                 self.setSubsetString(subsetString)
             except SubstringException:
                 # try the other one
-                # not sure if this could make the screen flash
+                # not sure if trying several idioms could make the screen flash
                 continue
             return
 
@@ -214,17 +150,10 @@ class TimeVectorLayer(TimeLayer):
         if not success:
             raise SubstringException("Could not set substring to".format(subsetString))
 
-    def constructOGRSubsetString(self, startTimeStr, endTimeStr):
-        """Constructs the subset query depending on which time format was detected"""
-        return STRINGCAST_FORMAT.format(self.fromTimeAttribute, endTimeStr, self.toTimeAttribute,
-                                  startTimeStr)
-
     def deleteTimeRestriction(self):
         """Restore original subset"""
-        success = self.layer.setSubsetString(self.originalSubsetString)
-        if not success:
-            raise SubstringException("Could not set substring  to {}".format(
-                self.originalSubsetString))
+        self.setSubsetString(self.originalSubsetString)
+
 
     def hasTimeRestriction(self):
         """returns true if current layer.subsetString is not equal to originalSubsetString"""

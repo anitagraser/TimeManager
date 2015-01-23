@@ -12,7 +12,6 @@ from TimeManager.time_util import datetime_to_str, DEFAULT_FORMAT
 from test_functionality import TestWithQGISLauncher, RiggedTimeManagerControl
 import TimeManager.time_util as time_util
 import TimeManager.timevectorlayer as timevectorlayer
-from TimeManager.timevectorlayer import  STRINGCAST_FORMAT,INT_FORMAT
 from mock import Mock
 
 import psycopg2
@@ -113,6 +112,7 @@ class TestPostgreSQL(TestWithQGISLauncher):
         expected_datetime = time_util.epoch_to_datetime(STARTTIME)
         self.assertEquals(self.tlm.getCurrentTimePosition(),expected_datetime)
         self.tlm.stepForward()
+        self.assertEquals(self.layer.featureCount(),1)
         expected_datetime = time_util.epoch_to_datetime(STARTTIME+1)
         self.assertEquals(self.tlm.getCurrentTimePosition(),expected_datetime)
 

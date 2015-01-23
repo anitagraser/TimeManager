@@ -12,7 +12,7 @@ from TimeManager.time_util import datetime_to_str, DEFAULT_FORMAT
 from test_functionality import TestWithQGISLauncher, RiggedTimeManagerControl
 import TimeManager.time_util as time_util
 import TimeManager.timevectorlayer as timevectorlayer
-from TimeManager.timevectorlayer import  STRINGCAST_FORMAT,INT_FORMAT, STRING_FORMAT
+from TimeManager.query_builder import  STRINGCAST_FORMAT,INT_FORMAT, STRING_FORMAT
 from mock import Mock
 
 
@@ -28,6 +28,8 @@ NUM_PTS = 100
 
 
 class TestSpatialite(TestWithQGISLauncher):
+
+    comparison_op="<"
 
     @classmethod
     def setUpClass(cls):
@@ -88,7 +90,7 @@ class TestSpatialite(TestWithQGISLauncher):
         self.tlm.setTimeFrameType("minutes")
         self.tlm.stepForward()
         subsetString = layer.subsetString()
-        expectedSubsetString = STRINGCAST_FORMAT.format(attr,
+        expectedSubsetString = STRINGCAST_FORMAT.format(attr,self.comparison_op,
                                     time_util.datetime_to_str(self.tlm.getCurrentTimePosition()+timedelta(minutes=1)
                                     ,timeLayer.getTimeFormat()),attr,
                                     time_util.datetime_to_str(self.tlm.getCurrentTimePosition(),
@@ -130,7 +132,7 @@ class TestSpatialite(TestWithQGISLauncher):
         subsetString = layer.subsetString()
 
         if is_int:
-            expectedSubsetString = INT_FORMAT.format(attr,
+            expectedSubsetString = INT_FORMAT.format(attr,self.comparison_op,
                                     time_util.datetime_to_epoch(self.tlm.getCurrentTimePosition()+timedelta(minutes=FS)),
                                     attr,
                                     time_util.datetime_to_epoch(self.tlm.getCurrentTimePosition()))
@@ -141,7 +143,7 @@ class TestSpatialite(TestWithQGISLauncher):
                 minimum_bound_seconds))
         if not is_int:
             self.assertEqual(timeLayer.getTimeFormat(), time_util.DEFAULT_FORMAT)
-            expectedSubsetString = STRING_FORMAT.format(attr,
+            expectedSubsetString = STRING_FORMAT.format(attr,self.comparison_op,
                                     time_util.datetime_to_str(self.tlm.getCurrentTimePosition()+timedelta(minutes=FS)
                                     ,timeLayer.getTimeFormat()),attr,
                                     time_util.datetime_to_str(self.tlm.getCurrentTimePosition(),

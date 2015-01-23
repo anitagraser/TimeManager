@@ -30,18 +30,21 @@ SUPPORTED_FORMATS = [
 "%Y/%m/%d %H:%M:%S",
 "%Y/%m/%d %H:%M",
 "%Y/%m/%d",
-"%d.%m.%Y %H:%M:%S.%f",
-"%d.%m.%Y %H:%M:%S",
-"%d.%m.%Y %H:%M",
-"%d.%m.%Y",
-"%d-%m-%Y %H:%M:%S.%f",
-"%d-%m-%Y %H:%M:%S",
-"%d-%m-%Y %H:%M",
-"%d-%m-%Y",
-"%d/%m/%Y %H:%M:%S.%f",
-"%d/%m/%Y %H:%M:%S",
-"%d/%m/%Y %H:%M",
-"%d/%m/%Y"
+"%H:%M:%S",
+"%H:%M:%S.%f",
+# Non-lexicographically comparable
+#"%d.%m.%Y %H:%M:%S.%f",
+#"%d.%m.%Y %H:%M:%S",
+#"%d.%m.%Y %H:%M",
+#"%d.%m.%Y",
+#"%d-%m-%Y %H:%M:%S.%f",
+#"%d-%m-%Y %H:%M:%S",
+#"%d-%m-%Y %H:%M",
+#"%d-%m-%Y",
+#"%d/%m/%Y %H:%M:%S.%f",
+#"%d/%m/%Y %H:%M:%S",
+#"%d/%m/%Y %H:%M",
+#"%d/%m/%Y"
 ]
 
 def QDateTime_to_datetime(date):
