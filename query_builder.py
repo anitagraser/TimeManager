@@ -45,10 +45,33 @@ class DateTypes:
         raise Exception
 
 
+class QueryBuildingException(Exception):
+    pass
+
 def can_compare_lexicographically(date_format):
-    # Date formats cannot have the same %x twice
-    # But they can have %x and %X
-    return True
+    """Can only compare lexicographically when the order of appearance in the string
+    is year, month, date"""
+    # fortunately, date formats cannot have the same %x twice
+    ioy=date_format.find("%Y")
+    iom=date_format.find("%m")
+    iod=date_format.find("%d")
+    ioh=date_format.find("%H")
+    iomin=date_format.find("%M")
+    ios=date_format.find("%S")
+    return ioy<=iom and iom<=iod and iod<=ioh and ioh<=iomin and iomin<=ios
+
+def create_ymd_substring(ioy,iom,iod,col, quote_type):
+    q=quote_type
+    ystr = "SUBSTR({}{}{},{},{})".format(q,col,q, ioy+1,ioy+5) if ioy>=0 else None # adding 1
+    # because SQL indexing is 1-based
+    mstr = "SUBSTR({}{}{},{},{})".format(q,col,q, iom+1,iom+3)  if iom>=0 else None
+    dstr = "SUBSTR({}{}{},{},{})".format(q,col,q, iod+1,iod+3)  if iod>=0 else None
+    max_index = max(ioy,iom,iod)
+    ior = max_index + (2 if max_index!=ioy else 4) # find where the rest of the string is
+    reststr = "SUBSTR({}{}{},{})".format(q,col,q, ior+1)  if iod>=0 else None
+    string_components = filter(lambda x: x is not None,[ystr,mstr,dstr,reststr])
+    return ",".join(string_components)
+
 
 def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, query_idiom):
     """Build subset query"""
@@ -71,6 +94,17 @@ def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, qu
             return STRING_FORMAT.format(from_attr,comparison,end_str,to_attr,start_str)
 
     else:
-        raise Exception("Not Implemented yet")
+        # thankfully, SQL & OGR syntax agree on substr and concat
+        if date_type!=DateTypes.DatesAsStrings:
+            raise QueryBuildingException()
+        ioy=date_format.find("%Y")
+        iom=date_format.find("%m")
+        iod=date_format.find("%d")
+        sub1=create_ymd_substring(ioy,iom,iod,from_attr,quote_type='"')
+        sub2=create_ymd_substring(ioy,iom,iod,end_str, quote_type='\'')
+        sub3=create_ymd_substring(ioy,iom,iod,to_attr, quote_type='"')
+        sub4=create_ymd_substring(ioy,iom,iod,start_str, quote_type='\'')
+        return "CONCAT({}) {} CONCAT({}) AND CONCAT({})<=CONCAT({})".format(sub1,comparison,
+                                                                            sub2,sub3,sub4)
 
 
