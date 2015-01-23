@@ -10,8 +10,7 @@ from PyQt4 import QtCore
 from PyQt4.QtGui import QMessageBox
 from timelayer import *
 from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, \
-    getFormatOfDatetimeValue, UTC, datetime_to_epoch, datetime_to_str, datetime_at_start_of_day, \
-    datetime_at_end_of_day, QDateTime_to_datetime, OGR_DATE_FORMAT, OGR_DATETIME_FORMAT
+    getFormatOfDatetimeValue, datetime_to_str, QDateTime_to_datetime, str_to_datetime
 from query_builder import  QueryIdioms, DateTypes
 import query_builder
 
@@ -23,30 +22,32 @@ class SubstringException(Exception):
     pass
 
 class TimeVectorLayer(TimeLayer):
+
     def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,
                  timeFormat=DEFAULT_FORMAT,offset=0, iface=None):
         TimeLayer.__init__(self,layer,enabled)
         
         self.layer = layer
         self.iface = iface
+        self.minValue,self.maxValue = None,None
         self.fromTimeAttribute = fromTimeAttribute
         self.toTimeAttribute = toTimeAttribute
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
         self.type = DateTypes.determine_type(self.getRawMinValue())
+
+        #TODO error if to and from attributes have different types
+
         if self.type in DateTypes.nonQDateTypes:
-            self.timeFormat = getFormatOfDatetimeValue(self.getMinMaxValues()[0], hint=str(timeFormat))
+            self.timeFormat = getFormatOfDatetimeValue(self.getRawMinValue(), hint=str(timeFormat))
         else:
             self.timeFormat = DateTypes.get_type_format(self.type)
-
         self.supportedFormats = SUPPORTED_FORMATS
         self.offset = int(offset)
         try:
             self.getTimeExtents()
-        except NotATimeAttributeError, e:
+        except Exception, e:
             raise InvalidTimeLayerError(e.value)
-        self.fromTimeAttributeType = layer.dataProvider().fields().field(fromTimeAttribute).typeName()
-        self.toTimeAttributeType = layer.dataProvider().fields().field(toTimeAttribute).typeName()
 
     def getDateType(self):
         """return the type of dates this layer has stored"""
@@ -68,6 +69,8 @@ class TimeVectorLayer(TimeLayer):
             QMessageBox.information(self.iface.mainWindow(),'Info', msg)
 
     def getRawMinValue(self):
+        """returns the raw minimum value. May not be the expected minimum value semantically if we
+        have dates that are saves as strings because of lexicographic comparisons"""
         provider = self.layer.dataProvider()
         fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
         minValue =  provider.minimumValue(fromTimeAttributeIndex)
@@ -75,27 +78,47 @@ class TimeVectorLayer(TimeLayer):
 
     def getMinMaxValues(self):
         """Returns str"""
-        provider = self.layer.dataProvider()
-        fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
-        toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
-        minValue =  provider.minimumValue(fromTimeAttributeIndex)
-        maxValue = provider.maximumValue(toTimeAttributeIndex)
-        if type(minValue) in [QtCore.QDate, QtCore.QDateTime]:
-            minValue = str(QDateTime_to_datetime(minValue))
-            maxValue = str(QDateTime_to_datetime(maxValue))
-        return minValue, maxValue
+        if self.minValue is None or self.maxValue is None: # if not already computed
+            provider = self.layer.dataProvider()
+            fmt = self.getTimeFormat()
+            fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
+            toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
+            if query_builder.can_compare_lexicographically(fmt):
+                minValue =  provider.minimumValue(fromTimeAttributeIndex)
+                maxValue = provider.maximumValue(toTimeAttributeIndex)
+            else:
+                # need to find min max by looking at all the unique values
+                # QGIS doesn't get sorting right
+
+                unique_vals = provider.uniqueValues(fromTimeAttributeIndex)
+                unique_vals = map(lambda x:str_to_datetime(x,fmt),unique_vals)
+                minValue= datetime_to_str(min(unique_vals),fmt)
+                if fromTimeAttributeIndex == toTimeAttributeIndex:
+                    maxValue =  datetime_to_str(max(unique_vals),fmt)
+                else:
+                    unique_vals = provider.uniqueValues(toTimeAttributeIndex)
+                    unique_vals = map(lambda x:str_to_datetime(x,fmt),unique_vals)
+                    maxValue= datetime_to_str(max(unique_vals),fmt)
+
+            if type(minValue) in [QtCore.QDate, QtCore.QDateTime]:
+                minValue = datetime_to_str(QDateTime_to_datetime(minValue), self.getTimeFormat())
+                maxValue = datetime_to_str(QDateTime_to_datetime(maxValue), self.getTimeFormat())
+            self.minValue = minValue
+            self.maxValue = maxValue
+        return self.minValue, self.maxValue
 
     def getTimeExtents(self):
-        """Get layer's temporal extent using the fields and the format defined somewhere else!"""
-        startStr, endStr = self.getMinMaxValues()
+        """Get layer's temporal extent in datetime format
+         using the fields and the format defined in the layer"""
+        start_str, end_str = self.getMinMaxValues()
         try:
-            startTime = strToDatetimeWithFormatHint(startStr,  self.getTimeFormat())
+            startTime = strToDatetimeWithFormatHint(start_str,  self.getTimeFormat())
         except ValueError:
-            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
+            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+start_str+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
         try:
-            endTime = strToDatetimeWithFormatHint(endStr,  self.getTimeFormat())
+            endTime = strToDatetimeWithFormatHint(end_str,  self.getTimeFormat())
         except ValueError:
-            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+endStr)
+            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+end_str)
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)

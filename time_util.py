@@ -61,7 +61,7 @@ def datetime_at_end_of_day(dt):
 
 def epoch_to_datetime(seconds_from_epoch):
     """Convert seconds since 1970-1-1 (UNIX epoch) to a datetime"""
-    #FIXME: Maybe this doesnt work on windows for negative timestamps
+    # This doesnt work on windows for negative timestamps
     # http://stackoverflow.com/questions/22082103/on-windows-how-to-convert-a-timestamps-before-1970-into-something-manageable
     # return datetime.utcfromtimestamp(seconds_from_epoch)
     # but this should:
@@ -125,7 +125,6 @@ def fixed_strftime(dt, fmt):
     return s
 
 def getFormatOfDatetimeValue(datetimeValue, hint=DEFAULT_FORMAT):
-    #FIXME, here we can see if the type is QDate and handle it accordingly
     datetimeValue = str(datetimeValue)
     # is it an integer representing seconds?
     try:
