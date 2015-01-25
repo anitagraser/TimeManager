@@ -2,17 +2,13 @@ import sip
 sip.setapi('QString', 2) # strange things happen without this. Must import before PyQt imports
 # if using ipython: do this on bash before
 # export QT_API=pyqt
-from pyspatialite import dbapi2 as db
 from qgis.core import *
 
 from datetime import datetime, timedelta
-import os
 import unittest
-from TimeManager.time_util import datetime_to_str, DEFAULT_FORMAT
-from test_functionality import TestWithQGISLauncher, RiggedTimeManagerControl
+from test_functionality import TestForLayersWithOnePointPerSecond
 import TimeManager.time_util as time_util
 import TimeManager.timevectorlayer as timevectorlayer
-from mock import Mock
 from nose.tools import raises
 
 import psycopg2
@@ -63,7 +59,7 @@ update pts set {6:s} = to_char(_date,'DD.MM.YYYY HH24:MI:SS');
 CUSTOM_FORMAT="%Y/%m/%d %H:%M:%S"
 CUSTOM_FORMAT_DMY="%d.%m.%Y %H:%M:%S"
 
-class TestPostgreSQL(TestWithQGISLauncher):
+class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
 
     conn = None
 
@@ -85,11 +81,11 @@ class TestPostgreSQL(TestWithQGISLauncher):
         cls.conn.cursor().execute("DROP TABLE IF EXISTS {};".format(TABLE))
         cls.conn.close()
 
+    def get_start_time(self):
+        return STARTTIME
+
     def setUp(self):
-        iface = Mock()
-        self.ctrl = RiggedTimeManagerControl(iface)
-        self.ctrl.initGui(test=True)
-        self.tlm = self.ctrl.getTimeLayerManager()
+        super(TestPostgreSQL,self).setUp()
         uri = QgsDataSourceURI()
         uri.setConnection('localhost', '5432', DBNAME, "postgres", "postgres")
         uri.setDataSource('public', TABLE, GEOMETRY_COL, '')
@@ -98,53 +94,40 @@ class TestPostgreSQL(TestWithQGISLauncher):
         self.assertEquals(self.layer.featureCount(),5)
 
     def test_integers(self):
-        self._test_layer(EPOCH_COL,timevectorlayer.DateTypes.IntegerTimestamps, time_util.UTC)
+        self._test_layer(self.layer,EPOCH_COL,timevectorlayer.DateTypes.IntegerTimestamps,
+                         time_util.UTC)
 
     def test_date_str(self):
-        self._test_layer(DATE_STR_COL,timevectorlayer.DateTypes.DatesAsStrings, CUSTOM_FORMAT)
+        self._test_layer(self.layer,DATE_STR_COL,timevectorlayer.DateTypes.DatesAsStrings,
+                         CUSTOM_FORMAT)
 
     def test_date_str_dmy(self):
         """Test that everything works properly with date formats that can't be compared correctly
         using their string representations"""
         start_dt=time_util.epoch_to_datetime(STARTTIME)
         end_dt=time_util.epoch_to_datetime(STARTTIME+1)
-        self.assertTrue(start_dt<end_dt and datetime_to_str(start_dt,
-                                                            CUSTOM_FORMAT_DMY)>datetime_to_str(end_dt,CUSTOM_FORMAT_DMY))
-        self._test_layer(DATE_STR_COL_DMY,timevectorlayer.DateTypes.DatesAsStrings, CUSTOM_FORMAT_DMY)
+        self.assertTrue(start_dt<end_dt and time_util.datetime_to_str(start_dt,CUSTOM_FORMAT_DMY)>
+                        time_util.datetime_to_str(end_dt,CUSTOM_FORMAT_DMY))
+        self._test_layer(self.layer, DATE_STR_COL_DMY,timevectorlayer.DateTypes.DatesAsStrings,
+                         CUSTOM_FORMAT_DMY)
 
     def test_date(self):
-        self._test_layer(DATE_COL,timevectorlayer.DateTypes.DatesAsStrings, time_util.DEFAULT_FORMAT)
+        self._test_layer(self.layer, DATE_COL,timevectorlayer.DateTypes.DatesAsStrings,
+                         time_util.DEFAULT_FORMAT)
 
     @raises(Exception)
     def test_to_from_are_different_types(self):
         # currently not supported, verify that exception is thrown
-         self._test_layer(DATE_COL,timevectorlayer.DateTypes.DatesAsStrings,
+         self._test_layer(self.layer, DATE_COL,timevectorlayer.DateTypes.DatesAsStrings,
                           time_util.DEFAULT_FORMAT,attr2=DATE_STR_COL_DMY)
 
     #TODO: Issue  https://github.com/anitagraser/TimeManager/issues/33
     # Timezones not supported yet
     def test_date_with_timezone(self):
         with self.assertRaises(time_util.UnsupportedFormatException):
-            self._test_layer(DATE_TZ_COL,timevectorlayer.DateTypes.DatesAsStrings, None)
+            self._test_layer(self.layer, DATE_TZ_COL,timevectorlayer.DateTypes.DatesAsStrings,
+                             None)
 
-    def _test_layer(self, attr, typ, tf, attr2=None):
-        if attr2 is None:
-            attr2=attr
-        timeLayer = timevectorlayer.TimeVectorLayer(self.layer,attr,attr2,True,
-                                                    time_util.DEFAULT_FORMAT,0)
-        self.tlm.registerTimeLayer(timeLayer)
-
-        self.assertEquals(timeLayer.getDateType(), typ)
-        self.assertEquals(timeLayer.getTimeFormat(), tf)
-        expected_datetime = time_util.epoch_to_datetime(STARTTIME)
-        self.assertEquals(self.tlm.getCurrentTimePosition(),expected_datetime)
-        self.tlm.setTimeFrameType("seconds")
-        self.assertEquals(self.layer.featureCount(),1)
-        self.assertEquals(self.tlm.getCurrentTimePosition(),expected_datetime)
-        self.tlm.stepForward()
-        self.assertEquals(self.layer.featureCount(),1)
-        expected_datetime = time_util.epoch_to_datetime(STARTTIME+1)
-        self.assertEquals(self.tlm.getCurrentTimePosition(),expected_datetime)
 
 if __name__=="__main__":
     unittest.main()

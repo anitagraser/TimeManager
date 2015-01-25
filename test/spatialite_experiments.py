@@ -42,10 +42,7 @@ class TestSpatialite(TestWithQGISLauncher):
         #os.remove(DB_FILE)
 
     def setUp(self):
-        iface = Mock()
-        self.ctrl = RiggedTimeManagerControl(iface)
-        self.ctrl.initGui(test=True)
-        self.tlm = self.ctrl.getTimeLayerManager()
+        super(TestSpatialite,self).setUp()
         self.layer = self._load_spatialite_layer(DB_FILE, "test_table", "geom", NUM_PTS)
         # this spatialite layer can only be loaded as a vector layer
         self.layer_loaded_as_vector = QgsVectorLayer(DB_FILE, "pointz_vector", 'ogr')

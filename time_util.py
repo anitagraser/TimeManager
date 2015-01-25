@@ -81,6 +81,9 @@ def epoch_to_datetime(seconds_from_epoch):
     # but this should:
     return datetime(1970, 1, 1) + timedelta(seconds=seconds_from_epoch)
 
+def epoch_to_str(seconds_from_epoch, fmt):
+    return datetime_to_str(epoch_to_datetime(seconds_from_epoch), fmt)
+
 def datetime_to_epoch(dt):
     """ convert a datetime to seconds after (or possibly before) 1970-1-1 """
     return int((dt - datetime(1970,1,1)).total_seconds())
