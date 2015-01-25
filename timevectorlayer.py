@@ -23,6 +23,13 @@ class SubstringException(Exception):
 
 class TimeVectorLayer(TimeLayer):
 
+    def _infer_time_format(self,val, hint):
+        if self.type in DateTypes.nonQDateTypes:
+            tf = getFormatOfDatetimeValue(val, hint=hint)
+        else:
+            tf = DateTypes.get_type_format(self.type)
+        return tf
+
     def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,
                  timeFormat=DEFAULT_FORMAT,offset=0, iface=None):
         TimeLayer.__init__(self,layer,enabled)
@@ -35,14 +42,14 @@ class TimeVectorLayer(TimeLayer):
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
         self.type = DateTypes.determine_type(self.getRawMinValue())
+        type2 = DateTypes.determine_type(self.getRawMaxValue())
+        self.timeFormat = self._infer_time_format(self.getRawMinValue(),hint=str(timeFormat))
+        tf2 = self._infer_time_format(self.getRawMaxValue(),hint=str(timeFormat))
 
-        #TODO error if to and from attributes have different types
+        if self.type!=type2 or self.timeFormat!=tf2:
+            raise InvalidTimeLayerError("Invalid time layer: To and From attributes must have "
+                                        "exact same format")
 
-        if self.type in DateTypes.nonQDateTypes:
-            self.timeFormat = getFormatOfDatetimeValue(self.getRawMinValue(), hint=str(timeFormat))
-        else:
-            self.timeFormat = DateTypes.get_type_format(self.type)
-        self.supportedFormats = SUPPORTED_FORMATS
         self.offset = int(offset)
         try:
             self.getTimeExtents()
@@ -75,6 +82,14 @@ class TimeVectorLayer(TimeLayer):
         fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
         minValue =  provider.minimumValue(fromTimeAttributeIndex)
         return minValue
+
+    def getRawMaxValue(self):
+        """returns the raw minimum value. May not be the expected minimum value semantically if we
+        have dates that are saves as strings because of lexicographic comparisons"""
+        provider = self.layer.dataProvider()
+        toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
+        maxValue =  provider.minimumValue(toTimeAttributeIndex)
+        return maxValue
 
     def getMinMaxValues(self):
         """Returns str"""

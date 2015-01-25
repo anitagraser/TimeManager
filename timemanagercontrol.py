@@ -403,7 +403,7 @@ class TimeManagerControl(QObject):
                 l = l.split(';')
                 layer = QgsMapLayerRegistry.instance().mapLayer(l[0]) # get the layer
                 if not layer:
-                    break
+                    continue
 
                 # this should be a python class factory
                 if type(layer).__name__ == "QgsRasterLayer":

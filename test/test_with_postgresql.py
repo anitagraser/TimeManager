@@ -13,6 +13,7 @@ from test_functionality import TestWithQGISLauncher, RiggedTimeManagerControl
 import TimeManager.time_util as time_util
 import TimeManager.timevectorlayer as timevectorlayer
 from mock import Mock
+from nose.tools import raises
 
 import psycopg2
 
@@ -114,14 +115,22 @@ class TestPostgreSQL(TestWithQGISLauncher):
     def test_date(self):
         self._test_layer(DATE_COL,timevectorlayer.DateTypes.DatesAsStrings, time_util.DEFAULT_FORMAT)
 
+    @raises(Exception)
+    def test_to_from_are_different_types(self):
+        # currently not supported, verify that exception is thrown
+         self._test_layer(DATE_COL,timevectorlayer.DateTypes.DatesAsStrings,
+                          time_util.DEFAULT_FORMAT,attr2=DATE_STR_COL_DMY)
+
     #TODO: Issue  https://github.com/anitagraser/TimeManager/issues/33
     # Timezones not supported yet
     def test_date_with_timezone(self):
         with self.assertRaises(time_util.UnsupportedFormatException):
             self._test_layer(DATE_TZ_COL,timevectorlayer.DateTypes.DatesAsStrings, None)
 
-    def _test_layer(self, attr, typ, tf):
-        timeLayer = timevectorlayer.TimeVectorLayer(self.layer,attr,attr,True,
+    def _test_layer(self, attr, typ, tf, attr2=None):
+        if attr2 is None:
+            attr2=attr
+        timeLayer = timevectorlayer.TimeVectorLayer(self.layer,attr,attr2,True,
                                                     time_util.DEFAULT_FORMAT,0)
         self.tlm.registerTimeLayer(timeLayer)
 
