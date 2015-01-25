@@ -17,10 +17,25 @@ DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
 SAVE_STRING_FORMAT =  DEFAULT_FORMAT # Used to be: "%Y-%m-%d %H:%M:%S.%f", but this format is not portable in Windows because of the %f directive
 UTC = "UTC"
 
+
+
 class UnsupportedFormatException(Exception):
     pass
 
-SUPPORTED_FORMATS = [
+def _str_switch(str, substr1, substr2):
+    """Switch the location in a string of two substrings"""
+    i1 = str.find(substr1)
+    i2 = str.find(substr2)
+    if i1<0 or i2<0:
+        return str
+    if i1<i2:
+        return str[:i1]+substr2+str[i1+len(substr1):i2]+substr1+str[i2+len(substr2):]
+    if i1==i2:
+        return str
+    if i1>i2:
+        return str[:i2]+substr1+str[i2+len(substr2):i1]+substr2+str[i1+len(substr1):]
+
+YMD_SUPPORTED_FORMATS = [
 "%Y-%m-%d %H:%M:%S.%f",
 "%Y-%m-%d %H:%M:%S",
 "%Y-%m-%d %H:%M",
@@ -32,20 +47,19 @@ SUPPORTED_FORMATS = [
 "%Y/%m/%d",
 "%H:%M:%S",
 "%H:%M:%S.%f",
-# Non-lexicographically comparable
-"%d.%m.%Y %H:%M:%S.%f",
-"%d.%m.%Y %H:%M:%S",
-"%d.%m.%Y %H:%M",
-"%d.%m.%Y",
-"%d-%m-%Y %H:%M:%S.%f",
-"%d-%m-%Y %H:%M:%S",
-"%d-%m-%Y %H:%M",
-"%d-%m-%Y",
-"%d/%m/%Y %H:%M:%S.%f",
-"%d/%m/%Y %H:%M:%S",
-"%d/%m/%Y %H:%M",
-"%d/%m/%Y"
+"%Y.%m.%d %H:%M:%S.%f",
+"%Y.%m.%d %H:%M:%S",
+"%Y.%m.%d %H:%M",
+"%Y.%m.%d",
 ]
+
+DMY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%Y","%d"), YMD_SUPPORTED_FORMATS)
+MDY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%m","%d"), DMY_SUPPORTED_FORMATS)
+
+
+SUPPORTED_FORMATS = list(set(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS +
+                             DMY_SUPPORTED_FORMATS))
+
 
 def QDateTime_to_datetime(date):
     try:
