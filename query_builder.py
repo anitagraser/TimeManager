@@ -106,5 +106,3 @@ def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, qu
         sub4=create_ymd_substring(ioy,iom,iod,start_str, quote_type='\'')
         return "CONCAT({}) {} CONCAT({}) AND CONCAT({})>=CONCAT({})".format(sub1,comparison,
                                                                             sub2,sub3,sub4)
-
-

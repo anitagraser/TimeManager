@@ -146,17 +146,7 @@ class TimeVectorLayer(TimeLayer):
             return
 
         startTime = timePosition + timedelta(seconds=self.offset)
-
-        if self.toTimeAttribute != self.fromTimeAttribute:
-            # If an end time attribute is set for the layer, then only show features where the \
-            # current time position falls between the feature'sget time from and time to
-            # attributes
-            endTime = startTime
-        else:
-            # If no end time attribute has been set for this layer, then show features with a time\
-            # attribute which falls somewhere between the current time position and the start
-            # position of the next frame"""
-            endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
+        endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
 
         idioms_to_try = [QueryIdioms.SQL, QueryIdioms.OGR]
 

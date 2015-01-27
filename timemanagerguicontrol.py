@@ -20,7 +20,8 @@ from qgis.core import *
 from timelayer import *
 from timevectorlayer import *
 from timerasterlayer import *
-from time_util import datetime_to_epoch, epoch_to_datetime, QDateTime_to_datetime
+from time_util import datetime_to_epoch, epoch_to_datetime, QDateTime_to_datetime, \
+    datetime_to_str, DEFAULT_FORMAT
 
 # The QTSlider only supports integers as the min and max, therefore the maximum maximum value
 # is whatever can be stored in an int. Making it a signed int to be sure.
@@ -31,13 +32,17 @@ MAX_TIME_LENGTH_SECONDS = 2**31-1
 MIN_QDATE = QDate(100, 1, 1)
 
 DOCK_WIDGET_FILE = "dockwidget2.ui"
+LABEL_WIDGET_FILE = "label_options.ui"
+
 
 class TimestampLabelConfig(object):
-    """Edit configuration for the timestamp label here, in liu of GUI control"""
+    """Object that has the settings for rendering timestamp labels. Can be customized via the UI"""
+    PLACEMENTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+    DEFAULT_FONT_SIZE = 4
     font = "Arial"      # Font names or family, comma-separated CSS style
-    size = 4            # Relative values between 1-7
-    fmt = "yyyy-MM-dd hh:mm:ss.zzz"  # Uses Qt's QDate format, see: http://qt-project.org/doc/qt-4.8/qdate.html#toString
-    placement = 'SE'    # Choose from N, NE, E, SE, S, SW, W, NW
+    size = DEFAULT_FONT_SIZE # Relative values between 1-7
+    fmt = DEFAULT_FORMAT # Pythonic format (same as in the layers)
+    placement = 'SE'    # Choose from
     color = 'black'     # Text color as name, rgb(RR,GG,BB), or #XXXXXX
     bgcolor = 'white'   # Background color as name, rgb(RR,GG,BB), or #XXXXXX
 
@@ -68,7 +73,7 @@ class TimeManagerGuiControl(QObject):
         self.iface = iface   
         self.timeLayerManager = timeLayerManager
         self.showLabel = False
-        self.labelOptions = TimestampLabelConfig()  # placeholder until config is in GUI
+        self.labelOptions = TimestampLabelConfig()
         self.optionsDialog = None
         
         # load the form
@@ -98,6 +103,31 @@ class TimeManagerGuiControl(QObject):
                      self.dock.horizontalTimeSlider.setFocus)
 
 
+    def showLabelOptions(self):
+        # TODO maybe more clearly (not inline here)
+        path = os.path.dirname( os.path.abspath( __file__ ) )
+        self.labelOptionsDialog = uic.loadUi(os.path.join(path,LABEL_WIDGET_FILE ))
+        self.labelOptionsDialog.fontsize.setValue(self.labelOptions.size)
+        self.labelOptionsDialog.time_format.setText(self.labelOptions.fmt)
+        self.labelOptionsDialog.font.setCurrentFont(QFont(self.labelOptions.font))
+        self.labelOptionsDialog.placement.addItems(TimestampLabelConfig.PLACEMENTS)
+        self.labelOptionsDialog.placement.setCurrentIndex(TimestampLabelConfig.PLACEMENTS.index(
+            self.labelOptions.placement))
+        self.labelOptionsDialog.text_color.setColor(QColor(self.labelOptions.color))
+        self.labelOptionsDialog.bg_color.setColor(QColor(self.labelOptions.bgcolor))
+        self.labelOptionsDialog.buttonBox.accepted.connect(self.saveLabelOptions)
+
+        self.labelOptionsDialog.show()
+
+    def saveLabelOptions(self):
+        self.labelOptions.font =  self.labelOptionsDialog.font.currentFont().family()
+        self.labelOptions.size = self.labelOptionsDialog.fontsize.value()
+        self.labelOptions.bgcolor = self.labelOptionsDialog.bg_color.color().name()
+        self.labelOptions.color = self.labelOptionsDialog.text_color.color().name()
+        self.labelOptions.placement = self.labelOptionsDialog.placement.currentText()
+        self.labelOptions.fmt = self.labelOptionsDialog.time_format.text()
+
+
     def optionsClicked(self):
         self.showOptions.emit()
         
@@ -122,13 +152,9 @@ class TimeManagerGuiControl(QObject):
         So we see the percentage the slider is at and determine the epoch time (which can be a
         long if it's sufficiently in the past or in the future)."""
 
-        #self.debug("slider val {}".format(sliderVal))
-
         if not self.propagateGuiChanges:
             return
-
         try:
-
             pct = (sliderVal - self.dock.horizontalTimeSlider.minimum())*1.0/(
                 self.dock.horizontalTimeSlider.maximum() - self.dock.horizontalTimeSlider.minimum())
         except:
@@ -199,8 +225,14 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.checkBoxBackwards.setChecked(playBackwards)
         self.optionsDialog.checkBoxLabel.setChecked(self.showLabel)
         self.optionsDialog.checkBoxLoop.setChecked(loopAnimation)
+        self.optionsDialog.show_label_options_button.clicked.connect(self.showLabelOptions)
 
-        # show diaolg
+
+        self.optionsDialog.checkBoxLabel.stateChanged.connect(self.showOrHideLabelOptions)
+
+
+        # show dialog
+        self.showOrHideLabelOptions()
         self.optionsDialog.show()
 
         # establish connections
@@ -213,6 +245,10 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.buttonBox.helpRequested.connect(self.showHelp)
 
         self.mapLayers=QgsMapLayerRegistry.instance().mapLayers()
+
+    def showOrHideLabelOptions(self):
+        self.optionsDialog.show_label_options_button.setEnabled(self.optionsDialog.checkBoxLabel.isChecked())
+
         
     def showHelp(self):
         """show the help dialog"""
@@ -521,7 +557,8 @@ class TimeManagerGuiControl(QObject):
         if not self.showLabel:
             return
 
-        labelString = str(self.dock.dateTimeEditCurrentTime.dateTime().toString(self.labelOptions.fmt))
+        labelString = datetime_to_str(QDateTime_to_datetime(self.dock.dateTimeEditCurrentTime.dateTime()),\
+                      self.labelOptions.fmt)
 
         # Determine placement of label given cardinal directions
         flags = 0

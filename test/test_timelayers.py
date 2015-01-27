@@ -61,17 +61,18 @@ class TestLayers(unittest.TestCase):
                              offset=0)
 
         assert(vector.getTimeFormat() == DEFAULT_FORMAT)
-        vector.setTimeRestriction(datetime(1970,1,1,0,0,2),timedelta(minutes=5))
+        td=timedelta(minutes=5)
+        vector.setTimeRestriction(datetime(1970,1,1,0,0,2),td)
         layer.setSubsetString.assert_called_with(STRING_FORMAT.format(self.from_attr,
                                                                       self.comparison_op,
-                                                               "1970-01-01 00:00:02",
+                                                               "1970-01-01 00:05:02",
                                                                self.to_attr,"1970-01-01 "
                                                                      "00:00:02"))
 
-        vector.setTimeRestriction(datetime(1980,1,1,0,0,2),timedelta(minutes=5))
+        vector.setTimeRestriction(datetime(1980,1,1,0,0,2),td)
         layer.setSubsetString.assert_called_with(STRING_FORMAT.format(self.from_attr,
                                                                       self.comparison_op,
-                                                                   "1980-01-01 00:00:02",
+                                                                   "1980-01-01 00:05:02",
                                                                    self.to_attr,
                                                                    "1980-01-01 "
                                                                    "00:00:02"))
@@ -91,20 +92,24 @@ class TestLayers(unittest.TestCase):
                              offset=0)
 
         assert(vector.getTimeFormat() == UTC)
+        td=timedelta(minutes=5)
         currTime = datetime(1970,1,1,0,3,0)
-        vector.setTimeRestriction(currTime,timedelta(minutes=5))
+        vector.setTimeRestriction(currTime,td)
         layer.setSubsetString.assert_called_with(INT_FORMAT.format(self.from_attr,
-                                                                   self.comparison_op,datetime_to_epoch(currTime),
+                                                                   self.comparison_op,
+                                                                   datetime_to_epoch(currTime+td),
                                                                    self.to_attr,
                                                                    datetime_to_epoch(currTime)))
 
         currTime = datetime(1980,1,1,0,0,2)
-        vector.setTimeRestriction(currTime, timedelta(minutes=5))
+
+        vector.setTimeRestriction(currTime, td)
         layer.setSubsetString.assert_called_with(INT_FORMAT.format(self.from_attr,
                                                                    self.comparison_op,
-                                                                   datetime_to_epoch(currTime),
+                                                                   datetime_to_epoch(currTime+td),
                                                                    self.to_attr,
-                                                                   datetime_to_epoch(currTime)))
+                                                                   datetime_to_epoch(
+                                                                       currTime)))
 
 
 if __name__=="__main__":
