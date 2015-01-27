@@ -393,8 +393,9 @@ class TimeManagerControl(QObject):
         if value:
             self.timeLayerManager.restoreFromSaveString(value)
   
-    def restoreTimeLayers(self,value):
+    def restoreTimeLayers(self, value):
         """restore all time layers"""
+        #FIXME What is value here?
         if value:
             layerInfo = value
             if len(layerInfo):
@@ -429,15 +430,11 @@ class TimeManagerControl(QObject):
                 except InvalidTimeLayerError, e:
                     self.showMessage('An error occured while trying to add layer '+layer.name()+' to \
                             TimeManager.\n'+e.value)
-                    return False
-
-                if not timeLayer:
-                    break
+                    return
                
                 self.timeLayerManager.registerTimeLayer(timeLayer) 
                 self.guiControl.showLabel = True
                 self.guiControl.refreshMapCanvas('restoreTimeLayer')
-            return True    
     
     def restoreSettingCurrentMapTimePosition(self,value):
         """restore currentMapTimePosition"""

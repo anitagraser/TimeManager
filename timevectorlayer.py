@@ -9,9 +9,9 @@ from PyQt4 import QtCore
 
 from PyQt4.QtGui import QMessageBox
 from timelayer import *
-from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, \
+from time_util import DEFAULT_FORMAT, strToDatetimeWithFormatHint, \
     getFormatOfDatetimeValue, datetime_to_str, QDateTime_to_datetime, str_to_datetime
-from query_builder import  QueryIdioms, DateTypes
+from query_builder import QueryIdioms, DateTypes
 import query_builder
 
 POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
@@ -174,6 +174,9 @@ class TimeVectorLayer(TimeLayer):
 
 
     def setSubsetString(self,subsetString):
+
+        if self.originalSubsetString !='':
+            subsetString= "{} AND {}".format(self.originalSubsetString, subsetString)
         success = self.layer.setSubsetString(subsetString)
         if not success:
             raise SubstringException("Could not set substring to".format(subsetString))

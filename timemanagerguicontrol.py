@@ -11,13 +11,11 @@ sys.path.append("~/.qgis/python")
 from string import replace
 
 from PyQt4.QtCore import *
-import PyQt4.QtGui as QtGui
 from PyQt4.QtGui import *
 from PyQt4 import uic
 
-from qgis.core import *
 
-from timelayer import *
+from timelayerfactory import TimeLayerFactory
 from timevectorlayer import *
 from timerasterlayer import *
 from time_util import datetime_to_epoch, epoch_to_datetime, QDateTime_to_datetime, \
@@ -49,6 +47,7 @@ class TimestampLabelConfig(object):
 class TimeManagerGuiControl(QObject):
     """This class controls all plugin-related GUI elements. Emitted signals are defined here.
     New TimeLayers are created here, in createTimeLayer()"""
+    #FIXME Semantically, probably new layers should not be created here
     
     showOptions = pyqtSignal()
     exportVideo = pyqtSignal()
@@ -267,8 +266,8 @@ class TimeManagerGuiControl(QObject):
         # loop through the rows in the table widget and add all layers accordingly
         for row in range(0,self.optionsDialog.tableWidget.rowCount()):
 
-        
-            if self.createTimeLayer(row):
+            try:
+                self.createTimeLayer(row)
                 # save animation options
                 animationFrameLength = self.optionsDialog.spinBoxFrameLength.value()
                 playBackwards = self.optionsDialog.checkBoxBackwards.isChecked()
@@ -283,51 +282,43 @@ class TimeManagerGuiControl(QObject):
                 else:
                     self.dock.pushButtonExportVideo.setEnabled(False)
                 
-                self.saveOptionsEnd.emit()
-            else:
-                break
+
+            except:
+                continue
+
+        self.saveOptionsEnd.emit()
 
     def debug(self, msg):
             QMessageBox.information(self.iface.mainWindow(),'Info', msg)
             
     def createTimeLayer(self,row):
         """create a TimeLayer from options set in the table row"""
-        # layer
-        ##self.debug("Creating time layer")
         layer=QgsMapLayerRegistry.instance().mapLayer(self.optionsDialog.tableWidget.item(row,4).text())
         if self.optionsDialog.tableWidget.item(row,3).checkState() == Qt.Checked:
             isEnabled = True
         else:
             isEnabled = False
         # offset
-        offset = int(self.optionsDialog.tableWidget.item(row,6).text()) # currently only seconds!        
-
+        offset = int(self.optionsDialog.tableWidget.item(row,6).text()) # currently only seconds!
         # start time
         startTimeAttribute = self.optionsDialog.tableWidget.item(row,1).text()
         # end time (optional)
-        if self.optionsDialog.tableWidget.item(row,2).text() == "": #QString(""):
+        if self.optionsDialog.tableWidget.item(row,2).text() == "":
             endTimeAttribute = startTimeAttribute # end time equals start time for timeLayers of type timePoint
         else:
             endTimeAttribute = self.optionsDialog.tableWidget.item(row,2).text()
         # time format
         timeFormat = self.optionsDialog.tableWidget.item(row,5).text()
-            
-        # this should be a python class factory
-        if type(layer).__name__ == "QgsVectorLayer":
-            timeLayerClass = TimeVectorLayer
-        elif type(layer).__name__ == "QgsRasterLayer":
-            timeLayerClass = TimeRasterLayer           
-            
-        try: # here we use the selected class
-            timeLayer = timeLayerClass(layer,startTimeAttribute,endTimeAttribute,isEnabled,
+
+        try:
+            timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(layer)(layer,startTimeAttribute,
+                                                           endTimeAttribute,isEnabled,
                                        timeFormat,offset, self.iface)
         except InvalidTimeLayerError, e:
             QMessageBox.information(self.iface.mainWindow(),'Error','An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+e.value)
-            return False
-
-        ##self.debug("registering time layer")
+            raise InvalidTimeLayerError(e)
+        # self.debug("registered layer {}".format(layer.title ()))
         self.registerTimeLayer.emit(timeLayer)
-        return True
 
         
     def setOptionsDialogToNone(self):
@@ -460,14 +451,15 @@ class TimeManagerGuiControl(QObject):
         self.propagateGuiChanges = val
 
     def updateTimeExtents(self,timeExtents):
-        """update time extents showing in labels and represented by horizontalTimeSlider"""
+        """update time extents showing in labels and represented by horizontalTimeSlider
+        :param timeExtents: a tuple of start and end datetimes
+        """
         self.timeExtents = timeExtents
 
         self.setPropagateGuiChanges(False)
         if timeExtents != (None,None):
-            #self.debug("extents:{}".format(timeExtents))
-            self.dock.labelStartTime.setText(str(timeExtents[0])[0:23])
-            self.dock.labelEndTime.setText(str(timeExtents[1])[0:23])
+            self.dock.labelStartTime.setText(datetime_to_str(timeExtents[0],DEFAULT_FORMAT))
+            self.dock.labelEndTime.setText(datetime_to_str(timeExtents[1], DEFAULT_FORMAT))
 
             timeLength = datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(timeExtents[0])
 
