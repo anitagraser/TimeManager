@@ -1,12 +1,9 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-from datetime import datetime
-
-from qgis.core import *
 
 from timemanagerguicontrol import *
-from timelayer import *
+from timelayerfactory import TimeLayerFactory
 from timevectorlayer import * 
 from timelayermanager import *
 from timemanagerprojecthandler import *
@@ -406,12 +403,7 @@ class TimeManagerControl(QObject):
                 if not layer:
                     continue
 
-                # this should be a python class factory
-                if type(layer).__name__ == "QgsRasterLayer":
-                    timeLayerClass = TimeRasterLayer # get the correct class to use
-                elif type(layer).__name__ == "QgsVectorLayer":
-                    timeLayerClass = TimeVectorLayer
-
+                timeLayerClass = TimeLayerFactory.get_timelayer_class_from_layer(layer)
                 if timeLayerClass == TimeVectorLayer:
                     layer.setSubsetString(l[1]) # restore the original subset string, only available for vector layers!
                     
