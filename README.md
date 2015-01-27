@@ -48,6 +48,22 @@ The biggest tested dataset was a Spatialite table with indexed timestamps contai
 
 Time Manager supports exporting image series based on the defined animation settings. Our goal for future versions is to include a tool that creates actual animations from these image series. Until then, external programs can be used for this last step. See VideoTutorial.md for instructions on how to create a video from the images.
 
+## Limitations
+
+The plug-in uses Python's datetime module for calculations. It is therefore limited to the module's functionality. This enfolds (not exhaustive):
+
+* Dates must be according to the formats mentioned above
+* Dates must be according to the Gregorian calendar
+* We fully support years from 100 AD to 8000 in the future, however the number of seconds between the first timestamp and the last timestamp needs to fit in an integer. This is over 2 billion seconds, so most use cases should be fine.
+* Time step can be as small as one second but not smaller
+
+We currently don't support:
+
+* Dates with time zone notion
+* Shapefiles can't be edited directly, while time-managed. This is an OGR limitation. It also exists for any other query you set: You simply can't edit a shapefile whilst a query is set.
+
+For other known issues check https://github.com/anitagraser/TimeManager/issues?direction=desc&sort=updated&state=open
+
 ## License
 
 This program is free software; you can redistribute it and/or modify
@@ -66,20 +82,4 @@ Time Manager 1.0 reqires **QGIS 2.0** with Python 2.7.
 Other plugin dependencies: Python module dateutil (included e.g. in matplotlib available in OSGeo4W)
 
 If you are running an **older version of QGIS**, Time Manager versions <= 0.7 require QGIS 1.7 or 1.8 with Python 2.7.
-
-## Limitations
-
-The plug-in uses Python's datetime module for calculations. It is therefore limited to the module's functionality. This enfolds (not exhaustive):
-
-* Dates must be according to the formats mentioned above
-* Dates must be according to the Gregorian calendar
-* We fully support years from 100 AD to 8000 in the future, however the number of seconds between the first timestamp and the last timestamp needs to fit in an integer. This is over 2 billion seconds, so most use cases should be fine.
-* Time step can be as small as one second but not smaller
-
-We currently don't support:
-
-* Dates with time zone notion
-* Shapefiles can't be edited directly, while time-managed. This is an OGR limitation. It also exists for any other query you set: You simply can't edit a shapefile whilst a query is set.
-
-For other known issues check https://github.com/anitagraser/TimeManager/issues?direction=desc&sort=updated&state=open
 
