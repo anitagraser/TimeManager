@@ -9,7 +9,8 @@ from datetime import datetime
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
-from time_util import datetime_to_epoch
+from time_util import datetime_to_epoch, QDateTime_to_datetime
+from timevectorlayer import  DateTypes
 
 class TimeManagerProjectHandler(QObject):
     """This class manages reading from and writing to the QgsProject instance. 
@@ -31,11 +32,15 @@ class TimeManagerProjectHandler(QObject):
         """write plugin settings to QgsProject instance"""
         # there is no writeEntry() for datetime!
         if type(value) == datetime:
-            value = datetime_to_epoch(value) 
+            value = datetime_to_epoch(value)
+        if type(value) in DateTypes.QDateTypes:
+            value = datetime_to_epoch(QDateTime_to_datetime(value))
         try: # write plugin settings to QgsProject
             QgsProject.instance().writeEntry("TimeManager",attribute, value)
         except TypeError:
-            QMessageBox.information(self.iface.mainWindow(),'Debug Output','Wrong type for '+attribute+'!\nType: '+str(type(value)))
+            pass
+            #QMessageBox.information(self.iface.mainWindow(),'Debug Output','Wrong type for
+            # '+attribute+'!\nType: '+str(type(value)))
             
     def readSetting(self,func,attribute,value):
         """read a plugin setting from QgsProject instance"""
