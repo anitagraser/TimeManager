@@ -270,7 +270,7 @@ class TimeLayerManager(QObject):
         if len(self.projectTimeExtents) > 0:
             try: # test if projectTimeExtens are populated with datetimes
                 datetime_to_str(self.projectTimeExtents[0], tdfmt)
-            except TypeError: # if Nonetypes:
+            except:
                 return (saveString,saveListLayers)
                 
             saveString  = datetime_to_str(self.projectTimeExtents[0], tdfmt) + ';'

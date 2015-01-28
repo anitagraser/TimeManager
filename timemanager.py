@@ -52,6 +52,7 @@ class timemanager:
         
     def initGui( self ):
         """initialize the gui"""
+        control.load()
         control.initGui()
 
     def unload( self ):

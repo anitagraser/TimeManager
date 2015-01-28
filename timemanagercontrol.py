@@ -23,25 +23,14 @@ class TimeManagerControl(QObject):
         QObject.__init__(self)
         self.iface = iface       
         self.loopAnimation = False
+        self.saveAnimation = False
+        self.animationActivated = False
+        self.animationFrameLength = DEFAULT_FRAME_LENGTH
+        self.playBackwards = False
         self.saveAnimationPath = os.path.expanduser('~')
 
         self.projectHandler = TimeManagerProjectHandler(self.iface)
         self.timeLayerManager = TimeLayerManager(self.iface)
-
-        # QGIS iface connections
-        self.iface.projectRead.connect(self.readSettings)
-        self.iface.newProjectCreated.connect(self.restoreDefaults)
-        self.iface.newProjectCreated.connect(self.disableAnimationExport)
-
-        # this signal is responsible for keeping the animation running
-        self.iface.mapCanvas().mapCanvasRefreshed.connect(self.waitAfterRenderComplete)
-
-        # establish connections to QgsMapLayerRegistry
-        QgsMapLayerRegistry.instance().layerWillBeRemoved.connect(self.timeLayerManager.removeTimeLayer)
-        QgsMapLayerRegistry.instance().removeAll.connect(self.timeLayerManager.clearTimeLayerList)
-        QgsMapLayerRegistry.instance().removeAll.connect(self.disableAnimationExport)
-
-        self.restoreDefaults()
 
     def disableAnimationExport(self):
         """disable the animation export button"""
@@ -52,8 +41,7 @@ class TimeManagerControl(QObject):
           
     def restoreDefaults(self):
         """restore plugin default settings"""
-        self.animationFrameLength = DEFAULT_FRAME_LENGTH # default to 2000 milliseconds
-        self.playBackwards = False # play forwards by default
+        QgsMessageLog.logMessage("resoted defaults")
         self.saveAnimation = False
         self.currentMapTimePosition = datetime.utcnow() # this sets the current time position to
         #  the current *UTC* system time
@@ -140,8 +128,25 @@ class TimeManagerControl(QObject):
                                                                        'destination',self.saveAnimationPath))
         self.exportVideoAtPath(path)
 
+    def load(self):
+        """ Load the plugin"""
+
+        # QGIS iface connections
+        self.iface.projectRead.connect(self.readSettings)
+        self.iface.newProjectCreated.connect(self.restoreDefaults)
+        self.iface.newProjectCreated.connect(self.disableAnimationExport)
+
+        # this signal is responsible for keeping the animation running
+        self.iface.mapCanvas().mapCanvasRefreshed.connect(self.waitAfterRenderComplete)
+
+        # establish connections to QgsMapLayerRegistry
+        QgsMapLayerRegistry.instance().layerWillBeRemoved.connect(self.timeLayerManager.removeTimeLayer)
+        QgsMapLayerRegistry.instance().removeAll.connect(self.timeLayerManager.clearTimeLayerList)
+        QgsMapLayerRegistry.instance().removeAll.connect(self.disableAnimationExport)
+
     def unload(self):
         """unload the plugin"""
+        #FIXME unloading time manager sometimes crashes QGIS
         self.timeLayerManager.deactivateTimeManagement() 
         self.iface.unregisterMainWindowAction(self.actionShowSettings) 
         self.guiControl.unload()
@@ -151,7 +156,7 @@ class TimeManagerControl(QObject):
         self.iface.newProjectCreated.disconnect(self.disableAnimationExport)
         QgsMapLayerRegistry.instance().layerWillBeRemoved.disconnect(self.timeLayerManager.removeTimeLayer)
         QgsMapLayerRegistry.instance().removeAll.disconnect(self.timeLayerManager.clearTimeLayerList)   
-        QgsMapLayerRegistry.instance().removeAll.disconnect(self.disableAnimationExport)                
+        QgsMapLayerRegistry.instance().removeAll.disconnect(self.disableAnimationExport)
         
     def toggleAnimation(self):
         """toggle animation on/off"""
