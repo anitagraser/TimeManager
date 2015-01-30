@@ -171,8 +171,6 @@ class TimeVectorLayer(TimeLayer):
 
         raise SubstringException
 
-
-
     def setSubsetString(self,subsetString):
 
         if self.originalSubsetString !='':
@@ -184,7 +182,6 @@ class TimeVectorLayer(TimeLayer):
     def deleteTimeRestriction(self):
         """Restore original subset"""
         self.setSubsetString(self.originalSubsetString)
-
 
     def hasTimeRestriction(self):
         """returns true if current layer.subsetString is not equal to originalSubsetString"""

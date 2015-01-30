@@ -6,50 +6,41 @@ from timemanagerguicontrol import *
 from timelayerfactory import TimeLayerFactory
 from timevectorlayer import * 
 from timelayermanager import *
-from timemanagerprojecthandler import *
+from timemanagerprojecthandler import TimeManagerProjectHandler
 from time_util import *
 
 DEFAULT_FRAME_LENGTH = 2000
+DEFAULT_FRAME_UNIT = "days"
+DEFAULT_FRAME_SIZE = 1
 FRAME_FILENAME_PREFIX = "frame"
 
 class TimeManagerControl(QObject):
     """Controls the logic behind the GUI. Signals are processed here."""
 
-    animationFrameCounter = 0
-
-
     def __init__(self,iface):
         """initialize the plugin control"""
         QObject.__init__(self)
-        self.iface = iface       
-        self.loopAnimation = False
-        self.saveAnimation = False
-        self.animationActivated = False
-        self.animationFrameLength = DEFAULT_FRAME_LENGTH
-        self.playBackwards = False
-        self.saveAnimationPath = os.path.expanduser('~')
-
-        self.projectHandler = TimeManagerProjectHandler(self.iface)
+        self.iface = iface
         self.timeLayerManager = TimeLayerManager(self.iface)
+
+
+    def restoreDefaults(self):
+        """restore plugin default settings"""
+        self.animationActivated = False
+        self.loopAnimation = False
+        self.playBackwards = False
+        self.animationFrameCounter = 0
+        self.saveAnimation = False
+        self.saveAnimationPath = os.path.expanduser('~')
+        self.currentMapTimePosition = datetime.utcnow()
+        self.animationFrameLength = DEFAULT_FRAME_LENGTH
+        self.setTimeFrameType(DEFAULT_FRAME_UNIT)
+        self.setTimeFrameSize(DEFAULT_FRAME_SIZE)
+
 
     def disableAnimationExport(self):
         """disable the animation export button"""
-        try:
-            self.guiControl.disableAnimationExport()
-        except AttributeError:
-            pass
-          
-    def restoreDefaults(self):
-        """restore plugin default settings"""
-        QgsMessageLog.logMessage("resoted defaults")
-        self.saveAnimation = False
-        self.currentMapTimePosition = datetime.utcnow() # this sets the current time position to
-        #  the current *UTC* system time
-        self.projectHandler.writeSetting('active',True)
-        self.setTimeFrameType('days')
-        self.setTimeFrameSize(1)
-        self.animationActivated = False
-
+        self.guiControl.disableAnimationExport()
 
     def getTimeLayerManager(self):
         return self.timeLayerManager
@@ -62,7 +53,7 @@ class TimeManagerControl(QObject):
         return True
 
     def initGui(self, test=False):
-        """initialize the plugin dock. If in testingb mode, skip the Gui"""
+        """initialize the plugin dock. If in testing mode, skip the Gui"""
 
         if test:
             from mock import Mock
@@ -77,18 +68,18 @@ class TimeManagerControl(QObject):
         self.guiControl.back.connect(self.stepBackward)
         self.guiControl.forward.connect(self.stepForward)
         self.guiControl.play.connect(self.toggleAnimation)   
-        self.guiControl.signalCurrentTimeUpdated.connect(self.setCurrentTimePosition)
+        self.guiControl.signalCurrentTimeUpdated.connect(
+            self.timeLayerManager.setCurrentTimePosition)
         self.guiControl.signalTimeFrameType.connect(self.setTimeFrameType)
         self.guiControl.signalTimeFrameSize.connect(self.setTimeFrameSize)        
-        self.guiControl.saveOptionsStart.connect(self.timeLayerManager.clearTimeLayerList)        
-        self.guiControl.saveOptionsEnd.connect(self.writeSettings) 
-        self.guiControl.saveOptionsEnd.connect(self.timeLayerManager.refresh) # sets the time restrictions again              
+        self.guiControl.saveOptionsStart.connect(self.timeLayerManager.clearTimeLayerList)
+        self.guiControl.saveOptionsEnd.connect(self.timeLayerManager.refresh)
         self.guiControl.signalAnimationOptions.connect(self.setAnimationOptions)
         self.guiControl.registerTimeLayer.connect(self.timeLayerManager.registerTimeLayer)
         
         # create actions
         # F8 button press - show time manager settings
-        if not test:
+        if not test: # Qt doesn't play well with Mock objects
             self.actionShowSettings = QAction(u"Show Time Manager Settings", self.iface.mainWindow())
             self.iface.registerMainWindowAction(self.actionShowSettings, "F8")
             self.guiControl.addActionShowSettings(self.actionShowSettings)
@@ -97,12 +88,11 @@ class TimeManagerControl(QObject):
         # establish connections to timeLayerManager
         self.timeLayerManager.timeRestrictionsRefreshed.connect(self.guiControl.refreshGuiWithCurrentTime)
         self.timeLayerManager.projectTimeExtentsChanged.connect(self.guiControl.updateTimeExtents)
-        self.timeLayerManager.toggledManagement.connect(self.toggleOnOff)
         self.timeLayerManager.lastLayerRemoved.connect(self.disableAnimationExport)
 
-        
+
     def setAnimationOptions(self,length,playBackwards,loopAnimation):
-        """set length and play direction of the animation""" #animationFrameLength,playBackwards,loopAnimation
+        """set length and play direction of the animation"""
         self.animationFrameLength = length
         self.playBackwards = playBackwards
         self.loopAnimation = loopAnimation
@@ -123,8 +113,7 @@ class TimeManagerControl(QObject):
 
     def exportVideo(self):
         """export 'video' - currently only image sequence"""
-        path = str(QFileDialog.getExistingDirectory (self.iface.mainWindow(),
-                                                                       'Pick export '
+        path = str(QFileDialog.getExistingDirectory (self.iface.mainWindow(),'Pick export '
                                                                        'destination',self.saveAnimationPath))
         self.exportVideoAtPath(path)
 
@@ -136,6 +125,9 @@ class TimeManagerControl(QObject):
         self.iface.newProjectCreated.connect(self.restoreDefaults)
         self.iface.newProjectCreated.connect(self.disableAnimationExport)
 
+        # this gets called for every layer before saving
+        QgsProject.instance().writeMapLayer.connect(self.writeSettings)
+
         # this signal is responsible for keeping the animation running
         self.iface.mapCanvas().mapCanvasRefreshed.connect(self.waitAfterRenderComplete)
 
@@ -144,9 +136,12 @@ class TimeManagerControl(QObject):
         QgsMapLayerRegistry.instance().removeAll.connect(self.timeLayerManager.clearTimeLayerList)
         QgsMapLayerRegistry.instance().removeAll.connect(self.disableAnimationExport)
 
+        self.restoreDefaults()
+
     def unload(self):
         """unload the plugin"""
-        #FIXME unloading time manager sometimes crashes QGIS
+        # FIXME disabling the time manager plugin sometimes crashes QGIS
+        # Maybe C related memory issues with slots
         self.timeLayerManager.deactivateTimeManagement() 
         self.iface.unregisterMainWindowAction(self.actionShowSettings) 
         self.guiControl.unload()
@@ -154,9 +149,12 @@ class TimeManagerControl(QObject):
         self.iface.projectRead.disconnect(self.readSettings)
         self.iface.newProjectCreated.disconnect(self.restoreDefaults)
         self.iface.newProjectCreated.disconnect(self.disableAnimationExport)
+        QgsProject.instance().writeMapLayer.disconnect(self.writeSettings)
+
         QgsMapLayerRegistry.instance().layerWillBeRemoved.disconnect(self.timeLayerManager.removeTimeLayer)
         QgsMapLayerRegistry.instance().removeAll.disconnect(self.timeLayerManager.clearTimeLayerList)   
         QgsMapLayerRegistry.instance().removeAll.disconnect(self.disableAnimationExport)
+
         
     def toggleAnimation(self):
         """toggle animation on/off"""
@@ -171,20 +169,6 @@ class TimeManagerControl(QObject):
             self.animationActivated = False
         self.exportNameDigits = len(str(expectedNumberOfFrames))
         self.startAnimation() # if animation is activated, it will start
-
-
-
-    def toggleOnOff(self,turnOn):
-        """write plugin status (on/off) to project settings"""
-        if turnOn:
-            self.projectHandler.writeSetting('active',True)
-            #self.guiControl.showLabel = True
-            pass
-        else:
-            self.projectHandler.writeSetting('active',False)
-            #self.guiControl.showLabel = False
-            pass
-        self.guiControl.refreshMapCanvas('toggleOnOff')
 
     def startAnimation(self):
         """kick-start the animation, afterwards the animation will run based on signal chains"""
@@ -218,6 +202,7 @@ class TimeManagerControl(QObject):
             try:
                  open(fileName, 'a').close()
             except:
+                #TODO: Friendlier exception, qgsbox etc
                 raise Exception("Cannot write to file {}".format(fileName))
             self.saveCurrentMap(fileName)
             #self.debug("saving animation for time: {}".format(currentTime))
@@ -228,7 +213,7 @@ class TimeManagerControl(QObject):
                 self.stepBackward()
             else:
                 if self.loopAnimation:
-                    self.resetAnimation()
+                    self.resetAnimation(toEnd=True)
                 else:
                     self.stopAnimation()
         else:
@@ -254,10 +239,14 @@ class TimeManagerControl(QObject):
         self.animationActivated = False 
         self.guiControl.turnPlayButtonOff()
         
-    def resetAnimation(self):
+    def resetAnimation(self, toEnd=False):
         """reset animation to start over from the beginning"""
         projectTimeExtents = self.timeLayerManager.getProjectTimeExtents()
-        self.setCurrentTimePosition(projectTimeExtents[0])
+        if not toEnd:
+            self.timeLayerManager.setCurrentTimePosition(projectTimeExtents[0])
+        else:
+            self.timeLayerManager.setCurrentTimePosition(projectTimeExtents[1])
+
 
     def toggleTimeManagement(self):
         """toggle time management on/off"""
@@ -267,47 +256,31 @@ class TimeManagerControl(QObject):
     def stepBackward(self):
         """move one step backward in time"""
         self.timeLayerManager.stepBackward()
-        self.writeSettings()
 
     def stepForward(self):
         """move one step forward in time"""
         self.timeLayerManager.stepForward()
-        self.writeSettings()
-        
-    def getCurrentTimePosition(self):
-        """get timeLayerManager's current time position in datetime"""
-        return self.timeLayerManager.getCurrentTimePosition()
-
-    def setCurrentTimePosition(self,timePosition):
-        """set timeLayerManager's current time position"""
-
-        self.currentMapTimePosition = timePosition
-        self.guiControl.refreshGuiWithCurrentTime(timePosition,
-                                                'timemanagercontrol.setCurrentTimePosition')
-        self.timeLayerManager.setCurrentTimePosition(timePosition)
-
-        if self.timeLayerManager.hasActiveLayers() and self.timeLayerManager.isEnabled():
-            self.guiControl.refreshMapCanvas('setCurrentTimePosition'+str(
-                timePosition))
 
     
     def setTimeFrameType(self,timeFrameType):
         """set timeLayerManager's time frame type"""
         self.timeLayerManager.setTimeFrameType(timeFrameType)
-        self.writeSettings()
         if self.timeLayerManager.hasActiveLayers():
             self.guiControl.refreshMapCanvas('setTimeFrameType')
 
     def setTimeFrameSize(self,timeFrameSize):
         """set timeLayerManager's time frame size"""
         self.timeLayerManager.setTimeFrameSize(timeFrameSize)
-        self.writeSettings()
         if self.timeLayerManager.hasActiveLayers():
             self.guiControl.refreshMapCanvas('setTimeFrameSize')
         
-    def writeSettings(self):  
+    def writeSettings(self, layer, dom, dom2):
         """write all relevant settings to the project file """
-        (timeLayerManagerSettings,timeLayerList) = self.timeLayerManager.getSaveString()
+        if not self.isActive():
+            return
+
+        QgsMessageLog.logMessage("timemanager.control.writesettings dummy")
+        (timeLayerManagerSettings,timeLayerList) = self.getTimeLayerManager().getSaveString()
         
         if timeLayerManagerSettings:    
             settings= { 'animationFrameLength': self.animationFrameLength,
@@ -315,27 +288,33 @@ class TimeManagerControl(QObject):
                      'loopAnimation': self.loopAnimation,
                      'timeLayerManager': timeLayerManagerSettings,
                      'timeLayerList': timeLayerList,
-                     'currentMapTimePosition': self.currentMapTimePosition,
-                     'timeFrameType': self.timeLayerManager.getTimeFrameType(),
-                     'timeFrameSize': self.timeLayerManager.getTimeFrameSize() }
+                     'currentMapTimePosition':
+                         datetime_to_str(self.getTimeLayerManager().getCurrentTimePosition(),
+                                                   DEFAULT_FORMAT),
+                     'timeFrameType': self.getTimeLayerManager().getTimeFrameType(),
+                     'timeFrameSize': self.getTimeLayerManager().getTimeFrameSize(),
+                     'active': self.getTimeLayerManager().isEnabled()}
                      
-            self.projectHandler.writeSettings(settings)
+            TimeManagerProjectHandler.writeSettings(settings)
         
     def readSettings(self):
         """load and restore settings from project file"""
-        # list of settings to restore
-        settings= { 'animationFrameLength': self.animationFrameLength,
-                 'playBackwards': self.playBackwards,
-                 'loopAnimation': self.loopAnimation,
-                 'timeLayerManager': '',
-                 'timeLayerList': [], #QStringList,
-                 'currentMapTimePosition': self.currentMapTimePosition,
-                 'timeFrameType': self.timeLayerManager.getTimeFrameType(),
-                 'timeFrameSize': self.timeLayerManager.getTimeFrameSize(),
-                 'active': True }
-        settings = self.projectHandler.readSettings(settings)
+        # list of settings to restore and their types (needed so that project handler can read
+        # them)
+        metasettings= { 'animationFrameLength': int,
+                 'playBackwards': int,
+                 'loopAnimation': int,
+                 'timeLayerManager': str,
+                 'timeLayerList': list,
+                 'currentMapTimePosition': str, # can't store datetime in XML
+                 'timeFrameType': str,
+                 'timeFrameSize': int,
+                 'active': int }
+        settings = TimeManagerProjectHandler.readSettings(metasettings)
         
-        # list of restore functions and associated default values 
+        QgsMessageLog.logMessage("SETTINGS LOADED!"+str(settings))
+        #TODO restore them settings :))
+        #TODO replace with defaults if missing!
         functions = { 
                  'currentMapTimePosition': (self.restoreSettingCurrentMapTimePosition,None), # this has to be first, because otherwise it might get over-written by other methods
                  'animationFrameLength': (self.restoreSettingAnimationFrameLength,1),
@@ -347,33 +326,7 @@ class TimeManagerControl(QObject):
                  'timeFrameSize': (self.restoreSettingTimeFrameSize,1),
                  'active': (self.restoreSettingActive,1)
                  }
-                 
-        savedTimePosition = datetime.utcfromtimestamp(1)
-        try: # save the timePosition first because it might get over-written by successive functions
-            savedTimePosition = datetime.utcfromtimestamp(settings['currentMapTimePosition'])
-        except KeyError:
-            pass
-        except TypeError:
-            pass
-         
-        # now restore all settings
-        for setting,(func,value) in functions.items():
-            if setting =='currentMapTimePosition':
-                continue
-            try:
-                value = settings[setting]
-            except KeyError:
-                pass
-            try:
-                func(value)
-            except Exception as e:
-                self.showMessage('An error occured while loading: '+setting+'\nValue: '+str(value)+'\nType: '+str(type(value))+", error"+str(e))
-                #TODO also log
-                #FIXME some bugs lurking here
-        
-        # finally, set the currentMapTimePosition         
-        if savedTimePosition:
-            self.restoreSettingCurrentMapTimePosition(savedTimePosition)
+
         
     def restoreSettingAnimationFrameLength(self,value):
         """restore animationFrameLength"""
@@ -436,8 +389,7 @@ class TimeManagerControl(QObject):
     def restoreSettingCurrentMapTimePosition(self,value):
         """restore currentMapTimePosition"""
         if value:
-            self.setCurrentTimePosition(value)       
-            self.guiControl.refreshGuiWithCurrentTime(value,'readSettings')
+            self.timeLayerManager.setCurrentTimePosition(value)
         
     def restoreSettingTimeFrameType(self,value):
         """restore timeFrameType"""
@@ -458,5 +410,3 @@ class TimeManagerControl(QObject):
         else: # if the status indicates "off"
             self.timeLayerManager.deactivateTimeManagement()
             self.guiControl.setActive(False)
-            
-    

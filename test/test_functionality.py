@@ -85,6 +85,7 @@ class TestWithQGISLauncher(unittest.TestCase):
     def setUp(self):
         iface = Mock()
         self.ctrl = RiggedTimeManagerControl(iface)
+        self.ctrl.load()
         self.ctrl.initGui(test=True)
         self.tlm = self.ctrl.getTimeLayerManager()
 

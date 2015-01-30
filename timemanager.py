@@ -52,6 +52,7 @@ class timemanager:
         
     def initGui( self ):
         """initialize the gui"""
+        QgsMessageLog.logMessage("timemanager initGui")
         control.load()
         control.initGui()
 
@@ -86,7 +87,7 @@ class timemanager:
                 QgsMessageLog.logMessage("Translation not supported for Qt <= {}".format(qVersion()))
         else:
              QgsMessageLog.logMessage("Timemanager: No translation found for locale {}, "
-                                      "using English".format(new_lang))
+                                      "using English!!".format(new_lang))
 
     @qgsfunction(0, "TimeManager")
     def animation_datetime(values, feature, parent):
