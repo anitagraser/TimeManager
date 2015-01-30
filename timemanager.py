@@ -54,7 +54,6 @@ class timemanager:
         """initialize the gui"""
         QgsMessageLog.logMessage("timemanager initGui")
         control.load()
-        control.initGui()
 
     def unload( self ):
         """Unload the plugin"""

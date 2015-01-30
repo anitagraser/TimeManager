@@ -1,4 +1,5 @@
 import sip
+
 sip.setapi('QString', 2) # strange things happen without this. Must import before PyQt imports
 # if using ipython: do this on bash before
 # export QT_API=pyqt
@@ -11,6 +12,7 @@ from PyQt4 import QtCore, QtGui, QtTest
 import TimeManager.timemanagercontrol as timemanagercontrol
 from TimeManager.timemanagercontrol import FRAME_FILENAME_PREFIX
 import TimeManager.timevectorlayer as timevectorlayer
+from TimeManager.timelayermanager import TimeLayerManager
 import testcfg
 import TimeManager.time_util as time_util
 import TimeManager.os_util as os_util
@@ -36,8 +38,17 @@ class RiggedTimeManagerControl(timemanagercontrol.TimeManagerControl):
     def saveCurrentMap(self,fileName):
         """We can't export a real screenshot from the test harness, so we just create a blank
         file"""
-        print fileName
         open(fileName, 'w').close()
+
+    def load(self):
+        """ Load the plugin"""
+        # order matters
+        self.timeLayerManager = TimeLayerManager(self.iface)
+        self.guiControl = Mock()
+        self.initViewConnections(test=True)
+        self.initModelConnections()
+        self.initQGISConnections()
+        self.restoreDefaults()
 
     def playAnimation(self,painter=None):
         """We just continue the animation after playing until it stops via the
@@ -86,7 +97,6 @@ class TestWithQGISLauncher(unittest.TestCase):
         iface = Mock()
         self.ctrl = RiggedTimeManagerControl(iface)
         self.ctrl.load()
-        self.ctrl.initGui(test=True)
         self.tlm = self.ctrl.getTimeLayerManager()
 
 
@@ -133,7 +143,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
                                                     time_util.DEFAULT_FORMAT,0)
         self.assertTrue(not self.timeLayer.hasTimeRestriction())
         self.tlm.registerTimeLayer(self.timeLayer)
-        #TODO: Why? Where is it set?
+        # refresh will have set the time restriction
         self.assertTrue(self.timeLayer.hasTimeRestriction())
 
     def test_go_back_and_forth_2011(self):
@@ -147,6 +157,28 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
 
     def test_go_back_and_forth_1165(self):
         self.go_back_and_forth("T1165","T1165")
+
+    def test_write_and_read_settings(self):
+        self.go_back_and_forth("T1165","T1165")
+        initial_time = self.tlm.getCurrentTimePosition()
+        self.ctrl.writeSettings(None,None,None)
+        test_file = os.path.join(testcfg.TEST_DATA_DIR, "sample_project.qgs")
+        if os.path.exists(test_file):
+            os.remove(test_file)
+        QgsProject.instance().write(QtCore.QFileInfo(test_file))
+
+        self.tlm.stepForward()
+        self.assertEqual(self.tlm.getTimeFrameType(),"seconds")
+        self.assertEquals(self.tlm.getCurrentTimePosition(), initial_time+timedelta(seconds=
+            self.tlm.getTimeFrameSize()))
+        self.tlm.setTimeFrameType('minutes')
+        os.remove(test_file)
+        QgsProject.instance().read(QtCore.QFileInfo(test_file))
+        self.ctrl.readSettings()
+        # check that the settings were restored properly
+        #TODO more
+        self.assertEquals(self.tlm.getCurrentTimePosition(), initial_time)
+        self.assertEqual(self.tlm.getTimeFrameType(),"seconds")
 
     def go_back_and_forth(self,fromAttr, toAttr):
 
@@ -213,7 +245,6 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
 #TODO (low prio): Test what happens with impossible events ie:
 #test what happens when trying to setCurrentTimePosition to sth wrong
 #test layers with nulls
-
 
 
 if __name__=="__main__":

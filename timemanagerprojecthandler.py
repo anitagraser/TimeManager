@@ -42,6 +42,7 @@ class TimeManagerProjectHandler(QObject):
         """
 
         prj = QgsProject.instance()
+
         # use QProjects functions to extract the settings from the project XML
         type_to_read_function_mapping = { str : prj.readEntry,
                      int : prj.readNumEntry,

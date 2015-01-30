@@ -12,7 +12,7 @@ from timelayer import NotATimeAttributeError
 from time_util import *
 
 class TimeLayerManager(QObject):
-    """Class manages all layers that can be queried temporally and provides navigation in time. Parenthesized sections are not implemented yet. All functions, besides the get functions, trigger a redraw."""
+    """Manages all layers that can be queried temporally and provides navigation in time"""
 
     # the signal for when the current time position is changed
     timeRestrictionsRefreshed = pyqtSignal(datetime)
@@ -121,7 +121,7 @@ class TimeLayerManager(QObject):
         """Applies or removes the temporal constraints for all managed (and enabled) layers"""
         if not self.hasLayers():
             return
-        if self.timeManagementEnabled:
+        if self.isEnabled():
             for timeLayer in self.getTimeLayerList():
                     timeLayer.setTimeRestriction(self.getCurrentTimePosition(),self.timeFrame())
         else:
@@ -221,7 +221,7 @@ class TimeLayerManager(QObject):
 
     def toggleTimeManagement(self):
         """toggle time management on/off"""
-        if self.timeManagementEnabled:
+        if self.isEnabled():
             self.deactivateTimeManagement()
         else:
             self.activateTimeManagement()
@@ -245,7 +245,7 @@ class TimeLayerManager(QObject):
         try: # test if projectTimeExtens are populated with datetimes
             datetime_to_str(self.getProjectTimeExtents()[0], tdfmt)
         except:
-            return (saveString,saveListLayers)
+            return (None,None)
 
         saveString  = datetime_to_str(self.getProjectTimeExtents()[0], tdfmt) + ';'
         saveString += datetime_to_str(self.getProjectTimeExtents()[1], tdfmt) + ';'
