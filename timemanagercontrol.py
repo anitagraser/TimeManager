@@ -8,10 +8,9 @@ from timevectorlayer import *
 from timelayermanager import *
 from timemanagerprojecthandler import TimeManagerProjectHandler
 from time_util import *
+from conf import *
 
 DEFAULT_FRAME_LENGTH = 2000
-DEFAULT_FRAME_UNIT = "days"
-DEFAULT_FRAME_SIZE = 1
 FRAME_FILENAME_PREFIX = "frame"
 
 class TimeManagerControl(QObject):

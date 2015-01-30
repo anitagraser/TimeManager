@@ -4,10 +4,7 @@ Created on Fri Oct 29 10:13:39 2010
 
 @author: agraser
 """
-
-import os, sys
-sys.path.append("~/.qgis/python")
-
+import os
 from string import replace
 
 from PyQt4.QtCore import *
@@ -20,6 +17,7 @@ from timevectorlayer import *
 from timerasterlayer import *
 from time_util import datetime_to_epoch, epoch_to_datetime, QDateTime_to_datetime, \
     datetime_to_str, DEFAULT_FORMAT
+import conf
 
 # The QTSlider only supports integers as the min and max, therefore the maximum maximum value
 # is whatever can be stored in an int. Making it a signed int to be sure.
@@ -63,8 +61,9 @@ class TimeManagerGuiControl(QObject):
     saveOptionsStart = pyqtSignal()
     saveOptionsEnd = pyqtSignal()
     registerTimeLayer = pyqtSignal(object)
-    propagateGuiChanges = True # propagate qui changes to the layer by emiting
+    propagateGuiChanges = True # propagate qui changes to the model (timelayermanager) by emiting
     # signcalCurrentTimeUpdated
+    # When the signal is coming from the model we don't want to propagate it to it again
     
     def __init__ (self,iface,timeLayerManager):
         """initialize the GUI control"""
@@ -81,8 +80,8 @@ class TimeManagerGuiControl(QObject):
         self.iface.addDockWidget( Qt.BottomDockWidgetArea, self.dock )
         
         self.dock.pushButtonExportVideo.setEnabled(False) # only enabled if there are managed layers
-        self.setTimeFrameType('days') # should be 'days'
-        
+        self.setTimeFrameType(conf.DEFAULT_FRAME_UNIT)
+        self.setTimeFrameSize(conf.DEFAULT_FRAME_SIZE)
         self.dock.pushButtonOptions.clicked.connect(self.optionsClicked) 
         self.dock.pushButtonExportVideo.clicked.connect(self.exportVideoClicked)
         self.dock.pushButtonToggleTime.clicked.connect(self.toggleTimeClicked)
@@ -145,6 +144,9 @@ class TimeManagerGuiControl(QObject):
     def playClicked(self):
         self.play.emit()
 
+    def getProjectTimeExtents(self):
+        return self.timeLayerManager.getProjectTimeExtents()
+
     def currentTimeChangedSlider(self,sliderVal):
         """Needs special handling because the Qtslider can only hold integer values, resulting
         in silent overflow when passing long values from Python.
@@ -160,9 +162,10 @@ class TimeManagerGuiControl(QObject):
             # slider is not properly initialized yet
             return
 
+        timeExtents = self.getProjectTimeExtents()
         try:
-            realEpochTime = int(pct * (datetime_to_epoch(self.timeExtents[1]) - datetime_to_epoch(
-                self.timeExtents[0])) + datetime_to_epoch(self.timeExtents[0]))
+            realEpochTime = int(pct * (datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(
+                timeExtents[0])) + datetime_to_epoch(timeExtents[0]))
         except:
             # extents are not set
             realEpochTime = 0
@@ -407,7 +410,7 @@ class TimeManagerGuiControl(QObject):
         endTime = self.addLayerDialog.comboBoxEnd.currentText()
         checkState = Qt.Checked
         layerId = self.layerIds[self.addLayerDialog.comboBoxLayers.currentIndex()]
-        timeFormat = "%Y-%m-%d %H:%M:%S" # default
+        timeFormat = DEFAULT_FORMAT
         offset = self.addLayerDialog.spinBoxOffset.value()
 
         self.addRowToOptionsTable(layerName,checkState,layerId,offset,timeFormat,startTime,endTime)
@@ -454,8 +457,6 @@ class TimeManagerGuiControl(QObject):
         """update time extents showing in labels and represented by horizontalTimeSlider
         :param timeExtents: a tuple of start and end datetimes
         """
-        self.timeExtents = timeExtents
-
         self.setPropagateGuiChanges(False)
         if timeExtents != (None,None):
             self.dock.labelStartTime.setText(datetime_to_str(timeExtents[0],DEFAULT_FORMAT))
@@ -472,11 +473,10 @@ class TimeManagerGuiControl(QObject):
             self.dock.horizontalTimeSlider.setMaximum(timeLength)
 
         else: # set to default values
-            #self.debug("No extents available yet")
             self.dock.labelStartTime.setText('not set')
             self.dock.labelEndTime.setText('not set')
-            self.dock.horizontalTimeSlider.setMinimum(0)
-            self.dock.horizontalTimeSlider.setMaximum(1)
+            self.dock.horizontalTimeSlider.setMinimum(conf.MIN_TIMESLIDER_DEFAULT)
+            self.dock.horizontalTimeSlider.setMaximum(conf.MAX_TIMESLIDER_DEFAULT)
 
         self.setPropagateGuiChanges(True)
 
@@ -493,9 +493,10 @@ class TimeManagerGuiControl(QObject):
 
         self.dock.dateTimeEditCurrentTime.setDateTime(currentTimePosition)
         timeval = datetime_to_epoch(currentTimePosition)
+        timeExtents = self.getProjectTimeExtents()
         try:
-            pct = (timeval - datetime_to_epoch(self.timeExtents[0]))*1.0 / (datetime_to_epoch(
-                self.timeExtents[1]) - datetime_to_epoch(self.timeExtents[0]))
+            pct = (timeval - datetime_to_epoch(timeExtents[0]))*1.0 / (datetime_to_epoch(
+                timeExtents[1]) - datetime_to_epoch(timeExtents[0]))
 
             sliderVal = self.dock.horizontalTimeSlider.minimum() + int(pct * (
                 self.dock.horizontalTimeSlider.maximum()

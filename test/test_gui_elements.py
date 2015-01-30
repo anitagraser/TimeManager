@@ -47,7 +47,8 @@ class testGuiControl(unittest.TestCase):
         gui = self.window.getGui()
         start = datetime(2010,1,1)
         end = datetime(2010,1,5)
-        gui.updateTimeExtents((start, end))
+        gui.timeLayerManager.getProjectTimeExtents.return_value = (start, end)
+        gui.updateTimeExtents((start,end))
         td = timedelta(seconds=54)
         signal_mock = Mock()
         gui.signalCurrentTimeUpdated = signal_mock
@@ -59,7 +60,8 @@ class testGuiControl(unittest.TestCase):
         gui = self.window.getGui()
         start = datetime(2010,1,1)
         end = datetime(2010,1,5)
-        gui.updateTimeExtents((start, end))
+        gui.timeLayerManager.getProjectTimeExtents.return_value = (start, end)
+        gui.updateTimeExtents((start,end))
         signal_mock = Mock()
         gui.signalCurrentTimeUpdated = signal_mock
         gui.currentTimeChangedDateText(QDateTime(2010,1,1,1,2))
@@ -70,7 +72,8 @@ class testGuiControl(unittest.TestCase):
         gui = self.window.getGui()
         start = datetime(2010,1,1)
         end = datetime(2010,1,5)
-        gui.updateTimeExtents((start, end))
+        gui.timeLayerManager.getProjectTimeExtents.return_value = (start, end)
+        gui.updateTimeExtents((start,end))
         self.assertEqual(gui.dock.horizontalTimeSlider.maximum() -
         gui.dock.horizontalTimeSlider.minimum(), (end-start).total_seconds())
         # refresh gui with current time
