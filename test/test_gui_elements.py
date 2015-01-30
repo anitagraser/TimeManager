@@ -5,11 +5,13 @@ from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt, QDate, QDateTime, QCoreApplication, QTranslator
 import TimeManager.timemanagerguicontrol as guicontrol
 import TimeManager.time_util as time_util
+import TimeManager.conf as conf
 from PyQt4 import QtGui, QtCore
 import os
 
 
 from datetime import datetime, timedelta
+from unittest2 import skip
 
 __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
@@ -45,30 +47,26 @@ class testGuiControl(unittest.TestCase):
 
     def test_slider_changed(self):
         gui = self.window.getGui()
-        start = datetime(2010,1,1)
-        end = datetime(2010,1,5)
-        gui.timeLayerManager.getProjectTimeExtents.return_value = (start, end)
-        gui.updateTimeExtents((start,end))
-        td = timedelta(seconds=54)
         signal_mock = Mock()
-        gui.signalCurrentTimeUpdated = signal_mock
-        gui.currentTimeChangedSlider(td.total_seconds())
+        gui.signalSliderTimeChanged = signal_mock
+        pct = 0.1
+        gui.currentTimeChangedSlider(pct)
         # assert that the signal was called with the correct datetime
-        signal_mock.emit.assert_called_with(start+td)
+        signal_mock.emit.assert_called_with(pct* (conf.MAX_TIMESLIDER_DEFAULT -
+                                                  conf.MIN_TIMESLIDER_DEFAULT))
 
     def test_datetime_textbox_changed(self):
         gui = self.window.getGui()
-        start = datetime(2010,1,1)
-        end = datetime(2010,1,5)
-        gui.timeLayerManager.getProjectTimeExtents.return_value = (start, end)
-        gui.updateTimeExtents((start,end))
         signal_mock = Mock()
         gui.signalCurrentTimeUpdated = signal_mock
-        gui.currentTimeChangedDateText(QDateTime(2010,1,1,1,2))
+        qdate = QDateTime(2010,1,1,1,2)
+        gui.currentTimeChangedDateText(qdate)
         # assert that the signal was called with the correct datetime
-        signal_mock.emit.assert_called_with(start+timedelta(hours=1, minutes=2))
+        signal_mock.emit.assert_called_with(qdate)
 
+    @skip
     def test_add_extents_and_refresh(self):
+        #TODO this should be in the controller's tests
         gui = self.window.getGui()
         start = datetime(2010,1,1)
         end = datetime(2010,1,5)
@@ -91,8 +89,7 @@ class TestApp(QtGui.QWidget):
     def __init__(self):
         QtGui.QWidget.__init__(self)
         iface = Mock()
-        tlm = Mock()
-        self.gui = guicontrol.TimeManagerGuiControl(iface,tlm)
+        self.gui = guicontrol.TimeManagerGuiControl(iface)
 
     def getGui(self):
         return self.gui

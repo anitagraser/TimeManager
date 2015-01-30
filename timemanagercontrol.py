@@ -20,12 +20,14 @@ class TimeManagerControl(QObject):
         """initialize the plugin control. Function gets called even when plugin is inactive"""
         QObject.__init__(self)
         self.iface = iface
+        self.setPropagateGuiChanges(True) # set this to False to be able to update the time in
+        # the gui without signals getting emitted
 
     def load(self):
         """ Load the plugin"""
         # order matters
         self.timeLayerManager = TimeLayerManager(self.iface)
-        self.guiControl = TimeManagerGuiControl(self.iface,self.timeLayerManager)
+        self.guiControl = TimeManagerGuiControl(self.iface)
         self.initViewConnections()
         self.initModelConnections()
         self.initQGISConnections()
@@ -72,8 +74,12 @@ class TimeManagerControl(QObject):
         self.guiControl.back.connect(self.stepBackward)
         self.guiControl.forward.connect(self.stepForward)
         self.guiControl.play.connect(self.toggleAnimation)
+
         self.guiControl.signalCurrentTimeUpdated.connect(
-            self.getTimeLayerManager().setCurrentTimePosition)
+            self.updateTimePositionFromTextBox)
+        self.guiControl.signalSliderTimeChanged.connect(
+            self.updateTimePositionFromSliderPct)
+
         self.guiControl.signalTimeFrameType.connect(self.setTimeFrameType)
         self.guiControl.signalTimeFrameSize.connect(self.setTimeFrameSize)
         self.guiControl.saveOptionsStart.connect(self.timeLayerManager.clearTimeLayerList)
@@ -92,8 +98,8 @@ class TimeManagerControl(QObject):
     def initModelConnections(self):
 
         # establish connections to timeLayerManager
-        self.timeLayerManager.timeRestrictionsRefreshed.connect(self.guiControl.refreshGuiWithCurrentTime)
-        self.timeLayerManager.projectTimeExtentsChanged.connect(self.guiControl.updateTimeExtents)
+        self.timeLayerManager.timeRestrictionsRefreshed.connect(self.refreshGuiWithCurrentTime)
+        self.timeLayerManager.projectTimeExtentsChanged.connect(self.refreshGuiTimeExtents)
         self.timeLayerManager.lastLayerRemoved.connect(self.disableAnimationExport)
 
     def restoreDefaults(self):
@@ -108,6 +114,68 @@ class TimeManagerControl(QObject):
         self.animationFrameLength = DEFAULT_FRAME_LENGTH
         self.setTimeFrameType(DEFAULT_FRAME_UNIT)
         self.setTimeFrameSize(DEFAULT_FRAME_SIZE)
+
+    def setPropagateGuiChanges(self, val):
+        self.propagateGuiChanges = val
+
+
+    def refreshGuiTimeExtents(self,timeExtents):
+        """update time extents showing in labels and represented by horizontalTimeSlider
+        :param timeExtents: a tuple of start and end datetimes
+        """
+        self.setPropagateGuiChanges(False)
+        if timeExtents != (None,None):
+            self.guiControl.dock.labelStartTime.setText(datetime_to_str(timeExtents[0],
+                                                                     DEFAULT_FORMAT))
+            self.guiControl.dock.labelEndTime.setText(datetime_to_str(timeExtents[1],
+                                                                    DEFAULT_FORMAT))
+
+            timeLength = datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(timeExtents[0])
+
+            if timeLength> MAX_TIME_LENGTH_SECONDS:
+                self.debug("Time length of {} seconds is too long for QT Slider to handle ("
+                           "integer overflow). Maximum value allowed: {}".format(timeLength,
+                                                                                 MAX_TIME_LENGTH_SECONDS))
+
+            self.guiControl.dock.horizontalTimeSlider.setMinimum(0)
+            self.guiControl.dock.horizontalTimeSlider.setMaximum(timeLength)
+
+        else: # set to default values
+            self.guiControl.dock.labelStartTime.setText('not set')
+            self.guiControl.dock.labelEndTime.setText('not set')
+            self.guiControl.dock.horizontalTimeSlider.setMinimum(conf.MIN_TIMESLIDER_DEFAULT)
+            self.guiControl.dock.horizontalTimeSlider.setMaximum(conf.MAX_TIMESLIDER_DEFAULT)
+
+        self.setPropagateGuiChanges(True)
+
+    def refreshGuiWithCurrentTime(self,currentTimePosition,sender=None):
+        """update current time showing in dateTimeEditCurrentTime and horizontalTimeSlider"""
+
+        # setting the gui elements should not fire the event for
+        # timeChanged, since they were changed to be in sync with the rest of the system on
+        # purpose, no need to sync the system again
+        self.setPropagateGuiChanges(False)
+        if currentTimePosition is None:
+            self.setPropagateGuiChanges(True)
+            return
+
+        self.guiControl.dock.dateTimeEditCurrentTime.setDateTime(currentTimePosition)
+        timeval = datetime_to_epoch(currentTimePosition)
+        timeExtents = self.getTimeLayerManager().getProjectTimeExtents()
+        try:
+            pct = (timeval - datetime_to_epoch(timeExtents[0]))*1.0 / (datetime_to_epoch(
+                timeExtents[1]) - datetime_to_epoch(timeExtents[0]))
+
+            sliderVal = self.guiControl.dock.horizontalTimeSlider.minimum() + int(pct * (
+                self.guiControl.dock.horizontalTimeSlider.maximum()
+                - self.guiControl.dock.horizontalTimeSlider.minimum()))
+            #self.debug("Slider val at refresh:{}".format(sliderVal))
+            self.guiControl.dock.horizontalTimeSlider.setValue(sliderVal)
+        except:
+            pass
+        finally:
+            self.setPropagateGuiChanges(True)
+
 
     def disableAnimationExport(self):
         """disable the animation export button"""
@@ -146,6 +214,7 @@ class TimeManagerControl(QObject):
         """export 'video' - currently only image sequence"""
         path = str(QFileDialog.getExistingDirectory (self.iface.mainWindow(),'Pick export '
                                                                        'destination',self.saveAnimationPath))
+
         self.exportVideoAtPath(path)
 
     def toggleAnimation(self):
@@ -258,6 +327,25 @@ class TimeManagerControl(QObject):
         self.timeLayerManager.setTimeFrameSize(timeFrameSize)
         if self.timeLayerManager.hasActiveLayers():
             self.guiControl.refreshMapCanvas('setTimeFrameSize')
+
+
+    def updateTimePositionFromSliderPct(self, pct):
+        """See the percentage the slider is at and determine the datetime"""
+        if not self.propagateGuiChanges:
+            return
+        timeExtents = self.getTimeLayerManager().getProjectTimeExtents()
+        try:
+            realEpochTime = int(pct * (datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(
+                timeExtents[0])) + datetime_to_epoch(timeExtents[0]))
+        except:
+            # extents are not set
+            realEpochTime = 0
+        self.getTimeLayerManager().setCurrentTimePosition(epoch_to_datetime(realEpochTime))
+
+    def updateTimePositionFromTextBox(self,qdate):
+        if not self.propagateGuiChanges:
+            return
+        self.getTimeLayerManager().setCurrentTimePosition(QDateTime_to_datetime(qdate))
         
     def writeSettings(self, layer, dom, dom2):
         """write all relevant settings to the project file XML """
@@ -303,6 +391,9 @@ class TimeManagerControl(QObject):
         
         QgsMessageLog.logMessage("SETTINGS LOADED!"+str(settings))
 
+        # TODO the restore fuctions should restore the state in the view, which should then
+        # propagate
+        # everywhere if the MVC is actually working
         restore_functions={
                  'currentMapTimePosition': (self.restoreTimePositionFromSettings,None),
                  'animationFrameLength': (self.setAnimationFrameLength,DEFAULT_FRAME_LENGTH),
@@ -310,10 +401,11 @@ class TimeManagerControl(QObject):
                  'loopAnimation': (self.setLoopAnimation,0),
                  'timeLayerManager': (self.restoreSettingTimeLayerManager,None),
                  'timeLayerList': (self.restoreTimeLayers,None),
-                 'timeFrameType': (self.setTimeFrameType,DEFAULT_FRAME_UNIT),
-                 'timeFrameSize': (self.setTimeFrameSize,DEFAULT_FRAME_SIZE),
+                 'timeFrameType': (self.guiControl.setTimeFrameType,DEFAULT_FRAME_UNIT),
+                 'timeFrameSize': (self.guiControl.setTimeFrameSize,DEFAULT_FRAME_SIZE),
                  'active': (self.setActive,1)
         }
+        #FIXME this doesn't restore the animationoptions [1:4]
 
         for setting_name in self.METASETTINGS.keys():
             restore_function,default_value = restore_functions[setting_name]
