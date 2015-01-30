@@ -265,14 +265,14 @@ class TimeManagerControl(QObject):
             self.saveCurrentMap(fileName)
             self.animationFrameCounter += 1
 
-        resetToEnd=False
+        resetToEnd = False
         canMakeNextStep = currentTime < projectTimeExtents[1]
         stepFunction = self.stepForward
 
         if self.playBackwards:
             canMakeNextStep =  currentTime > projectTimeExtents[0]
-            resetToEnd=True
-            stepFunction = self.stepBackward()
+            resetToEnd = True
+            stepFunction = self.stepBackward
 
         if canMakeNextStep:
             stepFunction()

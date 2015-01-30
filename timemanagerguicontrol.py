@@ -93,13 +93,11 @@ class TimeManagerGuiControl(QObject):
                      self.dock.horizontalTimeSlider.setFocus)
 
         # put default values
-
         self.dock.horizontalTimeSlider.setMinimum(conf.MIN_TIMESLIDER_DEFAULT)
         self.dock.horizontalTimeSlider.setMaximum(conf.MAX_TIMESLIDER_DEFAULT)
         self.setTimeFrameType(conf.DEFAULT_FRAME_UNIT)
         self.setTimeFrameSize(conf.DEFAULT_FRAME_SIZE)
         self.dock.dateTimeEditCurrentTime.setMinimumDate(MIN_QDATE)
-
 
     def showLabelOptions(self):
         # TODO maybe more clearly (not inline here)
@@ -124,7 +122,6 @@ class TimeManagerGuiControl(QObject):
         self.labelOptions.color = self.labelOptionsDialog.text_color.color().name()
         self.labelOptions.placement = self.labelOptionsDialog.placement.currentText()
         self.labelOptions.fmt = self.labelOptionsDialog.time_format.text()
-
 
     def optionsClicked(self):
         self.showOptions.emit()
@@ -221,11 +218,8 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.rejected.connect(self.setOptionsDialogToNone)
         self.optionsDialog.buttonBox.helpRequested.connect(self.showHelp)
 
-        self.mapLayers=QgsMapLayerRegistry.instance().mapLayers()
-
     def showOrHideLabelOptions(self):
         self.optionsDialog.show_label_options_button.setEnabled(self.optionsDialog.checkBoxLabel.isChecked())
-
         
     def showHelp(self):
         """show the help dialog"""
@@ -256,7 +250,6 @@ class TimeManagerGuiControl(QObject):
                 self.signalAnimationOptions.emit(animationFrameLength,playBackwards,loopAnimation)
                 
                 self.refreshMapCanvas('saveOptions')
-                
                 if len(self.getManagedLayers()) > 0:
                     self.dock.pushButtonExportVideo.setEnabled(True)
                 else:
@@ -275,17 +268,14 @@ class TimeManagerGuiControl(QObject):
     def createTimeLayer(self,row):
         """create a TimeLayer from options set in the table row"""
         layer=QgsMapLayerRegistry.instance().mapLayer(self.optionsDialog.tableWidget.item(row,4).text())
-        if self.optionsDialog.tableWidget.item(row,3).checkState() == Qt.Checked:
-            isEnabled = True
-        else:
-            isEnabled = False
+        isEnabled = (self.optionsDialog.tableWidget.item(row,3).checkState() == Qt.Checked)
         # offset
         offset = int(self.optionsDialog.tableWidget.item(row,6).text()) # currently only seconds!
         # start time
         startTimeAttribute = self.optionsDialog.tableWidget.item(row,1).text()
         # end time (optional)
         if self.optionsDialog.tableWidget.item(row,2).text() == "":
-            endTimeAttribute = startTimeAttribute # end time equals start time for timeLayers of type timePoint
+            endTimeAttribute = startTimeAttribute
         else:
             endTimeAttribute = self.optionsDialog.tableWidget.item(row,2).text()
         # time format
@@ -301,7 +291,6 @@ class TimeManagerGuiControl(QObject):
         # self.debug("registered layer {}".format(layer.title ()))
         self.registerTimeLayer.emit(timeLayer)
 
-        
     def setOptionsDialogToNone(self):
         """set self.optionsDialog to None"""
         self.optionsDialog = None
@@ -321,12 +310,11 @@ class TimeManagerGuiControl(QObject):
         path = os.path.dirname( os.path.abspath( __file__ ) )
         self.addLayerDialog = uic.loadUi(os.path.join(path,"addLayer.ui"))
 
-        self.mapLayers=QgsMapLayerRegistry.instance().mapLayers()
         self.layerIds=[]
         managedLayers=self.getManagedLayers()
         tempname=''
         # fill the combo box with all available vector layers
-        for (name,layer) in self.mapLayers.iteritems():
+        for (name,layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
             #if type(layer).__name__ == "QgsVectorLayer" and layer not in managedLayers:
             if layer not in managedLayers:
                 self.layerIds.append(name)
@@ -339,7 +327,6 @@ class TimeManagerGuiControl(QObject):
 
         # get attributes of the first layer for gui initialization
         self.getLayerAttributes(0)
-
         self.addLayerDialog.show()
 
         # establish connections
@@ -348,20 +335,22 @@ class TimeManagerGuiControl(QObject):
 
     def getManagedLayers(self):
         """get list of QgsMapLayers listed in optionsDialog.tableWidget"""
+        #FIXME Should the GUI be the sole keeper of this state?
         layerList=[]
         if self.optionsDialog.tableWidget is None:
             return
             
         for row in range(0,self.optionsDialog.tableWidget.rowCount()):
             # layer
-            layer=self.mapLayers[self.optionsDialog.tableWidget.item(row,4).text()]
+            layer=QgsMapLayerRegistry.instance().mapLayers()[self.optionsDialog.tableWidget.item(row,4).text()]
             layerList.append(layer)
         return layerList
 
     def getLayerAttributes(self,comboIndex):
+        #FIXME this shouldn't be in the view
         """get list layer attributes and fill the combo boxes"""
         try: 
-            layer=self.mapLayers[self.layerIds[comboIndex]]
+            layer=QgsMapLayerRegistry.instance().mapLayers()[self.layerIds[comboIndex]]
         except: 
             #QMessageBox.information(self.iface.mainWindow(),'Test Output','Error at: self.mapLayers[self.layerIds[comboIndex]]')
             return
@@ -396,38 +385,17 @@ class TimeManagerGuiControl(QObject):
     def addRowToOptionsTable(self,layerName,checkState,layerId,offset,timeFormat="",startTime="",endTime=""):
         """insert a new row into optionsDialog.tableWidget"""
         # insert row
-        row=self.optionsDialog.tableWidget.rowCount()
+        row = self.optionsDialog.tableWidget.rowCount()
         self.optionsDialog.tableWidget.insertRow(row)
-        
         # insert values
-        layerItem = QTableWidgetItem()
-        layerItem.setText(layerName)
-        self.optionsDialog.tableWidget.setItem(row,0,layerItem)
-
-        startItem = QTableWidgetItem()
-        startItem.setText(startTime)
-        self.optionsDialog.tableWidget.setItem(row,1,startItem)
-
-        endItem = QTableWidgetItem()
-        endItem.setText(endTime)
-        self.optionsDialog.tableWidget.setItem(row,2,endItem)
-
-        checkBoxItem = QTableWidgetItem()
-        checkBoxItem.setCheckState(checkState)
-        self.optionsDialog.tableWidget.setItem(row,3,checkBoxItem)
-
-        indexItem = QTableWidgetItem()
-        indexItem.setText(layerId)
-        self.optionsDialog.tableWidget.setItem(row,4,indexItem)
-
-        timeFormatItem = QTableWidgetItem()
-        timeFormatItem.setText(timeFormat)
-        self.optionsDialog.tableWidget.setItem(row,5,timeFormatItem)   
-    
-        offsetItem = QTableWidgetItem()
-        offsetItem.setText(str(offset))
-        self.optionsDialog.tableWidget.setItem(row,6,offsetItem)
-
+        for i,value in enumerate([layerName, startTime, endTime, checkState, layerId,
+                                 timeFormat, str(offset)]):
+            item = QTableWidgetItem()
+            if i!=3:
+                item.setText(value)
+            else:
+                item.setCheckState(checkState)
+            self.optionsDialog.tableWidget.setItem(row,i,item)
 
     def disableAnimationExport(self):
         """disable the animation export button"""
