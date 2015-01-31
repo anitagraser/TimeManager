@@ -177,6 +177,13 @@
          </property>
         </widget>
        </item>
+       <item row="2" column="3">
+        <widget class="QPushButton" name="show_label_options_button">
+         <property name="text">
+          <string>Time display Options</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
     </layout>

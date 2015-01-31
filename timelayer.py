@@ -6,6 +6,7 @@ from qgis.core import *
 
 class TimeLayer:
     """Manages the properties of a managed (managable) layer."""
+
     def __init__(self,layer,enabled=True):
         self.layer = layer
         self.timeEnabled = enabled

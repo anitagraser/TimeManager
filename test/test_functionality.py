@@ -1,4 +1,5 @@
 import sip
+
 sip.setapi('QString', 2) # strange things happen without this. Must import before PyQt imports
 # if using ipython: do this on bash before
 # export QT_API=pyqt
@@ -8,12 +9,15 @@ import os
 from mock import Mock
 from datetime import datetime, timedelta
 from PyQt4 import QtCore, QtGui, QtTest
-import timemanagercontrol
-from timemanagercontrol import FRAME_FILENAME_PREFIX
-import timevectorlayer
-import time_util
-import os_util
+import TimeManager.timemanagercontrol as timemanagercontrol
+from TimeManager.timemanagercontrol import FRAME_FILENAME_PREFIX
+import TimeManager.timevectorlayer as timevectorlayer
+from TimeManager.timelayermanager import TimeLayerManager
+import testcfg
+import TimeManager.time_util as time_util
+import TimeManager.os_util as os_util
 
+from abc import ABCMeta, abstractmethod
 import tempfile
 import shutil
 import unittest
@@ -24,7 +28,7 @@ __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
 
 
-TEST_DATA_DIR="testdata"
+
 PREFIX_PATH=None # replace with path in case of problems
 
 class RiggedTimeManagerControl(timemanagercontrol.TimeManagerControl):
@@ -34,8 +38,17 @@ class RiggedTimeManagerControl(timemanagercontrol.TimeManagerControl):
     def saveCurrentMap(self,fileName):
         """We can't export a real screenshot from the test harness, so we just create a blank
         file"""
-        print fileName
         open(fileName, 'w').close()
+
+    def load(self):
+        """ Load the plugin"""
+        # order matters
+        self.timeLayerManager = TimeLayerManager(self.iface)
+        self.guiControl = Mock()
+        self.initViewConnections(test=True)
+        self.initModelConnections()
+        self.initQGISConnections()
+        self.restoreDefaults()
 
     def playAnimation(self,painter=None):
         """We just continue the animation after playing until it stops via the
@@ -51,7 +64,8 @@ class RiggedTimeManagerControl(timemanagercontrol.TimeManagerControl):
 
 class TestWithQGISLauncher(unittest.TestCase):
     """
-    All test classes who want to have a QGIS application available should inherit this
+    All test classes who want to have a QGIS application available with the plugin set up should
+    inherit this
     """
 
     @classmethod
@@ -79,22 +93,58 @@ class TestWithQGISLauncher(unittest.TestCase):
                                                                             "on the top of the "
                                                                             "file "
                                                                             "test_functionality.py")
+    def setUp(self):
+        iface = Mock()
+        self.ctrl = RiggedTimeManagerControl(iface)
+        self.ctrl.load()
+        self.tlm = self.ctrl.getTimeLayerManager()
+
+
+class TestForLayersWithOnePointPerSecond(TestWithQGISLauncher):
+    """This class tests the functionality of layers for data that contains one point per second
+    (our own convention to not have to write similar test code a lot of times). See the
+    postgresql and delimited text tests for examples"""
+
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def get_start_time(self):
+        """Get first timestamp in epoch seconds"""
+        pass
+
+    def _test_layer(self,layer, attr, typ, tf, attr2=None):
+        if attr2 is None:
+            attr2=attr
+        timeLayer = timevectorlayer.TimeVectorLayer(layer,attr,attr2,True,
+                                                    time_util.DEFAULT_FORMAT,0)
+        self.tlm.registerTimeLayer(timeLayer)
+
+        self.assertEquals(timeLayer.getDateType(), typ)
+        self.assertEquals(timeLayer.getTimeFormat(), tf)
+        expected_datetime = time_util.epoch_to_datetime(self.get_start_time())
+        self.assertEquals(self.tlm.getCurrentTimePosition(),expected_datetime)
+        self.tlm.setTimeFrameType("seconds")
+        self.assertEquals(layer.featureCount(),1)
+        self.assertEquals(self.tlm.getCurrentTimePosition(),expected_datetime)
+        self.tlm.stepForward()
+        self.assertEquals(layer.featureCount(),1)
+        expected_datetime = time_util.epoch_to_datetime(self.get_start_time()+1)
+        self.assertEquals(self.tlm.getCurrentTimePosition(),expected_datetime)
+        self.tlm.setTimeFrameSize(2)
+        self.assertEquals(layer.featureCount(),2)
 
 
 class testTimeManagerWithoutGui(TestWithQGISLauncher):
 
-    def setUp(self):
-        iface = Mock()
-        self.ctrl = RiggedTimeManagerControl(iface)
-        self.ctrl.initGui(test=True)
-        self.tlm = self.ctrl.getTimeLayerManager()
-
 
     def registerTweetsTimeLayer(self, fromAttr="T", toAttr="T"):
-        self.layer = QgsVectorLayer(os.path.join(TEST_DATA_DIR, 'tweets.shp'), 'tweets', 'ogr')
+        self.layer = QgsVectorLayer(os.path.join(testcfg.TEST_DATA_DIR, 'tweets.shp'), 'tweets', 'ogr')
         self.timeLayer = timevectorlayer.TimeVectorLayer(self.layer,fromAttr,toAttr,True,
                                                     time_util.DEFAULT_FORMAT,0)
+        self.assertTrue(not self.timeLayer.hasTimeRestriction())
         self.tlm.registerTimeLayer(self.timeLayer)
+        # refresh will have set the time restriction
+        self.assertTrue(self.timeLayer.hasTimeRestriction())
 
     def test_go_back_and_forth_2011(self):
         self.go_back_and_forth("T","T")
@@ -107,6 +157,55 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
 
     def test_go_back_and_forth_1165(self):
         self.go_back_and_forth("T1165","T1165")
+
+
+    def test_disable_and_reenable(self):
+        self.go_back_and_forth("T1765","T1765")
+        initial_time = self.tlm.getCurrentTimePosition()
+        feature_subset_size = self.layer.featureCount()
+        self.ctrl.toggleTimeManagement()
+        # time management is disabled
+        self.assertTrue(self.layer.featureCount()>feature_subset_size)
+        self.tlm.stepForward()
+        self.assertEquals(self.tlm.getCurrentTimePosition(),initial_time)
+        self.ctrl.toggleTimeManagement()
+        # time management is enabled again
+        self.assertEquals(self.ctrl.animationActivated, False)
+        self.ctrl.toggleAnimation()
+        self.assertEquals(self.ctrl.animationActivated, True)
+        self.assertEquals(self.tlm.getCurrentTimePosition(),initial_time)
+        self.assertEquals(self.layer.featureCount(),feature_subset_size)
+        self.tlm.stepForward()
+        self.assertTrue(self.tlm.getCurrentTimePosition()>initial_time)
+
+
+    def test_write_and_read_settings(self):
+        self.go_back_and_forth("T1165","T1165")
+        initial_time = self.tlm.getCurrentTimePosition()
+        self.ctrl.setLoopAnimation(True)
+        self.ctrl.writeSettings(None,None,None)
+        test_file = os.path.join(testcfg.TEST_DATA_DIR, "sample_project.qgs")
+        if os.path.exists(test_file):
+            os.remove(test_file)
+        QgsProject.instance().write(QtCore.QFileInfo(test_file))
+
+        # change settings
+        self.tlm.stepForward()
+        self.assertEqual(self.tlm.getTimeFrameType(),"seconds")
+        self.assertEquals(self.tlm.getCurrentTimePosition(), initial_time+timedelta(seconds=
+            self.tlm.getTimeFrameSize()))
+        self.tlm.setTimeFrameType('minutes')
+        self.ctrl.setLoopAnimation(False)
+
+        # restore previous settings
+        QgsProject.instance().read(QtCore.QFileInfo(test_file))
+        self.ctrl.readSettings()
+        os.remove(test_file)
+        # check that the settings were restored properly
+        self.assertEquals(self.tlm.getCurrentTimePosition(), initial_time)
+        self.assertEquals(self.ctrl.loopAnimation, True)
+        self.ctrl.guiControl.setTimeFrameType.assert_called_with('seconds')
+        self.ctrl.guiControl.setTimeFrameSize.assert_called_with(1)
 
     def go_back_and_forth(self,fromAttr, toAttr):
 
@@ -149,31 +248,32 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         pass
 
     def test_with_two_layers(self):
-        self.registerTweetsTimeLayer("T1765","T1765")
-        self.assertEqual(self.tlm.getCurrentTimePosition().year,1765)
-        self.registerTweetsTimeLayer("T1165","T1165")
+        self.registerTweetsTimeLayer("T","T") # year 2011
+        laterYear=2011
+        earlierYear=1965
+        self.assertEqual(self.tlm.getCurrentTimePosition().year,laterYear)
+        self.registerTweetsTimeLayer("T1965","T1965")
         # the current position doesn't change when adding a new layer
-        self.assertEqual(self.tlm.getCurrentTimePosition().year,1765)
+        self.assertEqual(self.tlm.getCurrentTimePosition().year,laterYear)
         # but the extents do
         start, end = self.tlm.getProjectTimeExtents()
-        self.assertEquals(start.year, 1165)
-        self.assertEquals(end.year, 1765)
+        self.assertEquals(start.year, earlierYear)
+        self.assertEquals(end.year, laterYear)
         # now remove the first layer (from 1765)
         self.tlm.removeTimeLayer(self.tlm.getTimeLayerList()[0].getLayerId())
         start, end = self.tlm.getProjectTimeExtents()
-        self.assertEquals(start.year, 1165)
-        self.assertEquals(end.year, 1165)
+        self.assertEquals(start.year, earlierYear)
+        self.assertEquals(end.year, earlierYear)
         # now remove the last one too
         self.tlm.removeTimeLayer(self.tlm.getTimeLayerList()[0].getLayerId())
         self.assertAlmostEqual(self.tlm.getProjectTimeExtents(), (None,None))
 
 
-# TODOs for more tests
+# Ideas for more tests:
 # Test save string, settings, restoring, disabling timemanager
 #TODO (low prio): Test what happens with impossible events ie:
 #test what happens when trying to setCurrentTimePosition to sth wrong
 #test layers with nulls
-
 
 
 if __name__=="__main__":

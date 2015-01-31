@@ -10,13 +10,29 @@ from PyQt4.QtCore import QDateTime
 __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
 
-
 OGR_DATE_FORMAT="%Y/%m/%d"
-OGR_DATETIME_FORMAT="%Y-%m-%dT%H:%M:%S" # FIXME so date has slashes and datetime dashes???
+OGR_DATETIME_FORMAT="%Y-%m-%dT%H:%M:%S"
 DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
 SAVE_STRING_FORMAT =  DEFAULT_FORMAT # Used to be: "%Y-%m-%d %H:%M:%S.%f", but this format is not portable in Windows because of the %f directive
 UTC = "UTC"
-SUPPORTED_FORMATS = [
+
+class UnsupportedFormatException(Exception):
+    pass
+
+def _str_switch(str, substr1, substr2):
+    """Switch the location in a string of two substrings"""
+    i1 = str.find(substr1)
+    i2 = str.find(substr2)
+    if i1<0 or i2<0:
+        return str
+    if i1<i2:
+        return str[:i1]+substr2+str[i1+len(substr1):i2]+substr1+str[i2+len(substr2):]
+    if i1==i2:
+        return str
+    if i1>i2:
+        return str[:i2]+substr1+str[i2+len(substr2):i1]+substr2+str[i1+len(substr1):]
+
+YMD_SUPPORTED_FORMATS = [
 "%Y-%m-%d %H:%M:%S.%f",
 "%Y-%m-%d %H:%M:%S",
 "%Y-%m-%d %H:%M",
@@ -26,22 +42,27 @@ SUPPORTED_FORMATS = [
 "%Y/%m/%d %H:%M:%S",
 "%Y/%m/%d %H:%M",
 "%Y/%m/%d",
-"%d.%m.%Y %H:%M:%S.%f",
-"%d.%m.%Y %H:%M:%S",
-"%d.%m.%Y %H:%M",
-"%d.%m.%Y",
-"%d-%m-%Y %H:%M:%S.%f",
-"%d-%m-%Y %H:%M:%S",
-"%d-%m-%Y %H:%M",
-"%d-%m-%Y",
-"%d/%m/%Y %H:%M:%S.%f",
-"%d/%m/%Y %H:%M:%S",
-"%d/%m/%Y %H:%M",
-"%d/%m/%Y"
+"%H:%M:%S",
+"%H:%M:%S.%f",
+"%Y.%m.%d %H:%M:%S.%f",
+"%Y.%m.%d %H:%M:%S",
+"%Y.%m.%d %H:%M",
+"%Y.%m.%d",
 ]
 
+DMY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%Y","%d"), YMD_SUPPORTED_FORMATS)
+MDY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%m","%d"), DMY_SUPPORTED_FORMATS)
+
+
+SUPPORTED_FORMATS = list(set(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS +
+                             DMY_SUPPORTED_FORMATS))
+
+
 def QDateTime_to_datetime(date):
-    return date.toPyDateTime()
+    try:
+        return date.toPyDateTime()
+    except:
+        return datetime_at_start_of_day(date.toPyDate())
 
 def datetime_at_start_of_day(dt):
     return datetime.combine(dt, datetime.min.time())
@@ -51,11 +72,14 @@ def datetime_at_end_of_day(dt):
 
 def epoch_to_datetime(seconds_from_epoch):
     """Convert seconds since 1970-1-1 (UNIX epoch) to a datetime"""
-    #FIXME: Maybe this doesnt work on windows for negative timestamps
+    # This doesnt work on windows for negative timestamps
     # http://stackoverflow.com/questions/22082103/on-windows-how-to-convert-a-timestamps-before-1970-into-something-manageable
     # return datetime.utcfromtimestamp(seconds_from_epoch)
     # but this should:
     return datetime(1970, 1, 1) + timedelta(seconds=seconds_from_epoch)
+
+def epoch_to_str(seconds_from_epoch, fmt):
+    return datetime_to_str(epoch_to_datetime(seconds_from_epoch), fmt)
 
 def datetime_to_epoch(dt):
     """ convert a datetime to seconds after (or possibly before) 1970-1-1 """
@@ -115,7 +139,6 @@ def fixed_strftime(dt, fmt):
     return s
 
 def getFormatOfDatetimeValue(datetimeValue, hint=DEFAULT_FORMAT):
-    #FIXME, here we can see if the type is QDate and handle it accordingly
     datetimeValue = str(datetimeValue)
     # is it an integer representing seconds?
     try:
@@ -132,10 +155,11 @@ def getFormatOfDatetimeValue(datetimeValue, hint=DEFAULT_FORMAT):
         except:
             pass
     # If all fail, raise an exception
-    raise Exception("Could not find a suitable time format for value {}, choices {}".format(datetimeValue, formatsToTry))
+    raise UnsupportedFormatException("Could not find a suitable time format for value {}, choices {}".format(
+        datetimeValue, formatsToTry))
 
-def str_to_datetime(str, fmt):
-    return strToDatetimeWithFormatHint(str, fmt)
+def str_to_datetime(datestr, fmt):
+    return strToDatetimeWithFormatHint(datestr, fmt)
 
 
 def strToDatetime(datetimeString):

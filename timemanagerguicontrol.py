@@ -4,23 +4,21 @@ Created on Fri Oct 29 10:13:39 2010
 
 @author: agraser
 """
-
-import os, sys
-sys.path.append("~/.qgis/python")
-
+import os
 from string import replace
 
 from PyQt4.QtCore import *
-import PyQt4.QtGui as QtGui
 from PyQt4.QtGui import *
 from PyQt4 import uic
 
-from qgis.core import *
 
-from timelayer import *
+from timelayerfactory import TimeLayerFactory
 from timevectorlayer import *
 from timerasterlayer import *
-from time_util import datetime_to_epoch, epoch_to_datetime, QDateTime_to_datetime
+from time_util import QDateTime_to_datetime, \
+    datetime_to_str, DEFAULT_FORMAT
+import conf
+import qgis_utils as qgs
 
 # The QTSlider only supports integers as the min and max, therefore the maximum maximum value
 # is whatever can be stored in an int. Making it a signed int to be sure.
@@ -31,19 +29,22 @@ MAX_TIME_LENGTH_SECONDS = 2**31-1
 MIN_QDATE = QDate(100, 1, 1)
 
 DOCK_WIDGET_FILE = "dockwidget2.ui"
+LABEL_WIDGET_FILE = "label_options.ui"
+
 
 class TimestampLabelConfig(object):
-    """Edit configuration for the timestamp label here, in liu of GUI control"""
+    """Object that has the settings for rendering timestamp labels. Can be customized via the UI"""
+    PLACEMENTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+    DEFAULT_FONT_SIZE = 4
     font = "Arial"      # Font names or family, comma-separated CSS style
-    size = 4            # Relative values between 1-7
-    fmt = "yyyy-MM-dd hh:mm:ss.zzz"  # Uses Qt's QDate format, see: http://qt-project.org/doc/qt-4.8/qdate.html#toString
-    placement = 'SE'    # Choose from N, NE, E, SE, S, SW, W, NW
+    size = DEFAULT_FONT_SIZE # Relative values between 1-7
+    fmt = DEFAULT_FORMAT # Pythonic format (same as in the layers)
+    placement = 'SE'    # Choose from
     color = 'black'     # Text color as name, rgb(RR,GG,BB), or #XXXXXX
     bgcolor = 'white'   # Background color as name, rgb(RR,GG,BB), or #XXXXXX
 
 class TimeManagerGuiControl(QObject):
-    """This class controls all plugin-related GUI elements. Emitted signals are defined here.
-    New TimeLayers are created here, in createTimeLayer()"""
+    """This class controls all plugin-related GUI elements. Emitted signals are defined here."""
     
     showOptions = pyqtSignal()
     exportVideo = pyqtSignal()
@@ -52,6 +53,7 @@ class TimeManagerGuiControl(QObject):
     forward = pyqtSignal()
     play = pyqtSignal()
     signalCurrentTimeUpdated = pyqtSignal(object)
+    signalSliderTimeChanged = pyqtSignal(float)
     signalTimeFrameType = pyqtSignal(str)
     signalTimeFrameSize = pyqtSignal(int)
     signalOptionsStart = pyqtSignal()
@@ -59,16 +61,13 @@ class TimeManagerGuiControl(QObject):
     saveOptionsStart = pyqtSignal()
     saveOptionsEnd = pyqtSignal()
     registerTimeLayer = pyqtSignal(object)
-    propagateGuiChanges = True # propagate qui changes to the layer by emiting
-    # signcalCurrentTimeUpdated
     
-    def __init__ (self,iface,timeLayerManager):
+    def __init__ (self,iface):
         """initialize the GUI control"""
         QObject.__init__(self)
-        self.iface = iface   
-        self.timeLayerManager = timeLayerManager
+        self.iface = iface
         self.showLabel = False
-        self.labelOptions = TimestampLabelConfig()  # placeholder until config is in GUI
+        self.labelOptions = TimestampLabelConfig()
         self.optionsDialog = None
         
         # load the form
@@ -77,8 +76,6 @@ class TimeManagerGuiControl(QObject):
         self.iface.addDockWidget( Qt.BottomDockWidgetArea, self.dock )
         
         self.dock.pushButtonExportVideo.setEnabled(False) # only enabled if there are managed layers
-        self.setTimeFrameType('days') # should be 'days'
-        
         self.dock.pushButtonOptions.clicked.connect(self.optionsClicked) 
         self.dock.pushButtonExportVideo.clicked.connect(self.exportVideoClicked)
         self.dock.pushButtonToggleTime.clicked.connect(self.toggleTimeClicked)
@@ -86,7 +83,6 @@ class TimeManagerGuiControl(QObject):
         self.dock.pushButtonForward.clicked.connect(self.forwardClicked)
         self.dock.pushButtonPlay.clicked.connect(self.playClicked)   
         self.dock.dateTimeEditCurrentTime.dateTimeChanged.connect(self.currentTimeChangedDateText)
-        self.dock.dateTimeEditCurrentTime.setMinimumDate(MIN_QDATE)
         self.dock.horizontalTimeSlider.valueChanged.connect(self.currentTimeChangedSlider)
         self.dock.comboBoxTimeExtent.currentIndexChanged[str].connect(self.currentTimeFrameTypeChanged)
         self.dock.spinBoxTimeExtent.valueChanged.connect(self.currentTimeFrameSizeChanged)          
@@ -97,6 +93,36 @@ class TimeManagerGuiControl(QObject):
         self.connect(self.focusSC, QtCore.SIGNAL('activated()'),
                      self.dock.horizontalTimeSlider.setFocus)
 
+        # put default values
+        self.dock.horizontalTimeSlider.setMinimum(conf.MIN_TIMESLIDER_DEFAULT)
+        self.dock.horizontalTimeSlider.setMaximum(conf.MAX_TIMESLIDER_DEFAULT)
+        self.setTimeFrameType(conf.DEFAULT_FRAME_UNIT)
+        self.setTimeFrameSize(conf.DEFAULT_FRAME_SIZE)
+        self.dock.dateTimeEditCurrentTime.setMinimumDate(MIN_QDATE)
+
+    def showLabelOptions(self):
+        # TODO maybe more clearly (not inline here)
+        path = os.path.dirname( os.path.abspath( __file__ ) )
+        self.labelOptionsDialog = uic.loadUi(os.path.join(path,LABEL_WIDGET_FILE ))
+        self.labelOptionsDialog.fontsize.setValue(self.labelOptions.size)
+        self.labelOptionsDialog.time_format.setText(self.labelOptions.fmt)
+        self.labelOptionsDialog.font.setCurrentFont(QFont(self.labelOptions.font))
+        self.labelOptionsDialog.placement.addItems(TimestampLabelConfig.PLACEMENTS)
+        self.labelOptionsDialog.placement.setCurrentIndex(TimestampLabelConfig.PLACEMENTS.index(
+            self.labelOptions.placement))
+        self.labelOptionsDialog.text_color.setColor(QColor(self.labelOptions.color))
+        self.labelOptionsDialog.bg_color.setColor(QColor(self.labelOptions.bgcolor))
+        self.labelOptionsDialog.buttonBox.accepted.connect(self.saveLabelOptions)
+
+        self.labelOptionsDialog.show()
+
+    def saveLabelOptions(self):
+        self.labelOptions.font =  self.labelOptionsDialog.font.currentFont().family()
+        self.labelOptions.size = self.labelOptionsDialog.fontsize.value()
+        self.labelOptions.bgcolor = self.labelOptionsDialog.bg_color.color().name()
+        self.labelOptions.color = self.labelOptionsDialog.text_color.color().name()
+        self.labelOptions.placement = self.labelOptionsDialog.placement.currentText()
+        self.labelOptions.fmt = self.labelOptionsDialog.time_format.text()
 
     def optionsClicked(self):
         self.showOptions.emit()
@@ -117,37 +143,16 @@ class TimeManagerGuiControl(QObject):
         self.play.emit()
 
     def currentTimeChangedSlider(self,sliderVal):
-        """Needs special handling because the Qtslider can only hold integer values, resulting
-        in silent overflow when passing long values from Python.
-        So we see the percentage the slider is at and determine the epoch time (which can be a
-        long if it's sufficiently in the past or in the future)."""
-
-        #self.debug("slider val {}".format(sliderVal))
-
-        if not self.propagateGuiChanges:
-            return
-
         try:
-
             pct = (sliderVal - self.dock.horizontalTimeSlider.minimum())*1.0/(
                 self.dock.horizontalTimeSlider.maximum() - self.dock.horizontalTimeSlider.minimum())
         except:
             # slider is not properly initialized yet
             return
-
-        try:
-            realEpochTime = int(pct * (datetime_to_epoch(self.timeExtents[1]) - datetime_to_epoch(
-                self.timeExtents[0])) + datetime_to_epoch(self.timeExtents[0]))
-        except:
-            # extents are not set
-            realEpochTime = 0
-
-        self.signalCurrentTimeUpdated.emit(epoch_to_datetime(realEpochTime))
+        self.signalSliderTimeChanged.emit(pct)
         
     def currentTimeChangedDateText(self,qdate):
-        if not self.propagateGuiChanges:
-            return
-        self.signalCurrentTimeUpdated.emit(QDateTime_to_datetime(qdate))
+        self.signalCurrentTimeUpdated.emit(qdate)
         
     def currentTimeFrameTypeChanged(self,frameType):
         self.signalTimeFrameType.emit(frameType)
@@ -182,7 +187,6 @@ class TimeManagerGuiControl(QObject):
             else:
                 checkState=Qt.Unchecked
             layerId=layer.getLayerId()
-            
             offset=layer.getOffset()
 
             times=layer.getTimeAttributes()
@@ -199,8 +203,11 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.checkBoxBackwards.setChecked(playBackwards)
         self.optionsDialog.checkBoxLabel.setChecked(self.showLabel)
         self.optionsDialog.checkBoxLoop.setChecked(loopAnimation)
+        self.optionsDialog.show_label_options_button.clicked.connect(self.showLabelOptions)
+        self.optionsDialog.checkBoxLabel.stateChanged.connect(self.showOrHideLabelOptions)
 
-        # show diaolg
+        # show dialog
+        self.showOrHideLabelOptions()
         self.optionsDialog.show()
 
         # establish connections
@@ -212,7 +219,8 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.rejected.connect(self.setOptionsDialogToNone)
         self.optionsDialog.buttonBox.helpRequested.connect(self.showHelp)
 
-        self.mapLayers=QgsMapLayerRegistry.instance().mapLayers()
+    def showOrHideLabelOptions(self):
+        self.optionsDialog.show_label_options_button.setEnabled(self.optionsDialog.checkBoxLabel.isChecked())
         
     def showHelp(self):
         """show the help dialog"""
@@ -230,70 +238,60 @@ class TimeManagerGuiControl(QObject):
         
         # loop through the rows in the table widget and add all layers accordingly
         for row in range(0,self.optionsDialog.tableWidget.rowCount()):
-
-        
-            if self.createTimeLayer(row):
+            try:
+                # add layer
+                #FIXME this logic should be moved into the Controller/Model
+                self.createTimeLayer(row)
                 # save animation options
                 animationFrameLength = self.optionsDialog.spinBoxFrameLength.value()
                 playBackwards = self.optionsDialog.checkBoxBackwards.isChecked()
                 self.showLabel = self.optionsDialog.checkBoxLabel.isChecked()
                 loopAnimation = self.optionsDialog.checkBoxLoop.isChecked()
+
                 self.signalAnimationOptions.emit(animationFrameLength,playBackwards,loopAnimation)
                 
                 self.refreshMapCanvas('saveOptions')
-                
                 if len(self.getManagedLayers()) > 0:
                     self.dock.pushButtonExportVideo.setEnabled(True)
                 else:
                     self.dock.pushButtonExportVideo.setEnabled(False)
-                
-                self.saveOptionsEnd.emit()
-            else:
-                break
+            except:
+                continue
+        self.saveOptionsEnd.emit()
+
+    def setAnimationOptions(self):
+        #TODO
+        pass
 
     def debug(self, msg):
             QMessageBox.information(self.iface.mainWindow(),'Info', msg)
             
     def createTimeLayer(self,row):
         """create a TimeLayer from options set in the table row"""
-        # layer
-        ##self.debug("Creating time layer")
         layer=QgsMapLayerRegistry.instance().mapLayer(self.optionsDialog.tableWidget.item(row,4).text())
-        if self.optionsDialog.tableWidget.item(row,3).checkState() == Qt.Checked:
-            isEnabled = True
-        else:
-            isEnabled = False
+        isEnabled = (self.optionsDialog.tableWidget.item(row,3).checkState() == Qt.Checked)
         # offset
-        offset = int(self.optionsDialog.tableWidget.item(row,6).text()) # currently only seconds!        
-
+        offset = int(self.optionsDialog.tableWidget.item(row,6).text()) # currently only seconds!
         # start time
         startTimeAttribute = self.optionsDialog.tableWidget.item(row,1).text()
         # end time (optional)
-        if self.optionsDialog.tableWidget.item(row,2).text() == "": #QString(""):
-            endTimeAttribute = startTimeAttribute # end time equals start time for timeLayers of type timePoint
+        if self.optionsDialog.tableWidget.item(row,2).text() == "":
+            endTimeAttribute = startTimeAttribute
         else:
             endTimeAttribute = self.optionsDialog.tableWidget.item(row,2).text()
         # time format
         timeFormat = self.optionsDialog.tableWidget.item(row,5).text()
-            
-        # this should be a python class factory
-        if type(layer).__name__ == "QgsVectorLayer":
-            timeLayerClass = TimeVectorLayer
-        elif type(layer).__name__ == "QgsRasterLayer":
-            timeLayerClass = TimeRasterLayer           
-            
-        try: # here we use the selected class
-            timeLayer = timeLayerClass(layer,startTimeAttribute,endTimeAttribute,isEnabled,
+
+        try:
+            timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(layer)(layer,startTimeAttribute,
+                                                           endTimeAttribute,isEnabled,
                                        timeFormat,offset, self.iface)
         except InvalidTimeLayerError, e:
             QMessageBox.information(self.iface.mainWindow(),'Error','An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+e.value)
-            return False
-
-        ##self.debug("registering time layer")
+            raise InvalidTimeLayerError(e)
+        # self.debug("registered layer {}".format(layer.title ()))
         self.registerTimeLayer.emit(timeLayer)
-        return True
 
-        
     def setOptionsDialogToNone(self):
         """set self.optionsDialog to None"""
         self.optionsDialog = None
@@ -313,12 +311,11 @@ class TimeManagerGuiControl(QObject):
         path = os.path.dirname( os.path.abspath( __file__ ) )
         self.addLayerDialog = uic.loadUi(os.path.join(path,"addLayer.ui"))
 
-        self.mapLayers=QgsMapLayerRegistry.instance().mapLayers()
         self.layerIds=[]
         managedLayers=self.getManagedLayers()
         tempname=''
         # fill the combo box with all available vector layers
-        for (name,layer) in self.mapLayers.iteritems():
+        for (name,layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
             #if type(layer).__name__ == "QgsVectorLayer" and layer not in managedLayers:
             if layer not in managedLayers:
                 self.layerIds.append(name)
@@ -330,41 +327,31 @@ class TimeManagerGuiControl(QObject):
             return
 
         # get attributes of the first layer for gui initialization
-        self.getLayerAttributes(0)
-
+        self.addLayerAttributes(0)
         self.addLayerDialog.show()
 
         # establish connections
-        self.addLayerDialog.comboBoxLayers.currentIndexChanged.connect(self.getLayerAttributes)
+        self.addLayerDialog.comboBoxLayers.currentIndexChanged.connect(self.addLayerAttributes)
         self.addLayerDialog.buttonBox.accepted.connect(self.addLayerToOptions)
 
     def getManagedLayers(self):
         """get list of QgsMapLayers listed in optionsDialog.tableWidget"""
+        #FIXME Should the GUI be the sole keeper of this state?
         layerList=[]
         if self.optionsDialog.tableWidget is None:
             return
             
         for row in range(0,self.optionsDialog.tableWidget.rowCount()):
             # layer
-            layer=self.mapLayers[self.optionsDialog.tableWidget.item(row,4).text()]
+            layer=QgsMapLayerRegistry.instance().mapLayers()[self.optionsDialog.tableWidget.item(row,4).text()]
             layerList.append(layer)
         return layerList
 
-    def getLayerAttributes(self,comboIndex):
+    def addLayerAttributes(self,comboIndex):
         """get list layer attributes and fill the combo boxes"""
-        try: 
-            layer=self.mapLayers[self.layerIds[comboIndex]]
-        except: 
-            #QMessageBox.information(self.iface.mainWindow(),'Test Output','Error at: self.mapLayers[self.layerIds[comboIndex]]')
-            return
-        try: 
-            provider=layer.dataProvider() # this will crash on OpenLayers layers
-        except AttributeError:
-            return
-        try:
-            fieldmap=provider.fields() # this function will crash on raster layers
-        except:
-            #QMessageBox.information(self.iface.mainWindow(),'Test Output','Error at: provider.fields()')
+        layerId = self.layerIds[comboIndex]
+        fieldmap = qgs.getLayerAttributes(layerId)
+        if fieldmap is None:
             return
         self.addLayerDialog.comboBoxStart.clear()
         self.addLayerDialog.comboBoxEnd.clear()
@@ -380,7 +367,7 @@ class TimeManagerGuiControl(QObject):
         endTime = self.addLayerDialog.comboBoxEnd.currentText()
         checkState = Qt.Checked
         layerId = self.layerIds[self.addLayerDialog.comboBoxLayers.currentIndex()]
-        timeFormat = "%Y-%m-%d %H:%M:%S" # default
+        timeFormat = DEFAULT_FORMAT
         offset = self.addLayerDialog.spinBoxOffset.value()
 
         self.addRowToOptionsTable(layerName,checkState,layerId,offset,timeFormat,startTime,endTime)
@@ -388,98 +375,17 @@ class TimeManagerGuiControl(QObject):
     def addRowToOptionsTable(self,layerName,checkState,layerId,offset,timeFormat="",startTime="",endTime=""):
         """insert a new row into optionsDialog.tableWidget"""
         # insert row
-        row=self.optionsDialog.tableWidget.rowCount()
+        row = self.optionsDialog.tableWidget.rowCount()
         self.optionsDialog.tableWidget.insertRow(row)
-        
         # insert values
-        layerItem = QTableWidgetItem()
-        layerItem.setText(layerName)
-        self.optionsDialog.tableWidget.setItem(row,0,layerItem)
-
-        startItem = QTableWidgetItem()
-        startItem.setText(startTime)
-        self.optionsDialog.tableWidget.setItem(row,1,startItem)
-
-        endItem = QTableWidgetItem()
-        endItem.setText(endTime)
-        self.optionsDialog.tableWidget.setItem(row,2,endItem)
-
-        checkBoxItem = QTableWidgetItem()
-        checkBoxItem.setCheckState(checkState)
-        self.optionsDialog.tableWidget.setItem(row,3,checkBoxItem)
-
-        indexItem = QTableWidgetItem()
-        indexItem.setText(layerId)
-        self.optionsDialog.tableWidget.setItem(row,4,indexItem)
-
-        timeFormatItem = QTableWidgetItem()
-        timeFormatItem.setText(timeFormat)
-        self.optionsDialog.tableWidget.setItem(row,5,timeFormatItem)   
-    
-        offsetItem = QTableWidgetItem()
-        offsetItem.setText(str(offset))
-        self.optionsDialog.tableWidget.setItem(row,6,offsetItem)
-
-    def setPropagateGuiChanges(self, val):
-        self.propagateGuiChanges = val
-
-    def updateTimeExtents(self,timeExtents):
-        """update time extents showing in labels and represented by horizontalTimeSlider"""
-        self.timeExtents = timeExtents
-
-        self.setPropagateGuiChanges(False)
-        if timeExtents != (None,None):
-            #self.debug("extents:{}".format(timeExtents))
-            self.dock.labelStartTime.setText(str(timeExtents[0])[0:23])
-            self.dock.labelEndTime.setText(str(timeExtents[1])[0:23])
-
-            timeLength = datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(timeExtents[0])
-
-            if timeLength> MAX_TIME_LENGTH_SECONDS:
-                self.debug("Time length of {} seconds is too long for QT Slider to handle ("
-                           "integer overflow). Maximum value allowed: {}".format(timeLength,
-                                                                                 MAX_TIME_LENGTH_SECONDS))
-
-            self.dock.horizontalTimeSlider.setMinimum(0)
-            self.dock.horizontalTimeSlider.setMaximum(timeLength)
-
-        else: # set to default values
-            #self.debug("No extents available yet")
-            self.dock.labelStartTime.setText('not set')
-            self.dock.labelEndTime.setText('not set')
-            self.dock.horizontalTimeSlider.setMinimum(0)
-            self.dock.horizontalTimeSlider.setMaximum(1)
-
-        self.setPropagateGuiChanges(True)
-
-    def refreshGuiWithCurrentTime(self,currentTimePosition,sender=None):
-        """update current time showing in dateTimeEditCurrentTime and horizontalTimeSlider"""
-
-        # setting the gui elements should not fire the event for
-        # timeChanged, since they were changed to be in sync with the rest of the system on
-        # purpose, no need to sync the system again
-        self.setPropagateGuiChanges(False)
-        if currentTimePosition is None:
-            self.setPropagateGuiChanges(True)
-            return
-
-        self.dock.dateTimeEditCurrentTime.setDateTime(currentTimePosition)
-        timeval = datetime_to_epoch(currentTimePosition)
-        try:
-            pct = (timeval - datetime_to_epoch(self.timeExtents[0]))*1.0 / (datetime_to_epoch(
-                self.timeExtents[1]) - datetime_to_epoch(self.timeExtents[0]))
-
-            sliderVal = self.dock.horizontalTimeSlider.minimum() + int(pct * (
-                self.dock.horizontalTimeSlider.maximum()
-                - self.dock.horizontalTimeSlider.minimum()))
-            #self.debug("Slider val at refresh:{}".format(sliderVal))
-            self.dock.horizontalTimeSlider.setValue(sliderVal)
-        except:
-            pass
-        finally:
-            self.setPropagateGuiChanges(True)
-
-
+        for i,value in enumerate([layerName, startTime, endTime, checkState, layerId,
+                                 timeFormat, str(offset)]):
+            item = QTableWidgetItem()
+            if i!=3:
+                item.setText(value)
+            else:
+                item.setCheckState(checkState)
+            self.optionsDialog.tableWidget.setItem(row,i,item)
 
     def disableAnimationExport(self):
         """disable the animation export button"""
@@ -492,7 +398,7 @@ class TimeManagerGuiControl(QObject):
     def refreshMapCanvas(self,sender=None):
         """refresh the map canvas"""
         #QMessageBox.information(self.iface.mainWindow(),'Test Output','Refresh!\n'+str(sender))
-        self.iface.mapCanvas().refresh()            
+        self.iface.mapCanvas().refresh()
 
     def setTimeFrameSize(self,frameSize):
         """set spinBoxTimeExtent to given framzeSize"""
@@ -521,7 +427,8 @@ class TimeManagerGuiControl(QObject):
         if not self.showLabel:
             return
 
-        labelString = str(self.dock.dateTimeEditCurrentTime.dateTime().toString(self.labelOptions.fmt))
+        labelString = datetime_to_str(QDateTime_to_datetime(self.dock.dateTimeEditCurrentTime.dateTime()),\
+                      self.labelOptions.fmt)
 
         # Determine placement of label given cardinal directions
         flags = 0

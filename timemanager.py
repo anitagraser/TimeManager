@@ -19,6 +19,7 @@ from qgis.core import *
 from qgis.utils import qgsfunction
 from PyQt4.QtCore import QTranslator, QCoreApplication, qVersion
 from timemanagercontrol import TimeManagerControl
+import time_util
 import resources # loads the icons
 import os
 import locale
@@ -52,7 +53,7 @@ class timemanager:
         
     def initGui( self ):
         """initialize the gui"""
-        control.initGui()
+        control.load()
 
     def unload( self ):
         """Unload the plugin"""
@@ -85,12 +86,12 @@ class timemanager:
                 QgsMessageLog.logMessage("Translation not supported for Qt <= {}".format(qVersion()))
         else:
              QgsMessageLog.logMessage("Timemanager: No translation found for locale {}, "
-                                      "using English".format(new_lang))
+                                      "using English!!".format(new_lang))
 
     @qgsfunction(0, "TimeManager")
     def animation_datetime(values, feature, parent):
         """called by QGIS to determine the current animation time"""
-        #FIXME could use time_util instead of str() call
-        return str(control.getCurrentTimePosition())
+        return time_util.datetime_to_str(control.getTimeLayerManager().getCurrentTimePosition(),
+                                         time_util.DEFAULT_FORMAT)
   
 
