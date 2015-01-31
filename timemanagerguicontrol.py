@@ -18,6 +18,7 @@ from timerasterlayer import *
 from time_util import QDateTime_to_datetime, \
     datetime_to_str, DEFAULT_FORMAT
 import conf
+import qgis_utils as qgs
 
 # The QTSlider only supports integers as the min and max, therefore the maximum maximum value
 # is whatever can be stored in an int. Making it a signed int to be sure.
@@ -326,11 +327,11 @@ class TimeManagerGuiControl(QObject):
             return
 
         # get attributes of the first layer for gui initialization
-        self.getLayerAttributes(0)
+        self.addLayerAttributes(0)
         self.addLayerDialog.show()
 
         # establish connections
-        self.addLayerDialog.comboBoxLayers.currentIndexChanged.connect(self.getLayerAttributes)
+        self.addLayerDialog.comboBoxLayers.currentIndexChanged.connect(self.addLayerAttributes)
         self.addLayerDialog.buttonBox.accepted.connect(self.addLayerToOptions)
 
     def getManagedLayers(self):
@@ -346,22 +347,11 @@ class TimeManagerGuiControl(QObject):
             layerList.append(layer)
         return layerList
 
-    def getLayerAttributes(self,comboIndex):
-        #FIXME this shouldn't be in the view
+    def addLayerAttributes(self,comboIndex):
         """get list layer attributes and fill the combo boxes"""
-        try: 
-            layer=QgsMapLayerRegistry.instance().mapLayers()[self.layerIds[comboIndex]]
-        except: 
-            #QMessageBox.information(self.iface.mainWindow(),'Test Output','Error at: self.mapLayers[self.layerIds[comboIndex]]')
-            return
-        try: 
-            provider=layer.dataProvider() # this will crash on OpenLayers layers
-        except AttributeError:
-            return
-        try:
-            fieldmap=provider.fields() # this function will crash on raster layers
-        except:
-            #QMessageBox.information(self.iface.mainWindow(),'Test Output','Error at: provider.fields()')
+        layerId = self.layerIds[comboIndex]
+        fieldmap = qgs.getLayerAttributes(layerId)
+        if fieldmap is None:
             return
         self.addLayerDialog.comboBoxStart.clear()
         self.addLayerDialog.comboBoxEnd.clear()
@@ -408,7 +398,7 @@ class TimeManagerGuiControl(QObject):
     def refreshMapCanvas(self,sender=None):
         """refresh the map canvas"""
         #QMessageBox.information(self.iface.mainWindow(),'Test Output','Refresh!\n'+str(sender))
-        self.iface.mapCanvas().refresh()            
+        self.iface.mapCanvas().refresh()
 
     def setTimeFrameSize(self,frameSize):
         """set spinBoxTimeExtent to given framzeSize"""

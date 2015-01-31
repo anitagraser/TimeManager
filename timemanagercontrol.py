@@ -83,7 +83,7 @@ class TimeManagerControl(QObject):
         self.guiControl.signalTimeFrameType.connect(self.setTimeFrameType)
         self.guiControl.signalTimeFrameSize.connect(self.setTimeFrameSize)
         self.guiControl.saveOptionsStart.connect(self.timeLayerManager.clearTimeLayerList)
-        self.guiControl.saveOptionsEnd.connect(self.timeLayerManager.refresh)
+        self.guiControl.saveOptionsEnd.connect(self.timeLayerManager.refreshTimeRestrictions)
         self.guiControl.signalAnimationOptions.connect(self.setAnimationOptions)
         self.guiControl.registerTimeLayer.connect(self.timeLayerManager.registerTimeLayer)
 
@@ -219,6 +219,8 @@ class TimeManagerControl(QObject):
 
     def toggleAnimation(self):
         """toggle animation on/off"""
+        QgsMessageLog.logMessage("Toggle animation called with curr value = {}".format(
+            self.animationActivated))
         if self.animationActivated: 
             self.animationActivated = False 
         else:
@@ -319,15 +321,12 @@ class TimeManagerControl(QObject):
     def setTimeFrameType(self,timeFrameType):
         """set timeLayerManager's time frame type"""
         self.timeLayerManager.setTimeFrameType(timeFrameType)
-        if self.timeLayerManager.hasActiveLayers():
-            self.guiControl.refreshMapCanvas('setTimeFrameType')
+        self.guiControl.refreshMapCanvas('setTimeFrameType')
 
     def setTimeFrameSize(self,timeFrameSize):
         """set timeLayerManager's time frame size"""
         self.timeLayerManager.setTimeFrameSize(timeFrameSize)
-        if self.timeLayerManager.hasActiveLayers():
-            self.guiControl.refreshMapCanvas('setTimeFrameSize')
-
+        self.guiControl.refreshMapCanvas('setTimeFrameSize')
 
     def updateTimePositionFromSliderPct(self, pct):
         """See the percentage the slider is at and determine the datetime"""
@@ -405,7 +404,6 @@ class TimeManagerControl(QObject):
                  'timeFrameSize': (self.guiControl.setTimeFrameSize,DEFAULT_FRAME_SIZE),
                  'active': (self.setActive,1)
         }
-        #FIXME this doesn't restore the animationoptions [1:4]
 
         for setting_name in self.METASETTINGS.keys():
             restore_function,default_value = restore_functions[setting_name]
@@ -427,9 +425,7 @@ class TimeManagerControl(QObject):
     def restoreTimePositionFromSettings(self, value):
         """Restore the time position from settings"""
         if value:
-            # FIXME:  backwards compatibility we support both long and string types of different
-            #  formats?
-            dt = str_to_datetime(value, DEFAULT_FORMAT)
+            dt = str_to_datetime(value, DEFAULT_FORMAT) # this also works for integer values
             self.getTimeLayerManager().setCurrentTimePosition(dt)
 
     def restoreSettingTimeLayerManager(self,value):

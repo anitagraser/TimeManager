@@ -158,8 +158,8 @@ def getFormatOfDatetimeValue(datetimeValue, hint=DEFAULT_FORMAT):
     raise UnsupportedFormatException("Could not find a suitable time format for value {}, choices {}".format(
         datetimeValue, formatsToTry))
 
-def str_to_datetime(str, fmt):
-    return strToDatetimeWithFormatHint(str, fmt)
+def str_to_datetime(datestr, fmt):
+    return strToDatetimeWithFormatHint(datestr, fmt)
 
 
 def strToDatetime(datetimeString):

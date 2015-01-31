@@ -158,27 +158,54 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
     def test_go_back_and_forth_1165(self):
         self.go_back_and_forth("T1165","T1165")
 
+
+    def test_disable_and_reenable(self):
+        self.go_back_and_forth("T1765","T1765")
+        initial_time = self.tlm.getCurrentTimePosition()
+        feature_subset_size = self.layer.featureCount()
+        self.ctrl.toggleTimeManagement()
+        # time management is disabled
+        self.assertTrue(self.layer.featureCount()>feature_subset_size)
+        self.tlm.stepForward()
+        self.assertEquals(self.tlm.getCurrentTimePosition(),initial_time)
+        self.ctrl.toggleTimeManagement()
+        # time management is enabled again
+        self.assertEquals(self.ctrl.animationActivated, False)
+        self.ctrl.toggleAnimation()
+        self.assertEquals(self.ctrl.animationActivated, True)
+        self.assertEquals(self.tlm.getCurrentTimePosition(),initial_time)
+        self.assertEquals(self.layer.featureCount(),feature_subset_size)
+        self.tlm.stepForward()
+        self.assertTrue(self.tlm.getCurrentTimePosition()>initial_time)
+
+
     def test_write_and_read_settings(self):
         self.go_back_and_forth("T1165","T1165")
         initial_time = self.tlm.getCurrentTimePosition()
+        self.ctrl.setLoopAnimation(True)
         self.ctrl.writeSettings(None,None,None)
         test_file = os.path.join(testcfg.TEST_DATA_DIR, "sample_project.qgs")
         if os.path.exists(test_file):
             os.remove(test_file)
         QgsProject.instance().write(QtCore.QFileInfo(test_file))
 
+        # change settings
         self.tlm.stepForward()
         self.assertEqual(self.tlm.getTimeFrameType(),"seconds")
         self.assertEquals(self.tlm.getCurrentTimePosition(), initial_time+timedelta(seconds=
             self.tlm.getTimeFrameSize()))
         self.tlm.setTimeFrameType('minutes')
-        os.remove(test_file)
+        self.ctrl.setLoopAnimation(False)
+
+        # restore previous settings
         QgsProject.instance().read(QtCore.QFileInfo(test_file))
         self.ctrl.readSettings()
+        os.remove(test_file)
         # check that the settings were restored properly
-        #TODO more
         self.assertEquals(self.tlm.getCurrentTimePosition(), initial_time)
-        self.assertEqual(self.tlm.getTimeFrameType(),"seconds")
+        self.assertEquals(self.ctrl.loopAnimation, True)
+        self.ctrl.guiControl.setTimeFrameType.assert_called_with('seconds')
+        self.ctrl.guiControl.setTimeFrameSize.assert_called_with(1)
 
     def go_back_and_forth(self,fromAttr, toAttr):
 

@@ -57,7 +57,7 @@ class TimeLayerManager(QObject):
         
     def getFrameCount(self):
         """returns the number of frames that can be generated using the current settings"""
-        if len(self.getManagedLayers()) == 0:
+        if len(self.getManagedLayers()) == 0 or not self.isEnabled():
             return 0
 
         try:
@@ -115,10 +115,9 @@ class TimeLayerManager(QObject):
             return timedelta(milliseconds=self.timeFrameSize)
         elif self.timeFrameType == 'microseconds':
             return timedelta(microseconds=self.timeFrameSize)
-        
 
-    def refresh(self):
-        """Applies or removes the temporal constraints for all managed (and enabled) layers"""
+    def refreshTimeRestrictions(self):
+        """Refresh the subset strings of all enabled layers"""
         if not self.hasLayers():
             return
         if self.isEnabled():
@@ -127,7 +126,7 @@ class TimeLayerManager(QObject):
         else:
             for timeLayer in self.getTimeLayerList():
                 if not timeLayer.hasTimeRestriction():
-                    return
+                    continue
                 timeLayer.deleteTimeRestriction()
 
         self.timeRestrictionsRefreshed.emit(self.getCurrentTimePosition())
@@ -138,8 +137,7 @@ class TimeLayerManager(QObject):
             if self.getCurrentTimePosition() is None:
                 self.setCurrentTimePosition(timeLayer.getTimeExtents()[0])
             self.updateProjectTimeExtents()
-            self.refresh()
-
+            self.refreshTimeRestrictions()
 
     def removeTimeLayer(self,layerId):
         """remove the timeLayer with the given layerId"""
@@ -155,7 +153,7 @@ class TimeLayerManager(QObject):
             self.lastLayerRemoved.emit()
         else:
             self.updateProjectTimeExtents()
-        self.refresh()
+        self.refreshTimeRestrictions()
 
     def updateProjectTimeExtents(self):
         """Loop through all timeLayers and make sure that the projectTimeExtents cover all layers"""
@@ -192,12 +190,12 @@ class TimeLayerManager(QObject):
         """Defines the type of the time frame, accepts all values usable by timedelta objects:
         days, seconds, microseconds, milliseconds, minutes, hours, weeks"""
         self.timeFrameType = frameType
-        self.refresh()
+        self.refreshTimeRestrictions()
 
     def setTimeFrameSize( self, frameSize ):
         """Defines the size of the time frame"""
         self.timeFrameSize = frameSize
-        self.refresh()
+        self.refreshTimeRestrictions()
 
     def setCurrentTimePosition( self, timePosition ):
         """Sets the currently selected point in time (a datetime), which is at the beginning of
@@ -207,16 +205,16 @@ class TimeLayerManager(QObject):
                                                                                  type(timePosition)))
         self.currentTimePosition = timePosition
         if self.isEnabled():
-            self.refresh()
+            self.refreshTimeRestrictions()
 
     def stepForward(self):
         """Shifts query forward in time by one time frame"""
-        if self.getCurrentTimePosition() != None:
+        if self.getCurrentTimePosition() != None and self.isEnabled():
             self.setCurrentTimePosition(self.getCurrentTimePosition() + self.timeFrame())
 
     def stepBackward(self):
         """Shifts query back in time by one time frame"""
-        if self.getCurrentTimePosition() != None:
+        if self.getCurrentTimePosition() != None and self.isEnabled():
             self.setCurrentTimePosition(self.getCurrentTimePosition() - self.timeFrame())
 
     def toggleTimeManagement(self):
@@ -229,12 +227,12 @@ class TimeLayerManager(QObject):
     def activateTimeManagement(self):
         """Enable all temporal constraints on managed (and configured) layers. (Original subsets should still be active.)"""
         self.timeManagementEnabled = True
-        self.refresh()
+        self.refreshTimeRestrictions()
 
     def deactivateTimeManagement(self):
         """Disable all temporal constraints (and restore original subsets)"""
         self.timeManagementEnabled = False
-        self.refresh()
+        self.refreshTimeRestrictions()
 
     def getSaveString(self):
         """create a save string that can be put into project file"""
