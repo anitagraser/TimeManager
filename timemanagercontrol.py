@@ -112,8 +112,8 @@ class TimeManagerControl(QObject):
         self.saveAnimationPath = os.path.expanduser('~')
         self.currentMapTimePosition = datetime.utcnow()
         self.animationFrameLength = DEFAULT_FRAME_LENGTH
-        self.setTimeFrameType(DEFAULT_FRAME_UNIT)
-        self.setTimeFrameSize(DEFAULT_FRAME_SIZE)
+        self.guiControl.setTimeFrameType(DEFAULT_FRAME_UNIT)
+        self.guiControl.setTimeFrameSize(DEFAULT_FRAME_SIZE)
 
     def setPropagateGuiChanges(self, val):
         self.propagateGuiChanges = val
@@ -133,7 +133,7 @@ class TimeManagerControl(QObject):
             timeLength = datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(timeExtents[0])
 
             if timeLength> MAX_TIME_LENGTH_SECONDS:
-                self.debug("Time length of {} seconds is too long for QT Slider to handle ("
+                raise Exception("Time length of {} seconds is too long for QT Slider to handle ("
                            "integer overflow). Maximum value allowed: {}".format(timeLength,
                                                                                  MAX_TIME_LENGTH_SECONDS))
 
@@ -316,6 +316,7 @@ class TimeManagerControl(QObject):
 
     def stepForward(self):
         """move one step forward in time"""
+        QgsMessageLog.logMessage("go forward...")
         self.timeLayerManager.stepForward()
 
     def setTimeFrameType(self,timeFrameType):
@@ -387,12 +388,9 @@ class TimeManagerControl(QObject):
         # them)
 
         settings = TimeManagerProjectHandler.readSettings(self.METASETTINGS)
-        
-        QgsMessageLog.logMessage("SETTINGS LOADED!"+str(settings))
 
-        # TODO the restore fuctions should restore the state in the view, which should then
-        # propagate
-        # everywhere if the MVC is actually working
+        #QgsMessageLog.logMessage("Read settings "+str(settings))
+
         restore_functions={
                  'currentMapTimePosition': (self.restoreTimePositionFromSettings,None),
                  'animationFrameLength': (self.setAnimationFrameLength,DEFAULT_FRAME_LENGTH),

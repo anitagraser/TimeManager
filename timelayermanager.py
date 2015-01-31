@@ -10,6 +10,7 @@ from qgis.core import *
 
 from timelayer import NotATimeAttributeError
 from time_util import *
+import conf
 
 class TimeLayerManager(QObject):
     """Manages all layers that can be queried temporally and provides navigation in time"""
@@ -28,6 +29,8 @@ class TimeLayerManager(QObject):
         self.timeLayerList = []
         self.setProjectTimeExtents((None, None))
         self.setCurrentTimePosition(None)
+        self.timeFrameType = conf.DEFAULT_FRAME_UNIT
+        self.timeFrameSize = conf.DEFAULT_FRAME_SIZE
 
     def isEnabled(self):
         """return true if the manager is enabled"""

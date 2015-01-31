@@ -11,7 +11,7 @@ import os
 
 
 from datetime import datetime, timedelta
-from unittest2 import skip
+from unittest import skip
 
 __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"

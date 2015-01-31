@@ -248,20 +248,22 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         pass
 
     def test_with_two_layers(self):
-        self.registerTweetsTimeLayer("T1765","T1765")
-        self.assertEqual(self.tlm.getCurrentTimePosition().year,1765)
-        self.registerTweetsTimeLayer("T1165","T1165")
+        self.registerTweetsTimeLayer("T","T") # year 2011
+        laterYear=2011
+        earlierYear=1965
+        self.assertEqual(self.tlm.getCurrentTimePosition().year,laterYear)
+        self.registerTweetsTimeLayer("T1965","T1965")
         # the current position doesn't change when adding a new layer
-        self.assertEqual(self.tlm.getCurrentTimePosition().year,1765)
+        self.assertEqual(self.tlm.getCurrentTimePosition().year,laterYear)
         # but the extents do
         start, end = self.tlm.getProjectTimeExtents()
-        self.assertEquals(start.year, 1165)
-        self.assertEquals(end.year, 1765)
+        self.assertEquals(start.year, earlierYear)
+        self.assertEquals(end.year, laterYear)
         # now remove the first layer (from 1765)
         self.tlm.removeTimeLayer(self.tlm.getTimeLayerList()[0].getLayerId())
         start, end = self.tlm.getProjectTimeExtents()
-        self.assertEquals(start.year, 1165)
-        self.assertEquals(end.year, 1165)
+        self.assertEquals(start.year, earlierYear)
+        self.assertEquals(end.year, earlierYear)
         # now remove the last one too
         self.tlm.removeTimeLayer(self.tlm.getTimeLayerList()[0].getLayerId())
         self.assertAlmostEqual(self.tlm.getProjectTimeExtents(), (None,None))
