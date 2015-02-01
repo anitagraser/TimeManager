@@ -50,6 +50,9 @@ class timemanager:
                 
             self.change_i18n(lang)
             control = TimeManagerControl(iface)
+
+    def getController(self):
+        return control
         
     def initGui( self ):
         """initialize the gui"""
