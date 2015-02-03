@@ -62,5 +62,5 @@ class TimeManagerProjectHandler(QObject):
                 settings[setting_name] = setting_value
             except:
                 QgsMessageLog.logMessage("Could not extract setting {} from project xml. "
-                                         "Expected type {}".format(setting_name, type))
+                                         "Expected type {}. Will use default value".format(setting_name, type))
         return settings

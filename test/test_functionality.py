@@ -178,7 +178,6 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.tlm.stepForward()
         self.assertTrue(self.tlm.getCurrentTimePosition()>initial_time)
 
-
     def test_write_and_read_settings(self):
         self.go_back_and_forth("T1165","T1165")
         initial_time = self.tlm.getCurrentTimePosition()
@@ -206,6 +205,22 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.assertEquals(self.ctrl.loopAnimation, True)
         self.ctrl.guiControl.setTimeFrameType.assert_called_with('seconds')
         self.ctrl.guiControl.setTimeFrameSize.assert_called_with(1)
+
+    def test_write_and_read_settings_when_disabled(self):
+        self.go_back_and_forth("T1165","T1165")
+        self.ctrl.toggleTimeManagement()
+        self.ctrl.writeSettings(None,None,None)
+        test_file = os.path.join(testcfg.TEST_DATA_DIR, "sample_project.qgs")
+        if os.path.exists(test_file):
+            os.remove(test_file)
+        QgsProject.instance().write(QtCore.QFileInfo(test_file))
+        # restore previous settings
+        QgsProject.instance().read(QtCore.QFileInfo(test_file))
+        self.ctrl.readSettings()
+        os.remove(test_file)
+        # check that the settings were restored properly
+        self.assertEquals(self.tlm.isEnabled(), False)
+
 
     def go_back_and_forth(self,fromAttr, toAttr):
 

@@ -100,6 +100,9 @@ class TimeManagerGuiControl(QObject):
         self.setTimeFrameSize(conf.DEFAULT_FRAME_SIZE)
         self.dock.dateTimeEditCurrentTime.setMinimumDate(MIN_QDATE)
 
+    def getOptionsDialog(self):
+        return self.optionsDialog
+
     def showLabelOptions(self):
         # TODO maybe more clearly (not inline here)
         path = os.path.dirname( os.path.abspath( __file__ ) )
@@ -349,6 +352,7 @@ class TimeManagerGuiControl(QObject):
 
     def addLayerAttributes(self,comboIndex):
         """get list layer attributes and fill the combo boxes"""
+
         layerId = self.layerIds[comboIndex]
         fieldmap = qgs.getLayerAttributes(layerId)
         if fieldmap is None:

@@ -110,7 +110,7 @@ class TimeManagerControl(QObject):
         self.animationFrameCounter = 0
         self.saveAnimation = False
         self.saveAnimationPath = os.path.expanduser('~')
-        self.currentMapTimePosition = datetime.utcnow()
+        #self.getTimeLayerManager().setCurrentTimePosition(datetime.now()) #FIXME buggy
         self.animationFrameLength = DEFAULT_FRAME_LENGTH
         self.guiControl.setTimeFrameType(DEFAULT_FRAME_UNIT)
         self.guiControl.setTimeFrameSize(DEFAULT_FRAME_SIZE)
@@ -184,6 +184,9 @@ class TimeManagerControl(QObject):
     def getTimeLayerManager(self):
         return self.timeLayerManager
 
+    def getGui(self):
+        return self.guiControl
+
     def showMessage(self, msg, msg_type="Info"):
         if self.showQMessagesEnabled():
             QMessageBox.information(self.iface.mainWindow(),msg_type, msg)
@@ -219,8 +222,8 @@ class TimeManagerControl(QObject):
 
     def toggleAnimation(self):
         """toggle animation on/off"""
-        QgsMessageLog.logMessage("Toggle animation called with curr value = {}".format(
-            self.animationActivated))
+        #QgsMessageLog.logMessage("Toggle animation called with curr value = {}".format(
+        #    self.animationActivated))
         if self.animationActivated: 
             self.animationActivated = False 
         else:
@@ -349,8 +352,6 @@ class TimeManagerControl(QObject):
         
     def writeSettings(self, layer, dom, dom2):
         """write all relevant settings to the project file XML """
-        if not self.getTimeLayerManager().isEnabled():
-            return
 
         QgsMessageLog.logMessage("timemanager.control.writesettings dummy")
         (timeLayerManagerSettings,timeLayerList) = self.getTimeLayerManager().getSaveString()
@@ -369,7 +370,6 @@ class TimeManagerControl(QObject):
                      'timeFrameSize': self.getTimeLayerManager().getTimeFrameSize(),
                      'active': self.getTimeLayerManager().isEnabled()}
 
-                     
             TimeManagerProjectHandler.writeSettings(settings)
 
     METASETTINGS= { 'animationFrameLength': int,
@@ -389,7 +389,7 @@ class TimeManagerControl(QObject):
 
         settings = TimeManagerProjectHandler.readSettings(self.METASETTINGS)
 
-        #QgsMessageLog.logMessage("Read settings "+str(settings))
+        QgsMessageLog.logMessage("Read settings "+str(settings))
 
         restore_functions={
                  'currentMapTimePosition': (self.restoreTimePositionFromSettings,None),
