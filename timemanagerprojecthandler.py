@@ -17,7 +17,6 @@ class TimeManagerProjectHandler(QObject):
     @classmethod
     def writeSettings(cls,settings):
         """write the list of settings to QgsProject instance"""
-        QgsMessageLog.logMessage("Writing settings to project..")
         for (key, value) in settings.items():
             cls.writeSetting(key,value)
 

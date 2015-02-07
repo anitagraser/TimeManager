@@ -10,8 +10,7 @@ from timemanagerprojecthandler import TimeManagerProjectHandler
 from time_util import *
 from conf import *
 
-DEFAULT_FRAME_LENGTH = 2000
-FRAME_FILENAME_PREFIX = "frame"
+
 
 class TimeManagerControl(QObject):
     """Controls the logic behind the GUI. Signals are processed here."""
@@ -171,6 +170,7 @@ class TimeManagerControl(QObject):
                 - self.guiControl.dock.horizontalTimeSlider.minimum()))
             #self.debug("Slider val at refresh:{}".format(sliderVal))
             self.guiControl.dock.horizontalTimeSlider.setValue(sliderVal)
+            self.guiControl.refreshMapCanvas()
         except:
             pass
         finally:
@@ -319,7 +319,6 @@ class TimeManagerControl(QObject):
 
     def stepForward(self):
         """move one step forward in time"""
-        QgsMessageLog.logMessage("go forward...")
         self.timeLayerManager.stepForward()
 
     def setTimeFrameType(self,timeFrameType):
@@ -352,8 +351,9 @@ class TimeManagerControl(QObject):
         
     def writeSettings(self, layer, dom, dom2):
         """write all relevant settings to the project file XML """
-
-        QgsMessageLog.logMessage("timemanager.control.writesettings dummy")
+        if not self.getTimeLayerManager().isEnabled():
+            QgsProject.instance().clearProperties()
+            return
         (timeLayerManagerSettings,timeLayerList) = self.getTimeLayerManager().getSaveString()
         
         if timeLayerManagerSettings is not None:
@@ -400,7 +400,7 @@ class TimeManagerControl(QObject):
                  'timeLayerList': (self.restoreTimeLayers,None),
                  'timeFrameType': (self.guiControl.setTimeFrameType,DEFAULT_FRAME_UNIT),
                  'timeFrameSize': (self.guiControl.setTimeFrameSize,DEFAULT_FRAME_SIZE),
-                 'active': (self.setActive,1)
+                 'active': (self.setActive,0)
         }
 
         for setting_name in self.METASETTINGS.keys():
@@ -470,7 +470,7 @@ class TimeManagerControl(QObject):
     
     def setActive(self,value):
         """de/activate the whole thing"""
-        if value: 
+        if value==True:
             self.timeLayerManager.activateTimeManagement()
             self.guiControl.setActive(True)            
         else: # if the status indicates "off"
