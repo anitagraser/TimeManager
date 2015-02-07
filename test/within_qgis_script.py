@@ -1,12 +1,15 @@
 from PyQt4 import QtCore
 import qgis
 from qgis._core import QgsApplication, QgsVectorLayer, QgsMapLayerRegistry, QgsProject
-
-from timemanager.test import testcfg as testcfg
 import os
 from time import sleep
 from datetime import datetime, timedelta
 import tempfile
+
+try:
+    from timemanager.test import testcfg as testcfg
+except:
+    from TimeManager.test import testcfg as testcfg #Mac0S needs the capitalized name
 
 __author__ = 'carolinux'
 
@@ -43,11 +46,12 @@ def addFirstUnmanagedLayerToTm(gui, column):
     gui.addLayerDialog.buttonBox.accepted.emit()
     options.buttonBox.accepted.emit()
 
+## get reference to timemanager controller
+try:
+    ctrl = qgis.utils.plugins['timemanager'].getController()
+except:
+    ctrl = qgis.utils.plugins['TimeManager'].getController() # MacOS needs the capitalized name
 
-
-
-## get references to timemanager controller
-ctrl = qgis.utils.plugins['timemanager'].getController()
 gui = ctrl.getGui()
 tlm = ctrl.getTimeLayerManager()
 
@@ -85,6 +89,7 @@ with open(tmp_file.name) as f:
 
 assert("TimeManager" in text)
 assert("active" in text)
+assert("currentMapTimePosition" in text)
 os.remove(tmp_file.name)
 
 # add second layer
