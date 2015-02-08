@@ -1,19 +1,18 @@
 [general]
 name=TimeManager
 description=TimeManager adds time controls to QGIS. Using these time controls, you can animate vector features based on a time attribute. There is also an experimental raster layer support. You can create animations directly in the map window and export image series.
-version=1.4
+version=1.5
 qgisMinimumVersion=2.3
-author=Anita Graser, Carolinux
-email=anitagraser@gmx.at
-changelog=1.4
-    numerous fixes by https://github.com/carolinux:
-    - fixed #64 Export Video error: no attribute 'animationFrameCounter' 
-    - fixed #26 mktime out of range
-    - fixed #81 error message for export video errors on Mac
-    - fixed #28 argument 1 has unexpected type 'float'
-    - fixed #85 locale support
-    - fixed #83 support for YYYY-MM-DDTHH:MM:SS timestamp format
-    - fixed #79 support delimited text files
+author=Anita Graser, Karolina Alexiou (aka carolinux)
+email=anitagraser@gmx.at, carolinegr@gmail.com
+changelog=1.5
+    iterative improvements by https://github.com/carolinux:
+    - implemented #78 Add GUI for timestamp label settings
+    - implemented #27 Support looping when playing backwards
+    - implemented #93 Refactor read/write settings logic
+    - updated documentation
+    - introduced continuous testing via Travis & test coverage reports via coveralls
+    - wrote more tests (postgresql data layers, reading & writing settings)
 tags=spatio-temporal,time,animation
 icon=icon.png
 experimental=True
