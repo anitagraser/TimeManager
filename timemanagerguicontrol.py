@@ -286,13 +286,13 @@ class TimeManagerGuiControl(QObject):
         timeFormat = self.optionsDialog.tableWidget.item(row,5).text()
 
         try:
-            timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(layer)(layer,startTimeAttribute,
-                                                           endTimeAttribute,isEnabled,
-                                       timeFormat,offset, self.iface)
+            timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(layer, interpolate=True)(
+                layer,startTimeAttribute,endTimeAttribute,isEnabled,timeFormat,offset, self.iface)
+            QgsMessageLog.logMessage("created layer OK")
         except InvalidTimeLayerError, e:
+            QgsMessageLog.logMessage("exception???")
             QMessageBox.information(self.iface.mainWindow(),'Error','An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+e.value)
             raise InvalidTimeLayerError(e)
-        # self.debug("registered layer {}".format(layer.title ()))
         self.registerTimeLayer.emit(timeLayer)
 
     def setOptionsDialogToNone(self):

@@ -136,6 +136,7 @@ class TimeLayerManager(QObject):
                 
     def registerTimeLayer( self, timeLayer ):
             """Register a new layer for management and update the project's temporal extent"""
+            QgsMessageLog.logMessage("Registering time layer")
             self.getTimeLayerList().append( timeLayer )
             if self.getCurrentTimePosition() is None:
                 self.setCurrentTimePosition(timeLayer.getTimeExtents()[0])
@@ -262,19 +263,18 @@ class TimeLayerManager(QObject):
         """restore settings from loaded project file"""
         tdfmt = SAVE_STRING_FORMAT
         if saveString:
-            self.isFirstRun = False
             saveString = str(saveString).split(';')
             try:
                 timeExtents = (str_to_datetime(saveString[0], tdfmt),
                                str_to_datetime(saveString[1], tdfmt))
-            except ValueError:
+            except:
                 try:
                     # Try converting without the fractional seconds for
                     # backward compatibility.
                     tdfmt = DEFAULT_FORMAT
                     timeExtents = (str_to_datetime(saveString[0], tdfmt),
                                    str_to_datetime(saveString[1], tdfmt))
-                except ValueError:
+                except:
                     # avoid error message for projects without
                     # time-managed layers
                     return

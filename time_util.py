@@ -3,6 +3,7 @@ import re # for hacking strftime
 
 from datetime import datetime, timedelta
 from PyQt4.QtCore import QDateTime
+import PyQt4.QtCore as QtCore
 
 
 """ A module to have time related functionality """
@@ -58,6 +59,18 @@ MDY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%m","%d"), DMY_SUPPORTED_FO
 SUPPORTED_FORMATS = list(set(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS +
                              DMY_SUPPORTED_FORMATS))
 
+
+def timeval_to_epoch(val):
+    """Converts any datetime or Qdate or QDatetime to epoch"""
+    try: # if it's already epoch, return self
+        int(val)
+        return val
+    except:
+        if type(val) in [ QtCore.QDate, QtCore.QDateTime]:
+            val = QDateTime_to_datetime(val)
+        if type(val) != datetime:
+            raise UnsupportedFormatException
+        return datetime_to_epoch(val)
 
 def QDateTime_to_datetime(date):
     try:

@@ -43,7 +43,9 @@ class TimeManagerControl(QObject):
         self.iface.projectRead.disconnect(self.readSettings)
         self.iface.newProjectCreated.disconnect(self.restoreDefaults)
         self.iface.newProjectCreated.disconnect(self.disableAnimationExport)
-        QgsProject.instance().writeMapLayer.disconnect(self.writeSettings)
+        #QgsProject.instance().writeMapLayer.disconnect(self.writeSettings)
+        QObject.disconnect(QgsProject.instance(), SIGNAL("writeMapLayer( QgsMapLayer, QDomElement, "
+                                                      "QDomDocument )"), self.writeSettings)
 
         QgsMapLayerRegistry.instance().layerWillBeRemoved.disconnect(self.timeLayerManager.removeTimeLayer)
         QgsMapLayerRegistry.instance().removeAll.disconnect(self.timeLayerManager.clearTimeLayerList)
@@ -54,7 +56,9 @@ class TimeManagerControl(QObject):
         self.iface.projectRead.connect(self.readSettings)
         self.iface.newProjectCreated.connect(self.restoreDefaults)
         self.iface.newProjectCreated.connect(self.disableAnimationExport)
-        QgsProject.instance().writeMapLayer.connect(self.writeSettings)
+        #QgsProject.instance().writeMapLayer.connect(self.writeSettings)
+        QObject.connect(QgsProject.instance(), SIGNAL("writeMapLayer( QgsMapLayer, QDomElement, "
+                                                      "QDomDocument )"), self.writeSettings)
         # this signal is responsible for keeping the animation running
         self.iface.mapCanvas().mapCanvasRefreshed.connect(self.waitAfterRenderComplete)
 

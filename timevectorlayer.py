@@ -14,6 +14,7 @@ from time_util import DEFAULT_FORMAT, strToDatetimeWithFormatHint, \
 from query_builder import QueryIdioms, DateTypes
 import query_builder
 
+
 POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
 DELIMITED_TEXT_TYPE='Delimited text file'
 STORAGE_TYPES_WITH_SQL=[POSTGRES_TYPE, DELIMITED_TEXT_TYPE]
@@ -41,6 +42,7 @@ class TimeVectorLayer(TimeLayer):
         self.toTimeAttribute = toTimeAttribute
         self.timeEnabled = enabled
         self.originalSubsetString = self.layer.subsetString()
+        self.provider = self.layer.dataProvider()
         self.type = DateTypes.determine_type(self.getRawMinValue())
         type2 = DateTypes.determine_type(self.getRawMaxValue())
         self.timeFormat = self._infer_time_format(self.getRawMinValue(),hint=str(timeFormat))
@@ -75,26 +77,27 @@ class TimeVectorLayer(TimeLayer):
     def debug(self, msg):
             QMessageBox.information(self.iface.mainWindow(),'Info', msg)
 
+    def getProvider(self):
+        return self.provider
+
     def getRawMinValue(self):
         """returns the raw minimum value. May not be the expected minimum value semantically if we
         have dates that are saves as strings because of lexicographic comparisons"""
-        provider = self.layer.dataProvider()
-        fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
-        minValue =  provider.minimumValue(fromTimeAttributeIndex)
+        fromTimeAttributeIndex = self.getProvider().fieldNameIndex(self.fromTimeAttribute)
+        minValue =  self.getProvider().minimumValue(fromTimeAttributeIndex)
         return minValue
 
     def getRawMaxValue(self):
         """returns the raw minimum value. May not be the expected minimum value semantically if we
         have dates that are saves as strings because of lexicographic comparisons"""
-        provider = self.layer.dataProvider()
-        toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
-        maxValue =  provider.minimumValue(toTimeAttributeIndex)
+        toTimeAttributeIndex = self.getProvider().fieldNameIndex(self.toTimeAttribute)
+        maxValue =  self.getProvider().minimumValue(toTimeAttributeIndex)
         return maxValue
 
     def getMinMaxValues(self):
         """Returns str"""
         if self.minValue is None or self.maxValue is None: # if not already computed
-            provider = self.layer.dataProvider()
+            provider = self.getProvider()
             fmt = self.getTimeFormat()
             fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
             toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
@@ -139,21 +142,27 @@ class TimeVectorLayer(TimeLayer):
         endTime += timedelta(seconds=self.offset)
         return startTime, endTime
 
+    def getStartTime(self, timePosition, timeFrame):
+        return timePosition + timedelta(seconds=self.offset)
+
+    def getEndTime(self, timePosition, timeFrame):
+        return timePosition + timeFrame + timedelta(seconds=self.offset)
+
     def setTimeRestriction(self, timePosition, timeFrame):
         """Constructs the query, including the original subset"""
         if not self.timeEnabled:
             self.deleteTimeRestriction()
             return
 
-        startTime = timePosition + timedelta(seconds=self.offset)
-        endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
+        startTime = self.getStartTime(timePosition, timeFrame)
+        endTime = self.getEndTime(timePosition, timeFrame)
 
         idioms_to_try = [QueryIdioms.SQL, QueryIdioms.OGR]
 
         if self.getDateType() in DateTypes.QDateTypes:
             idioms_to_try = [QueryIdioms.OGR]
 
-        if self.layer.dataProvider().storageType() in STORAGE_TYPES_WITH_SQL:
+        if self.getProvider().storageType() in STORAGE_TYPES_WITH_SQL:
             idioms_to_try = [QueryIdioms.SQL]
 
         for idiom in idioms_to_try:
