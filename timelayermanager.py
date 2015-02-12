@@ -100,9 +100,11 @@ class TimeLayerManager(QObject):
         self.timeLayerList = []
 
     def timeFrame(self):
-        """returns the current time frame as datetime.timedelta object"""
-        if self.timeFrameType == 'months':
-            return relativedelta(months=self.timeFrameSize) # months are not supported by timedelta
+        """returns the current time frame as datetime.timedelta or compatible dateutil.relativedelta.relativedelta object"""
+        if self.timeFrameType == 'years':
+            return relativedelta(years=self.timeFrameSize)   # years are not supported by timedelta
+        elif self.timeFrameType == 'months':
+            return relativedelta(months=self.timeFrameSize)  # months are not supported by timedelta
         elif self.timeFrameType == 'weeks':
             return timedelta(weeks=self.timeFrameSize)
         elif self.timeFrameType == 'days':
@@ -190,8 +192,8 @@ class TimeLayerManager(QObject):
         return self.timeLayerList
 
     def setTimeFrameType(self, frameType):
-        """Defines the type of the time frame, accepts all values usable by timedelta objects:
-        days, seconds, microseconds, milliseconds, minutes, hours, weeks"""
+        """Defines the type of the time frame, accepts all values usable by timedelta/relativedelta objects:
+        days, seconds, microseconds, milliseconds, minutes, hours, weeks, months, years"""
         self.timeFrameType = frameType
         self.refreshTimeRestrictions()
 
