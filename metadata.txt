@@ -7,8 +7,6 @@ author=Anita Graser, Karolina Alexiou (aka carolinux)
 email=anitagraser@gmx.at, carolinegr@gmail.com
 changelog=1.5.1
     - fixed #98 Qgis 2.6.1 chrashes after updating Timemanager
-1.5
-    iterative improvements by https://github.com/carolinux:
     - implemented #78 Add GUI for timestamp label settings
     - implemented #27 Support looping when playing backwards
     - implemented #93 Refactor read/write settings logic
