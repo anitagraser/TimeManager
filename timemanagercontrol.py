@@ -44,8 +44,7 @@ class TimeManagerControl(QObject):
         self.iface.newProjectCreated.disconnect(self.restoreDefaults)
         self.iface.newProjectCreated.disconnect(self.disableAnimationExport)
         #QgsProject.instance().writeMapLayer.disconnect(self.writeSettings)
-        QObject.disconnect(QgsProject.instance(), SIGNAL("writeMapLayer( QgsMapLayer *, "
-                                                         "QDomElement &, QDomDocument & )"),
+        QObject.disconnect(QgsProject.instance(), SIGNAL("writeProject(QDomDocument &)"),
                            self.writeSettings)
 
         QgsMapLayerRegistry.instance().layerWillBeRemoved.disconnect(self.timeLayerManager.removeTimeLayer)
@@ -58,9 +57,8 @@ class TimeManagerControl(QObject):
         self.iface.newProjectCreated.connect(self.restoreDefaults)
         self.iface.newProjectCreated.connect(self.disableAnimationExport)
         #QgsProject.instance().writeMapLayer.connect(self.writeSettings)
-        QObject.connect(QgsProject.instance(), SIGNAL("writeMapLayer( QgsMapLayer *, "
-                                                      "QDomElement&, "
-                                                      "QDomDocument& )"), self.writeSettings)
+        QObject.connect(QgsProject.instance(), SIGNAL("writeProject(QDomDocument &)"),
+                        self.writeSettings)
         # this signal is responsible for keeping the animation running
         self.iface.mapCanvas().mapCanvasRefreshed.connect(self.waitAfterRenderComplete)
 
@@ -355,10 +353,11 @@ class TimeManagerControl(QObject):
             return
         self.getTimeLayerManager().setCurrentTimePosition(QDateTime_to_datetime(qdate))
         
-    def writeSettings(self, layer, dom, dom2):
+    def writeSettings(self, doc):
         """write all relevant settings to the project file XML """
         if not self.getTimeLayerManager().isEnabled():
-            QgsProject.instance().clearProperties()
+            #QgsProject.instance().clearProperties() #FIXME this may clear non Time Manager
+            # custom properties too
             return
         (timeLayerManagerSettings,timeLayerList) = self.getTimeLayerManager().getSaveString()
         
@@ -395,7 +394,7 @@ class TimeManagerControl(QObject):
 
         settings = TimeManagerProjectHandler.readSettings(self.METASETTINGS)
 
-        QgsMessageLog.logMessage("Read settings "+str(settings))
+        #QgsMessageLog.logMessage("Read settings "+str(settings))
 
         restore_functions={
                  'currentMapTimePosition': (self.restoreTimePositionFromSettings,None),
