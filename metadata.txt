@@ -6,7 +6,9 @@ qgisMinimumVersion=2.3
 author=Anita Graser, Karolina Alexiou (aka carolinux)
 email=anitagraser@gmx.at, carolinegr@gmail.com
 changelog=1.5.2
-    - todo
+    - fixed #103 (critical)
+    - fixed #102 (metadata formatting)
+    - fixed #99 label options now work
     1.5.1
     - fixed #98 Qgis 2.6.1 chrashes after updating Timemanager
     1.5
