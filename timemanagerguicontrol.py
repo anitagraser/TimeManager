@@ -316,7 +316,6 @@ class TimeManagerGuiControl(QObject):
 
         self.layerIds=[]
         managedLayers=self.getManagedLayers()
-        tempname=''
         # fill the combo box with all available vector layers
         for (name,layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
             #if type(layer).__name__ == "QgsVectorLayer" and layer not in managedLayers:
@@ -331,11 +330,24 @@ class TimeManagerGuiControl(QObject):
 
         # get attributes of the first layer for gui initialization
         self.addLayerAttributes(0)
+        self.addInterpolationModes(self.addLayerDialog.comboBoxInterpolation)
         self.addLayerDialog.show()
 
         # establish connections
         self.addLayerDialog.comboBoxLayers.currentIndexChanged.connect(self.addLayerAttributes)
+        QObject.connect(self.addLayerDialog.comboBoxInterpolation,SIGNAL("currentIndexChanged(const QString &)"),
+            self.maybeEnableIDBox)
         self.addLayerDialog.buttonBox.accepted.connect(self.addLayerToOptions)
+
+    def maybeEnableIDBox(self, interpolation_mode):
+        if conf.INTERPOLATION_MODES[interpolation_mode]:
+            self.addLayerDialog.comboBoxID.setEnabled(True)
+            self.addLayerDialog.labelID1.setEnabled(True)
+            self.addLayerDialog.labelID2.setEnabled(True)
+        else:
+            self.addLayerDialog.comboBoxID.setEnabled(False)
+            self.addLayerDialog.labelID1.setEnabled(False)
+            self.addLayerDialog.labelID2.setEnabled(False)
 
     def getManagedLayers(self):
         """get list of QgsMapLayers listed in optionsDialog.tableWidget"""
@@ -344,11 +356,16 @@ class TimeManagerGuiControl(QObject):
         if self.optionsDialog.tableWidget is None:
             return
             
-        for row in range(0,self.optionsDialog.tableWidget.rowCount()):
+        for row in range(self.optionsDialog.tableWidget.rowCount()):
             # layer
             layer=QgsMapLayerRegistry.instance().mapLayers()[self.optionsDialog.tableWidget.item(row,4).text()]
             layerList.append(layer)
         return layerList
+
+    def addInterpolationModes(self, comboBox):
+        comboBox.clear()
+        for mode in conf.INTERPOLATION_MODES.keys():
+            comboBox.addItem(mode)
 
     def addLayerAttributes(self,comboIndex):
         """get list layer attributes and fill the combo boxes"""
@@ -359,10 +376,13 @@ class TimeManagerGuiControl(QObject):
             return
         self.addLayerDialog.comboBoxStart.clear()
         self.addLayerDialog.comboBoxEnd.clear()
+        self.addLayerDialog.comboBoxID.clear()
         self.addLayerDialog.comboBoxEnd.addItem('') # this box is optional, so we add an empty item
+        self.addLayerDialog.comboBoxID.addItem('None - every geometry has the same ID')
         for attr in fieldmap: 
             self.addLayerDialog.comboBoxStart.addItem(attr.name())
             self.addLayerDialog.comboBoxEnd.addItem(attr.name())
+            self.addLayerDialog.comboBoxID.addItem(attr.name())
 
     def addLayerToOptions(self):
         """write information from addLayerDialog to optionsDialog.tableWidget"""
