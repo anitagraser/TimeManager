@@ -191,6 +191,11 @@
           <string>months</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>years</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item>

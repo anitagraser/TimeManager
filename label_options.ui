@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>dialog</class>
- <widget class="QDialog" name="dialog">
+ <class>labelOptions</class>
+ <widget class="QDialog" name="labelOptions">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -132,9 +132,8 @@
     </item>
    </layout>
   </widget>
-  <zorder>label_4</zorder>
   <zorder>layoutWidget</zorder>
-  <zorder></zorder>
+  <zorder>label_4</zorder>
  </widget>
  <customwidgets>
   <customwidget>
@@ -148,7 +147,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>dialog</receiver>
+   <receiver>labelOptions</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -164,7 +163,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>dialog</receiver>
+   <receiver>labelOptions</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

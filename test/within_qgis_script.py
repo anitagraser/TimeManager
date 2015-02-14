@@ -90,7 +90,8 @@ with open(tmp_file.name) as f:
 assert("TimeManager" in text)
 assert("active" in text)
 assert("currentMapTimePosition" in text)
-os.remove(tmp_file.name)
+
+#os.remove(tmp_file.name)
 
 # add second layer
 ## load tweets layer again but with 2011 timestamps

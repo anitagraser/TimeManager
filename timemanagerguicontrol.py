@@ -10,6 +10,7 @@ from string import replace
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import uic
+from PyQt4 import QtGui as QtGui
 
 
 from timelayerfactory import TimeLayerFactory
@@ -19,6 +20,7 @@ from time_util import QDateTime_to_datetime, \
     datetime_to_str, DEFAULT_FORMAT
 import conf
 import qgis_utils as qgs
+from ui import label_options
 
 # The QTSlider only supports integers as the min and max, therefore the maximum maximum value
 # is whatever can be stored in an int. Making it a signed int to be sure.
@@ -29,7 +31,6 @@ MAX_TIME_LENGTH_SECONDS = 2**31-1
 MIN_QDATE = QDate(100, 1, 1)
 
 DOCK_WIDGET_FILE = "dockwidget2.ui"
-LABEL_WIDGET_FILE = "label_options.ui"
 
 
 class TimestampLabelConfig(object):
@@ -104,9 +105,10 @@ class TimeManagerGuiControl(QObject):
         return self.optionsDialog
 
     def showLabelOptions(self):
-        # TODO maybe more clearly (not inline here)
-        path = os.path.dirname( os.path.abspath( __file__ ) )
-        self.labelOptionsDialog = uic.loadUi(os.path.join(path,LABEL_WIDGET_FILE ))
+        # TODO maybe more clearly
+        self.dialog = QtGui.QDialog()
+        self.labelOptionsDialog = label_options.Ui_labelOptions()
+        self.labelOptionsDialog.setupUi(self.dialog)
         self.labelOptionsDialog.fontsize.setValue(self.labelOptions.size)
         self.labelOptionsDialog.time_format.setText(self.labelOptions.fmt)
         self.labelOptionsDialog.font.setCurrentFont(QFont(self.labelOptions.font))
@@ -117,7 +119,7 @@ class TimeManagerGuiControl(QObject):
         self.labelOptionsDialog.bg_color.setColor(QColor(self.labelOptions.bgcolor))
         self.labelOptionsDialog.buttonBox.accepted.connect(self.saveLabelOptions)
 
-        self.labelOptionsDialog.show()
+        self.dialog.show()
 
     def saveLabelOptions(self):
         self.labelOptions.font =  self.labelOptionsDialog.font.currentFont().family()
