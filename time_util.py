@@ -61,16 +61,17 @@ SUPPORTED_FORMATS = list(set(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS +
 
 
 def timeval_to_epoch(val):
-    """Converts any datetime or Qdate or QDatetime to epoch"""
+    """Converts any string,datetime or Qdate or QDatetime to epoch"""
     try: # if it's already epoch, return self
         int(val)
         return val
     except:
         if type(val) in [ QtCore.QDate, QtCore.QDateTime]:
             val = QDateTime_to_datetime(val)
-        if type(val) != datetime:
-            raise UnsupportedFormatException
+        if type(val) in [str,basestring,unicode]:
+            val= str_to_datetime(val,DEFAULT_FORMAT)
         return datetime_to_epoch(val)
+
 
 def QDateTime_to_datetime(date):
     try:

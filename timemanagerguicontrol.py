@@ -187,10 +187,7 @@ class TimeManagerGuiControl(QObject):
         for layer in layerList:
             
             layerName=layer.getName()
-            if layer.isEnabled():
-                checkState=Qt.Checked
-            else:
-                checkState=Qt.Unchecked
+            enabled = layer.isEnabled()
             layerId=layer.getLayerId()
             offset=layer.getOffset()
 
@@ -201,7 +198,13 @@ class TimeManagerGuiControl(QObject):
             else:
                 endTime = ""
             timeFormat=layer.getTimeFormat()
-            self.addRowToOptionsTable(layerName,checkState,layerId,offset,timeFormat,startTime,endTime)
+            interpolation_enabled = layer.isInterpolationEnabled()
+            if interpolation_enabled:
+                idAttr = "" if not layer.hasIdAttribute() else layer.getIdAttribute()
+            else:
+                idAttr = ""
+            self.addRowToOptionsTable(layerName,enabled,layerId,offset,timeFormat,startTime,
+                                      endTime,interpolation_enabled, idAttr)
         
         # restore animation options
         self.optionsDialog.spinBoxFrameLength.setValue(animationFrameLength)
@@ -242,7 +245,7 @@ class TimeManagerGuiControl(QObject):
         self.saveOptionsStart.emit()
         
         # loop through the rows in the table widget and add all layers accordingly
-        for row in range(0,self.optionsDialog.tableWidget.rowCount()):
+        for row in range(self.optionsDialog.tableWidget.rowCount()):
             try:
                 # add layer
                 #FIXME this logic should be moved into the Controller/Model
@@ -284,17 +287,22 @@ class TimeManagerGuiControl(QObject):
             endTimeAttribute = startTimeAttribute
         else:
             endTimeAttribute = self.optionsDialog.tableWidget.item(row,2).text()
+
         # time format
         timeFormat = self.optionsDialog.tableWidget.item(row,5).text()
-
+        interpolation_enabled =(self.optionsDialog.tableWidget.item(row,7).checkState() ==  Qt.Checked)
+        idAttribute = self.optionsDialog.tableWidget.item(row,8).text()
+        if idAttribute =="":
+            idAttribute = None
         try:
-            timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(layer, interpolate=True)(
-                layer,startTimeAttribute,endTimeAttribute,isEnabled,timeFormat,offset, self.iface)
-            QgsMessageLog.logMessage("created layer OK")
-        except InvalidTimeLayerError, e:
-            QgsMessageLog.logMessage("exception???")
-            QMessageBox.information(self.iface.mainWindow(),'Error','An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+e.value)
-            raise InvalidTimeLayerError(e)
+            timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(layer, interpolate=interpolation_enabled)(
+                layer,startTimeAttribute,endTimeAttribute,enabled = isEnabled,
+                timeFormat=timeFormat, offset=offset, iface=self.iface, idAttribute=idAttribute)
+        except Exception,e:
+            QgsMessageLog.logMessage("Error creating timelayer:"+e)
+            QMessageBox.information(self.optionsDialog,'Error',
+                                    'An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+str(e))
+            return
         self.registerTimeLayer.emit(timeLayer)
 
     def setOptionsDialogToNone(self):
@@ -380,7 +388,7 @@ class TimeManagerGuiControl(QObject):
         self.addLayerDialog.comboBoxEnd.clear()
         self.addLayerDialog.comboBoxID.clear()
         self.addLayerDialog.comboBoxEnd.addItem('') # this box is optional, so we add an empty item
-        self.addLayerDialog.comboBoxID.addItem('None - every geometry has the same ID')
+        self.addLayerDialog.comboBoxID.addItem(conf.NO_ID_TEXT)
         for attr in fieldmap: 
             self.addLayerDialog.comboBoxStart.addItem(attr.name())
             self.addLayerDialog.comboBoxEnd.addItem(attr.name())
@@ -391,26 +399,31 @@ class TimeManagerGuiControl(QObject):
         layerName = self.addLayerDialog.comboBoxLayers.currentText()
         startTime = self.addLayerDialog.comboBoxStart.currentText()
         endTime = self.addLayerDialog.comboBoxEnd.currentText()
-        checkState = Qt.Checked
+        enabled = True
         layerId = self.layerIds[self.addLayerDialog.comboBoxLayers.currentIndex()]
         timeFormat = DEFAULT_FORMAT
         offset = self.addLayerDialog.spinBoxOffset.value()
+        interpolation_mode = self.addLayerDialog.comboBoxInterpolation.currentText()
+        interpolation_enabled = conf.INTERPOLATION_MODES[interpolation_mode]
+        idAttr = self.addLayerDialog.comboBoxID.currentText() if interpolation_enabled else None
+        idAttr = "" if idAttr==conf.NO_ID_TEXT else idAttr
+        self.addRowToOptionsTable(layerName,enabled,layerId,offset,timeFormat,startTime,
+                                  endTime, interpolation_enabled,idAttr)
 
-        self.addRowToOptionsTable(layerName,checkState,layerId,offset,timeFormat,startTime,endTime)
-
-    def addRowToOptionsTable(self,layerName,checkState,layerId,offset,timeFormat="",startTime="",endTime=""):
+    def addRowToOptionsTable(self,layerName,enabled,layerId,offset,timeFormat="",
+                             startTime="",endTime="", interpolation_enabled=False,ID=""):
         """insert a new row into optionsDialog.tableWidget"""
         # insert row
         row = self.optionsDialog.tableWidget.rowCount()
         self.optionsDialog.tableWidget.insertRow(row)
         # insert values
-        for i,value in enumerate([layerName, startTime, endTime, checkState, layerId,
-                                 timeFormat, str(offset)]):
+        for i,value in enumerate([layerName, startTime, endTime, enabled, layerId,
+                                 timeFormat, str(offset), interpolation_enabled, ID]):
             item = QTableWidgetItem()
-            if i!=3:
+            if type(value)!=bool:
                 item.setText(value)
             else:
-                item.setCheckState(checkState)
+                item.setCheckState(Qt.Checked if value else Qt.Unchecked)
             self.optionsDialog.tableWidget.setItem(row,i,item)
 
     def disableAnimationExport(self):

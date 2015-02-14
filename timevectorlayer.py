@@ -32,7 +32,7 @@ class TimeVectorLayer(TimeLayer):
         return tf
 
     def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,
-                 timeFormat=DEFAULT_FORMAT,offset=0, iface=None):
+                 timeFormat=DEFAULT_FORMAT,offset=0, iface=None, **kwargs):
         TimeLayer.__init__(self,layer,enabled)
         
         self.layer = layer

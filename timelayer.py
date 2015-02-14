@@ -11,6 +11,9 @@ class TimeLayer:
         self.layer = layer
         self.timeEnabled = enabled
 
+    def isInterpolationEnabled(self):
+        return False
+
     def getLayer(self):
         """Get the layer associated with the current timeLayer"""
         return self.layer

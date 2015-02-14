@@ -16,19 +16,25 @@ except:
 
 DEFAULT_ID = 0
 
-
 #TODO Modify ctrl.restoreTimeLayers to be able to recreate a TimeVectorInterpolated layer
-#TODO and teh layerfactory
 #TODO: Just points types? Why not also lines or polygon move?
 #TODO: What about totimeattr
+#TODO: Why no exception thrown upon creation when there is sth wrong??
 
 class TimeVectorInterpolatedLayer(TimeVectorLayer):
+
+    def isInterpolationEnabled(self):
+        return True
 
     def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,
                  timeFormat=DEFAULT_FORMAT,offset=0, iface=None, idAttribute=None):
         TimeVectorLayer.__init__(self,layer,fromTimeAttribute,toTimeAttribute,
-                                 enabled=enabled,timeFormat=timeFormat,offset=offset, iface=iface)
+                                 enabled=enabled,timeFormat=timeFormat,offset=offset,
+                                 iface=iface)
         QgsMessageLog.logMessage("Making layer???")
+        #pyqtRemoveInputHook()
+        #import pdb
+        #pdb.set_trace()
         try:
             import numpy as np
         except:
@@ -89,12 +95,15 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
 
         self.n=0
         self.previous_ids = set()
+        QgsMessageLog.logMessage("Created layer successfully!")
 
 
     def _getGeomForIdTime(self,id, epoch, attr="from"):
         if attr=="from":
             return self.id_time_to_geom[(id,epoch)]
 
+    def getIdAttribute(self):
+        return self.idAttribute
 
     def hasIdAttribute(self):
         return self.idAttribute is not None
