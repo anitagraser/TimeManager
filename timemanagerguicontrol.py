@@ -19,6 +19,7 @@ from time_util import QDateTime_to_datetime, \
 import conf
 import qgis_utils as qgs
 from ui import label_options
+import layer_settings as ls
 
 # The QTSlider only supports integers as the min and max, therefore the maximum maximum value
 # is whatever can be stored in an int. Making it a signed int to be sure.
@@ -29,6 +30,7 @@ MAX_TIME_LENGTH_SECONDS = 2**31-1
 MIN_QDATE = QDate(100, 1, 1)
 
 DOCK_WIDGET_FILE = "dockwidget2.ui"
+ADD_LAYER_WIDGET_FILE ="addLayer.ui"
 
 
 class TimestampLabelConfig(object):
@@ -68,12 +70,12 @@ class TimeManagerGuiControl(QObject):
         self.showLabel = False
         self.labelOptions = TimestampLabelConfig()
         self.optionsDialog = None
+        self.path = os.path.dirname( os.path.abspath( __file__ ) )
         
         # load the form
-        path = os.path.dirname( os.path.abspath( __file__ ) )
-        self.dock = uic.loadUi( os.path.join( path, DOCK_WIDGET_FILE ) )
+        self.dock = uic.loadUi( os.path.join(self.path, DOCK_WIDGET_FILE ) )
         self.iface.addDockWidget( Qt.BottomDockWidgetArea, self.dock )
-        
+
         self.dock.pushButtonExportVideo.setEnabled(False) # only enabled if there are managed layers
         self.dock.pushButtonOptions.clicked.connect(self.optionsClicked) 
         self.dock.pushButtonExportVideo.clicked.connect(self.exportVideoClicked)
@@ -178,12 +180,11 @@ class TimeManagerGuiControl(QObject):
             return
         
         # load the form
-        path = os.path.dirname( os.path.abspath( __file__ ) )
-        self.optionsDialog = uic.loadUi(os.path.join(path,"options.ui"))
+        self.optionsDialog = uic.loadUi(os.path.join(self.path,"options.ui"))
        
         # restore settings from layerList:
         for layer in layerList:
-            settings = layer.getSettings()
+            settings = ls.getSettingsFromLayer(layer)
             self.addRowToOptionsTable(*settings)
         
         # restore animation options
@@ -212,9 +213,9 @@ class TimeManagerGuiControl(QObject):
         
     def showHelp(self):
         """show the help dialog"""
-        path = os.path.dirname( os.path.abspath( __file__ ) )
-        self.helpDialog = uic.loadUi(os.path.join(path,"help.ui"))
-        helpPath = QUrl('file:///'+replace(os.path.join(path,"help.htm"),'\\','/')) # windows hack: Qt expects / instead of \
+        self.helpDialog = uic.loadUi(os.path.join(self.path,"help.ui"))
+        helpPath = QUrl('file:///'+replace(os.path.join(self.path,"help.htm"),'\\','/')) # windows
+        # hack: Qt expects / instead of \
         #QMessageBox.information(self.iface.mainWindow(),'Error',str(helpPath))
         self.helpDialog.textBrowser.setSource(helpPath)
         self.helpDialog.show()
@@ -222,7 +223,6 @@ class TimeManagerGuiControl(QObject):
     def saveOptions(self):
         """save the options from optionsDialog to timeLayerManager"""
         self.saveOptionsStart.emit()
-        
         # loop through the rows in the table widget and add all layers accordingly
         for row in range(self.optionsDialog.tableWidget.rowCount()):
             try:
@@ -235,19 +235,12 @@ class TimeManagerGuiControl(QObject):
                 loopAnimation = self.optionsDialog.checkBoxLoop.isChecked()
 
                 self.signalAnimationOptions.emit(animationFrameLength,playBackwards,loopAnimation)
-                
                 self.refreshMapCanvas('saveOptions')
-                if len(self.getManagedLayers()) > 0:
-                    self.dock.pushButtonExportVideo.setEnabled(True)
-                else:
-                    self.dock.pushButtonExportVideo.setEnabled(False)
+                self.dock.pushButtonExportVideo.setEnabled(True)
             except:
                 continue
         self.saveOptionsEnd.emit()
 
-    def setAnimationOptions(self):
-        #TODO
-        pass
 
     def debug(self, msg):
             QMessageBox.information(self.iface.mainWindow(),'Info', msg)
@@ -267,15 +260,15 @@ class TimeManagerGuiControl(QObject):
             self.optionsDialog.tableWidget.removeRow(self.optionsDialog.tableWidget.currentRow())     
             
     def showAddLayerDialog(self):
-        """show the addLayerDialog and populate it with QgsVectorLayers from QgsMapLayerRegistry"""
-        path = os.path.dirname( os.path.abspath( __file__ ) )
-        self.addLayerDialog = uic.loadUi(os.path.join(path,"addLayer.ui"))
+        """show the addLayerDialog and populate it with layers from QgsMapLayerRegistry
+        that haven't already been added"""
 
-        self.layerIds=[]
-        managedLayers=self.getManagedLayers()
+        self.addLayerDialog = uic.loadUi(os.path.join(self.path, ADD_LAYER_WIDGET_FILE))
+
+        self.layerIds=[] #FFIXME keep state in a different way
+        managedLayers=self.getLayersAlreadyInTable()
         # fill the combo box with all available vector layers
         for (name,layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
-            #if type(layer).__name__ == "QgsVectorLayer" and layer not in managedLayers:
             if layer not in managedLayers:
                 self.layerIds.append(name)
                 tempname = unicode(layer.name())#.rstrip('01234567890') # stripping out the trailing numeric code
@@ -306,15 +299,14 @@ class TimeManagerGuiControl(QObject):
             self.addLayerDialog.labelID1.setEnabled(False)
             self.addLayerDialog.labelID2.setEnabled(False)
 
-    def getManagedLayers(self):
+    def getLayersAlreadyInTable(self):
         """get list of QgsMapLayers listed in optionsDialog.tableWidget"""
         #FIXME Should the GUI be the sole keeper of this state?
         layerList=[]
         if self.optionsDialog.tableWidget is None:
-            return
+            return layerList
             
         for row in range(self.optionsDialog.tableWidget.rowCount()):
-            # layer
             layer=QgsMapLayerRegistry.instance().mapLayers()[self.optionsDialog.tableWidget.item(row,4).text()]
             layerList.append(layer)
         return layerList
@@ -343,19 +335,8 @@ class TimeManagerGuiControl(QObject):
 
     def addLayerToOptions(self):
         """write information from addLayerDialog to optionsDialog.tableWidget"""
-        layerName = self.addLayerDialog.comboBoxLayers.currentText()
-        startTime = self.addLayerDialog.comboBoxStart.currentText()
-        endTime = self.addLayerDialog.comboBoxEnd.currentText()
-        enabled = True
-        layerId = self.layerIds[self.addLayerDialog.comboBoxLayers.currentIndex()]
-        timeFormat = DEFAULT_FORMAT
-        offset = self.addLayerDialog.spinBoxOffset.value()
-        interpolation_mode = self.addLayerDialog.comboBoxInterpolation.currentText()
-        interpolation_enabled = conf.INTERPOLATION_MODES[interpolation_mode]
-        idAttr = self.addLayerDialog.comboBoxID.currentText() if interpolation_enabled else None
-        idAttr = "" if idAttr==conf.NO_ID_TEXT else idAttr
-        self.addRowToOptionsTable(layerName,enabled,layerId,offset,timeFormat,startTime,
-                                  endTime, interpolation_enabled,idAttr)
+        settings = ls.getSettingsFromAddLayersUI(self.addLayerDialog, self.layerIds)
+        self.addRowToOptionsTable(*settings)
 
     def addRowToOptionsTable(self,layerName,enabled,layerId,offset,timeFormat="",
                              startTime="",endTime="", interpolation_enabled=False,ID=""):

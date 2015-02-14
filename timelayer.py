@@ -33,30 +33,6 @@ class TimeLayer:
     def getIdAttribute(self):
         return None
 
-    def getSettings(self):
-        """Get the layer's settings as a tuple"""
-
-        layerName=self.getName()
-        enabled = self.isEnabled()
-        layerId=self.getLayerId()
-        offset=self.getOffset()
-
-        times=self.getTimeAttributes()
-        startTime=times[0]
-        if times[0] != times[1]: # end time equals start time for timeLayers of type timePoint
-            endTime = times[1]
-        else:
-            endTime = ""
-        timeFormat= self.getTimeFormat()
-        interpolation_enabled = self.isInterpolationEnabled()
-        if interpolation_enabled:
-            idAttr = "" if not self.hasIdAttribute() else self.getIdAttribute()
-        else:
-            idAttr = ""
-
-        return (layerName,enabled,layerId,offset,timeFormat,startTime,
-                                      endTime,interpolation_enabled, idAttr)
-
     def getLayer(self):
         """Get the layer associated with the current timeLayer"""
         return self.layer

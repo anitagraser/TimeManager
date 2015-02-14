@@ -435,39 +435,22 @@ class TimeManagerControl(QObject):
         """restore timeLayerManager"""
         self.timeLayerManager.restoreFromSaveString(value)
   
-    def restoreTimeLayers(self, value):
+    def restoreTimeLayers(self, layerInfos):
         """restore all time layers"""
-        #FIXME What is value here?
-        if value:
-            layerInfo = value
-            if len(layerInfo):
+        if layerInfos:
+            if len(layerInfos)>0:
                 self.guiControl.enableAnimationExport()
-            for l in layerInfo: # for every layer entry
-                l = l.split(';')
-                layer = QgsMapLayerRegistry.instance().mapLayer(l[0]) # get the layer
-                if not layer:
-                    continue
-
-                timeLayerClass = TimeLayerFactory.get_timelayer_class_from_layer(layer)
-                if timeLayerClass == TimeVectorLayer:
-                    layer.setSubsetString(l[1]) # restore the original subset string, only available for vector layers!
-                    
-                startTimeAttribute=l[2]
-                endTimeAttribute=l[3]
-                isEnabled=l[4]
-                timeFormat=l[5]
-                
+            for l in layerInfos: # for every layer entry
                 try:
-                    offset=l[6]
-                except IndexError: # old versions didn't have an offset option
-                    offset=0
-                    
-                try: # here we use the previously determined class
-                    timeLayer = timeLayerClass(layer,startTimeAttribute,endTimeAttribute,isEnabled,timeFormat,offset)
+                    layer,isEnabled,offset,timeFormat,startTimeAttribute,\
+                                  endTimeAttribute,interpolation_enabled, idAttr = ls.getSettingsFromSaveStr(l)
+
+                    timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(layer,interpolate=interpolation_enabled)(layer,
+                                                startTimeAttribute,endTimeAttribute,isEnabled,timeFormat,offset)
                 except InvalidTimeLayerError, e:
-                    self.showMessage('An error occured while trying to add layer '+layer.name()+' to \
-                            TimeManager.\n'+e.value)
-                    return
+                    self.showMessage('An error occured while trying to add layer  to \
+                            TimeManager.\n'+str(e))
+                    continue
                
                 self.timeLayerManager.registerTimeLayer(timeLayer) 
                 self.guiControl.showLabel = True
@@ -476,31 +459,13 @@ class TimeManagerControl(QObject):
     #FFIX createtimelayer either from string or from row should be abstracted away
     def createTimeLayer(self,row):
         """create a TimeLayer from options set in the table row"""
-        layer=QgsMapLayerRegistry.instance().mapLayer(
-            self.guiControl.optionsDialog.tableWidget.item(row,4).text())
-        isEnabled = (self.guiControl.optionsDialog.tableWidget.item(row,3).checkState() ==
-                     Qt.Checked)
-        # offset
-        offset = int(self.guiControl.optionsDialog.tableWidget.item(row,6).text()) # currently
-
-        startTimeAttribute = self.guiControl.optionsDialog.tableWidget.item(row,1).text()
-        # end time (optional)
-        if self.guiControl.optionsDialog.tableWidget.item(row,2).text() == "":
-            endTimeAttribute = startTimeAttribute
-        else:
-            endTimeAttribute = self.guiControl.optionsDialog.tableWidget.item(row,2).text()
-
-        # time format
-        timeFormat = self.guiControl.optionsDialog.tableWidget.item(row,5).text()
-        interpolation_enabled =(self.guiControl.optionsDialog.tableWidget.item(row,7).checkState()
-                                ==  Qt.Checked)
-        idAttribute = self.guiControl.optionsDialog.tableWidget.item(row,8).text()
-        if idAttribute =="":
-            idAttribute = None
+        layer,isEnabled,layerId,offset,timeFormat,\
+            startTimeAttribute,endTimeAttribute,interpolation_enabled, \
+            idAttr =ls.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
         try:
             timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(layer, interpolate=interpolation_enabled)(
                 layer,startTimeAttribute,endTimeAttribute,enabled = isEnabled,
-                timeFormat=timeFormat, offset=offset, iface=self.iface, idAttribute=idAttribute)
+                timeFormat=timeFormat, offset=offset, iface=self.iface, idAttribute=idAttr)
         except Exception,e:
             QgsMessageLog.logMessage("Error creating timelayer:"+e)
             QMessageBox.information(self.optionsDialog,'Error',
