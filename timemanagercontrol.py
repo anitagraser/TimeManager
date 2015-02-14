@@ -88,7 +88,7 @@ class TimeManagerControl(QObject):
         self.guiControl.saveOptionsStart.connect(self.timeLayerManager.clearTimeLayerList)
         self.guiControl.saveOptionsEnd.connect(self.timeLayerManager.refreshTimeRestrictions)
         self.guiControl.signalAnimationOptions.connect(self.setAnimationOptions)
-        self.guiControl.registerTimeLayer.connect(self.timeLayerManager.registerTimeLayer)
+        self.guiControl.createTimeLayerFromRow.connect(self.createTimeLayer)
 
         # create actions
         # F8 button press - show time manager settings
@@ -472,6 +472,42 @@ class TimeManagerControl(QObject):
                 self.timeLayerManager.registerTimeLayer(timeLayer) 
                 self.guiControl.showLabel = True
                 self.guiControl.refreshMapCanvas('restoreTimeLayer')
+
+    #FFIX createtimelayer either from string or from row should be abstracted away
+    def createTimeLayer(self,row):
+        """create a TimeLayer from options set in the table row"""
+        layer=QgsMapLayerRegistry.instance().mapLayer(
+            self.guiControl.optionsDialog.tableWidget.item(row,4).text())
+        isEnabled = (self.guiControl.optionsDialog.tableWidget.item(row,3).checkState() ==
+                     Qt.Checked)
+        # offset
+        offset = int(self.guiControl.optionsDialog.tableWidget.item(row,6).text()) # currently
+
+        startTimeAttribute = self.guiControl.optionsDialog.tableWidget.item(row,1).text()
+        # end time (optional)
+        if self.guiControl.optionsDialog.tableWidget.item(row,2).text() == "":
+            endTimeAttribute = startTimeAttribute
+        else:
+            endTimeAttribute = self.guiControl.optionsDialog.tableWidget.item(row,2).text()
+
+        # time format
+        timeFormat = self.guiControl.optionsDialog.tableWidget.item(row,5).text()
+        interpolation_enabled =(self.guiControl.optionsDialog.tableWidget.item(row,7).checkState()
+                                ==  Qt.Checked)
+        idAttribute = self.guiControl.optionsDialog.tableWidget.item(row,8).text()
+        if idAttribute =="":
+            idAttribute = None
+        try:
+            timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(layer, interpolate=interpolation_enabled)(
+                layer,startTimeAttribute,endTimeAttribute,enabled = isEnabled,
+                timeFormat=timeFormat, offset=offset, iface=self.iface, idAttribute=idAttribute)
+        except Exception,e:
+            QgsMessageLog.logMessage("Error creating timelayer:"+e)
+            QMessageBox.information(self.optionsDialog,'Error',
+                                    'An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+str(e))
+            return
+        self.getTimeLayerManager().registerTimeLayer(timeLayer)
+
     
     def setActive(self,value):
         """de/activate the whole thing"""

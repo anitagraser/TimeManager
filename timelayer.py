@@ -1,11 +1,12 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-from datetime import datetime, timedelta
-from qgis.core import *
+import abc
 
 class TimeLayer:
     """Manages the properties of a managed (managable) layer."""
+
+    __metaclass__ = abc.ABCMeta # this class cannot be instantiated directly
 
     def __init__(self,layer,enabled=True):
         self.layer = layer
@@ -13,6 +14,48 @@ class TimeLayer:
 
     def isInterpolationEnabled(self):
         return False
+
+    @abc.abstractmethod
+    def getOffset(self):
+        pass
+
+    @abc.abstractmethod
+    def getTimeFormat(self):
+        pass
+
+    @abc.abstractmethod
+    def getTimeAttributes(self):
+        pass
+
+    def hasIdAttribute(self):
+        return False
+
+    def getIdAttribute(self):
+        return None
+
+    def getSettings(self):
+        """Get the layer's settings as a tuple"""
+
+        layerName=self.getName()
+        enabled = self.isEnabled()
+        layerId=self.getLayerId()
+        offset=self.getOffset()
+
+        times=self.getTimeAttributes()
+        startTime=times[0]
+        if times[0] != times[1]: # end time equals start time for timeLayers of type timePoint
+            endTime = times[1]
+        else:
+            endTime = ""
+        timeFormat= self.getTimeFormat()
+        interpolation_enabled = self.isInterpolationEnabled()
+        if interpolation_enabled:
+            idAttr = "" if not self.hasIdAttribute() else self.getIdAttribute()
+        else:
+            idAttr = ""
+
+        return (layerName,enabled,layerId,offset,timeFormat,startTime,
+                                      endTime,interpolation_enabled, idAttr)
 
     def getLayer(self):
         """Get the layer associated with the current timeLayer"""

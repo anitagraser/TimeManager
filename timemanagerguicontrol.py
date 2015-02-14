@@ -12,8 +12,6 @@ from PyQt4.QtGui import *
 from PyQt4 import uic
 from PyQt4 import QtGui as QtGui
 
-
-from timelayerfactory import TimeLayerFactory
 from timevectorlayer import *
 from timerasterlayer import *
 from time_util import QDateTime_to_datetime, \
@@ -61,7 +59,7 @@ class TimeManagerGuiControl(QObject):
     signalAnimationOptions = pyqtSignal(int,bool,bool)
     saveOptionsStart = pyqtSignal()
     saveOptionsEnd = pyqtSignal()
-    registerTimeLayer = pyqtSignal(object)
+    createTimeLayerFromRow = pyqtSignal(object)
     
     def __init__ (self,iface):
         """initialize the GUI control"""
@@ -183,28 +181,10 @@ class TimeManagerGuiControl(QObject):
         path = os.path.dirname( os.path.abspath( __file__ ) )
         self.optionsDialog = uic.loadUi(os.path.join(path,"options.ui"))
        
-        # restore options from layerList:
+        # restore settings from layerList:
         for layer in layerList:
-            
-            layerName=layer.getName()
-            enabled = layer.isEnabled()
-            layerId=layer.getLayerId()
-            offset=layer.getOffset()
-
-            times=layer.getTimeAttributes()
-            startTime=times[0]
-            if times[0] != times[1]: # end time equals start time for timeLayers of type timePoint
-                endTime = times[1]
-            else:
-                endTime = ""
-            timeFormat=layer.getTimeFormat()
-            interpolation_enabled = layer.isInterpolationEnabled()
-            if interpolation_enabled:
-                idAttr = "" if not layer.hasIdAttribute() else layer.getIdAttribute()
-            else:
-                idAttr = ""
-            self.addRowToOptionsTable(layerName,enabled,layerId,offset,timeFormat,startTime,
-                                      endTime,interpolation_enabled, idAttr)
+            settings = layer.getSettings()
+            self.addRowToOptionsTable(*settings)
         
         # restore animation options
         self.optionsDialog.spinBoxFrameLength.setValue(animationFrameLength)
@@ -241,15 +221,13 @@ class TimeManagerGuiControl(QObject):
 
     def saveOptions(self):
         """save the options from optionsDialog to timeLayerManager"""
-        #self.emit(SIGNAL('saveOptionsStart()'),)
         self.saveOptionsStart.emit()
         
         # loop through the rows in the table widget and add all layers accordingly
         for row in range(self.optionsDialog.tableWidget.rowCount()):
             try:
-                # add layer
-                #FIXME this logic should be moved into the Controller/Model
-                self.createTimeLayer(row)
+                # add layer from row information
+                self.createTimeLayerFromRow.emit(row)
                 # save animation options
                 animationFrameLength = self.optionsDialog.spinBoxFrameLength.value()
                 playBackwards = self.optionsDialog.checkBoxBackwards.isChecked()
@@ -273,37 +251,6 @@ class TimeManagerGuiControl(QObject):
 
     def debug(self, msg):
             QMessageBox.information(self.iface.mainWindow(),'Info', msg)
-            
-    def createTimeLayer(self,row):
-        """create a TimeLayer from options set in the table row"""
-        layer=QgsMapLayerRegistry.instance().mapLayer(self.optionsDialog.tableWidget.item(row,4).text())
-        isEnabled = (self.optionsDialog.tableWidget.item(row,3).checkState() == Qt.Checked)
-        # offset
-        offset = int(self.optionsDialog.tableWidget.item(row,6).text()) # currently only seconds!
-        # start time
-        startTimeAttribute = self.optionsDialog.tableWidget.item(row,1).text()
-        # end time (optional)
-        if self.optionsDialog.tableWidget.item(row,2).text() == "":
-            endTimeAttribute = startTimeAttribute
-        else:
-            endTimeAttribute = self.optionsDialog.tableWidget.item(row,2).text()
-
-        # time format
-        timeFormat = self.optionsDialog.tableWidget.item(row,5).text()
-        interpolation_enabled =(self.optionsDialog.tableWidget.item(row,7).checkState() ==  Qt.Checked)
-        idAttribute = self.optionsDialog.tableWidget.item(row,8).text()
-        if idAttribute =="":
-            idAttribute = None
-        try:
-            timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(layer, interpolate=interpolation_enabled)(
-                layer,startTimeAttribute,endTimeAttribute,enabled = isEnabled,
-                timeFormat=timeFormat, offset=offset, iface=self.iface, idAttribute=idAttribute)
-        except Exception,e:
-            QgsMessageLog.logMessage("Error creating timelayer:"+e)
-            QMessageBox.information(self.optionsDialog,'Error',
-                                    'An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+str(e))
-            return
-        self.registerTimeLayer.emit(timeLayer)
 
     def setOptionsDialogToNone(self):
         """set self.optionsDialog to None"""

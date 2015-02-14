@@ -27,7 +27,7 @@ class TimeRasterLayer(TimeLayer):
         try:
             self.getTimeExtents()
         except NotATimeAttributeError, e:
-            raise InvalidTimeLayerError(e.value)
+            raise InvalidTimeLayerError(e)
             
     def getTimeAttributes(self):
         """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""

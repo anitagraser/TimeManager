@@ -13,6 +13,7 @@ from time_util import DEFAULT_FORMAT, strToDatetimeWithFormatHint, \
     getFormatOfDatetimeValue, datetime_to_str, QDateTime_to_datetime, str_to_datetime
 from query_builder import QueryIdioms, DateTypes
 import query_builder
+from datetime import timedelta
 
 
 POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
@@ -56,7 +57,7 @@ class TimeVectorLayer(TimeLayer):
         try:
             self.getTimeExtents()
         except Exception, e:
-            raise InvalidTimeLayerError(e.value)
+            raise InvalidTimeLayerError(e)
 
     def getDateType(self):
         """return the type of dates this layer has stored"""
