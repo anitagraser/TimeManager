@@ -10,4 +10,4 @@ FRAME_FILENAME_PREFIX = "frame"
 INTERPOLATION_MODES = {"Linear interpolation (point geometries only":True, # add other
                         # interpolation modes where interpolation=True at the beginning
                        "No interpolation (faster)":False,}
-NO_ID_TEXT = "None - every geometry has the same ID"
+NO_ID_TEXT = "None - every geometry is a position of the same moving object in time"

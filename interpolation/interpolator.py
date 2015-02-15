@@ -53,19 +53,21 @@ class LinearInterpolator(Interpolator):
         #TODO probably if the point hasnt appeared yet, we shouldnt interpolate left or right
         interp_x = np.interp(start_epoch,time_values,x_pos)
         interp_y = np.interp(start_epoch,time_values,y_pos)
-        return (interp_x, interp_y)
+        return [interp_x, interp_y]
 
 
     def getLastEpochBeforeForId(self, id, epoch):
-        idx = np.searchsorted(self.id_to_time[id],epoch-1)
-        if idx>0 and self.id_to_time[id][idx]>epoch:
+        idx = np.searchsorted(self.id_to_time[id],epoch)
+        if idx == len(self.id_to_time[id]): # if exceeding the bounds, return largest epoch
+            return self.id_to_time[id][-1]
+        if idx>0 and self.id_to_time[id][idx]>epoch: # need to find a value smaller than current
             idx=idx-1
         return self.id_to_time[id][idx]
 
     def getFirstEpochAfterForId(self, id, epoch):
         idx=np.searchsorted(self.id_to_time[id],epoch)
-        if idx==len(self.id_to_time[id]):
-            idx=idx-1
+        if idx == len(self.id_to_time[id]):
+            return self.id_to_time[id][-1]
         return self.id_to_time[id][idx]
 
 
