@@ -85,10 +85,7 @@ class TimeManagerControl(QObject):
 
         self.guiControl.signalTimeFrameType.connect(self.setTimeFrameType)
         self.guiControl.signalTimeFrameSize.connect(self.setTimeFrameSize)
-        self.guiControl.saveOptionsStart.connect(self.timeLayerManager.clearTimeLayerList)
-        self.guiControl.saveOptionsEnd.connect(self.timeLayerManager.refreshTimeRestrictions)
-        self.guiControl.signalAnimationOptions.connect(self.setAnimationOptions)
-        self.guiControl.createTimeLayerFromRow.connect(self.createTimeLayer)
+        self.guiControl.signalSaveOptions.connect(self.saveOptions)
 
         # create actions
         # F8 button press - show time manager settings
@@ -453,11 +450,34 @@ class TimeManagerControl(QObject):
                     continue
                
                 self.timeLayerManager.registerTimeLayer(timeLayer) 
-                self.guiControl.showLabel = True
+                self.guiControl.showLabel = True #FFIXME
                 self.guiControl.refreshMapCanvas('restoreTimeLayer')
 
-    #FFIX createtimelayer either from string or from row should be abstracted away
-    def createTimeLayer(self,row):
+    def saveOptions(self):
+        self.getTimeLayerManager().clearTimeLayerList()
+        for row in range(self.guiControl.optionsDialog.tableWidget.rowCount()):
+            try:
+                # add layer from row information
+                layer = self.createTimeLayerFromRow(row)
+                if layer is None:
+                    continue
+                self.getTimeLayerManager().registerTimeLayer(layer)
+                # save animation options
+                animationFrameLength = self.guiControl.optionsDialog.spinBoxFrameLength.value()
+                playBackwards = self.guiControl.optionsDialog.checkBoxBackwards.isChecked()
+                self.showLabel = self.guiControl.optionsDialog.checkBoxLabel.isChecked()
+                loopAnimation = self.guiControl.optionsDialog.checkBoxLoop.isChecked()
+                self.setAnimationOptions(animationFrameLength,playBackwards,loopAnimation)
+
+                self.guiControl.refreshMapCanvas('saveOptions')
+                self.guiControl.dock.pushButtonExportVideo.setEnabled(True)
+            except:
+                continue
+
+            self.timeLayerManager.refreshTimeRestrictions()
+
+
+    def createTimeLayerFromRow(self,row):
         """create a TimeLayer from options set in the table row"""
         layer,isEnabled,layerId,offset,timeFormat,\
             startTimeAttribute,endTimeAttribute,interpolation_enabled, \
@@ -470,8 +490,8 @@ class TimeManagerControl(QObject):
             QgsMessageLog.logMessage("Error creating timelayer:"+e)
             QMessageBox.information(self.optionsDialog,'Error',
                                     'An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+str(e))
-            return
-        self.getTimeLayerManager().registerTimeLayer(timeLayer)
+            return None
+        return timeLayer
 
     
     def setActive(self,value):

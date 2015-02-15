@@ -57,11 +57,7 @@ class TimeManagerGuiControl(QObject):
     signalSliderTimeChanged = pyqtSignal(float)
     signalTimeFrameType = pyqtSignal(str)
     signalTimeFrameSize = pyqtSignal(int)
-    signalOptionsStart = pyqtSignal()
-    signalAnimationOptions = pyqtSignal(int,bool,bool)
-    saveOptionsStart = pyqtSignal()
-    saveOptionsEnd = pyqtSignal()
-    createTimeLayerFromRow = pyqtSignal(object)
+    signalSaveOptions = pyqtSignal()
     
     def __init__ (self,iface):
         """initialize the GUI control"""
@@ -222,25 +218,7 @@ class TimeManagerGuiControl(QObject):
 
     def saveOptions(self):
         """save the options from optionsDialog to timeLayerManager"""
-        self.saveOptionsStart.emit()
-        # loop through the rows in the table widget and add all layers accordingly
-        for row in range(self.optionsDialog.tableWidget.rowCount()):
-            try:
-                # add layer from row information
-                self.createTimeLayerFromRow.emit(row)
-                # save animation options
-                animationFrameLength = self.optionsDialog.spinBoxFrameLength.value()
-                playBackwards = self.optionsDialog.checkBoxBackwards.isChecked()
-                self.showLabel = self.optionsDialog.checkBoxLabel.isChecked()
-                loopAnimation = self.optionsDialog.checkBoxLoop.isChecked()
-
-                self.signalAnimationOptions.emit(animationFrameLength,playBackwards,loopAnimation)
-                self.refreshMapCanvas('saveOptions')
-                self.dock.pushButtonExportVideo.setEnabled(True)
-            except:
-                continue
-        self.saveOptionsEnd.emit()
-
+        self.signalSaveOptions.emit()
 
     def debug(self, msg):
             QMessageBox.information(self.iface.mainWindow(),'Info', msg)
@@ -341,7 +319,6 @@ class TimeManagerGuiControl(QObject):
     def addRowToOptionsTable(self,layerName,enabled,layerId,offset,timeFormat="",
                              startTime="",endTime="", interpolation_enabled=False,ID=""):
         """insert a new row into optionsDialog.tableWidget"""
-        # insert row
         row = self.optionsDialog.tableWidget.rowCount()
         self.optionsDialog.tableWidget.insertRow(row)
         # insert values
