@@ -97,6 +97,7 @@ class TimeLayerManager(QObject):
         """clear the timeLayerList"""
         for timeLayer in self.getTimeLayerList():
             timeLayer.deleteTimeRestriction()
+            del timeLayer
         self.timeLayerList = []
 
     def timeFrame(self):

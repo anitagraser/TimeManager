@@ -465,10 +465,10 @@ class TimeManagerControl(QObject):
                 # save animation options
                 animationFrameLength = self.guiControl.optionsDialog.spinBoxFrameLength.value()
                 playBackwards = self.guiControl.optionsDialog.checkBoxBackwards.isChecked()
-                self.showLabel = self.guiControl.optionsDialog.checkBoxLabel.isChecked()
                 loopAnimation = self.guiControl.optionsDialog.checkBoxLoop.isChecked()
                 self.setAnimationOptions(animationFrameLength,playBackwards,loopAnimation)
 
+                self.guiControl.showLabel = self.guiControl.optionsDialog.checkBoxLabel.isChecked()
                 self.guiControl.refreshMapCanvas('saveOptions')
                 self.guiControl.dock.pushButtonExportVideo.setEnabled(True)
             except:

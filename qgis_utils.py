@@ -14,3 +14,14 @@ def getLayerAttributes(layerId):
     except:
         QgsMessageLog.logMessage("Could not get attributes of layer {}".format(layerId))
         return None
+
+
+def getIdFromLayerName(layerName):
+    for (id, layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
+        if unicode(layer.name())==layerName:
+            return id
+    return None
+
+def getNameFromLayerId(layerId):
+    layer =  QgsMapLayerRegistry.instance().mapLayers()[layerId]
+    return unicode(layer.name())

@@ -8,6 +8,7 @@ from time_util import DEFAULT_FORMAT, datetime_to_epoch, timeval_to_epoch, epoch
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from collections import defaultdict
+from qgis.core import *
 
 try:
     import numpy as np
@@ -20,6 +21,12 @@ DEFAULT_ID = 0
 #TODO: Just points types? Why not also lines or polygon move?
 #TODO: What about totimeattr
 #TODO: Why no exception thrown upon creation when there is sth wrong??
+#TODO: Make same style as original layer, only a bit moar transparent
+#TODO: Queries need to work even when the timestamp exceeds the first layer .. tests
+#TODO: Think about user scenario testing
+#TODO: layer_settings.py -> use named tuple
+# minor: Fix bug -> delete layer -> yes -> cancel -> no deletion but gets deleted from ui (cant
+# reproduce)
 
 class TimeVectorInterpolatedLayer(TimeVectorLayer):
 
@@ -46,8 +53,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
         self.memLayer = QgsVectorLayer("Point?crs=epsg:4326&index=yes",
                                        "interpolated_points_for_{}".format(
             self.layer.name()), "memory")
-        #TODO: Set CRS without prompt
-        #TODO: Make same style as original layer, only a bit moar transparent
+
         self.memLayer.setCrs(self.layer.crs())
         QgsMapLayerRegistry.instance().addMapLayer(self.memLayer)
 
@@ -92,11 +98,15 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
         for id in self.id_to_time.keys():
             self.id_to_time[id].sort() # in place sorting
 
-
         self.n=0
         self.previous_ids = set()
         QgsMessageLog.logMessage("Created layer successfully!")
 
+
+    def __del__(self):
+        QgsMessageLog.logMessage("deleting time interpolated layer")
+        QgsMapLayerRegistry.instance().removeMapLayer(self.memLayer.id())
+        del self.memLayer
 
     def _getGeomForIdTime(self,id, epoch, attr="from"):
         if attr=="from":
