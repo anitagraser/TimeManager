@@ -15,7 +15,13 @@ __author__ = 'carolinux'
 
 """File that should be run within the QGIS Python console to test the application directly"""
 
-## helper functions
+
+
+## Available actions with very readable names to facilitate scenario creation ##
+
+def new_project():
+    iface.newProject()
+
 def get_all_items(combobox):
     """Get all text items of a QtComboBox"""
     return [combobox.itemText(i) for i in range(combobox.count())]
@@ -32,6 +38,40 @@ def getTweetsLayer():
     tweets = QgsVectorLayer(os.path.join(testfile_dir, 'tweets.shp'), 'tweets', 'ogr')
     return tweets
 
+def load_layer_to_qgis(layer):
+    QgsMapLayerRegistry.instance().addMapLayer(layer)
+    sleep(0.1)
+
+def remove_layer_from_qgis(id):
+    QgsMapLayerRegistry.instance().removeMapLayer(id)
+    sleep(0.1)
+
+def goForward(gui):
+    gui.forwardClicked()
+    sleep(0.1)
+
+def goBackward(gui):
+    gui.backClicked()
+    sleep(0.1)
+
+def clickPlay(gui):
+    gui.playClicked()
+    sleep(0.1)
+
+def clickOnOff(gui):
+    gui.dock.pushButtonToggleTime.clicked.emit(1)
+    sleep(0.1)
+
+def save_project_to_file(fn):
+    QgsProject.instance().write(QtCore.QFileInfo(fn))
+    sleep(0.1)
+
+def get_temp_file():
+    return tempfile.NamedTemporaryFile(delete=False)
+
+def layer_count():
+    return len(QgsMapLayerRegistry.instance().mapLayers())
+
 def addFirstUnmanagedLayerToTm(gui, column):
     gui.dock.pushButtonOptions.clicked.emit(1)
     sleep(0.1)
@@ -46,7 +86,10 @@ def addFirstUnmanagedLayerToTm(gui, column):
     gui.addLayerDialog.buttonBox.accepted.emit()
     options.buttonBox.accepted.emit()
 
-## get reference to timemanager controller
+def set_time_frame_type(gui,typ):
+    gui.dock.comboBoxTimeExtent.setCurrentIndex(get_index_of(gui.dock.comboBoxTimeExtent,typ))
+
+## get reference to timemanager modules before starting scenario execution
 try:
     ctrl = qgis.utils.plugins['timemanager'].getController()
 except:
@@ -54,55 +97,66 @@ except:
 
 gui = ctrl.getGui()
 tlm = ctrl.getTimeLayerManager()
+assert(tlm.isEnabled())
 
-## load tweets layer
-QgsMapLayerRegistry.instance().addMapLayer(getTweetsLayer())
+## senario 0 -> disable timemanager, see that saving project works normally, reenable
 
-## add layer to TimeManager via the GUI
+new_project()
+clickOnOff(gui)
+assert(not tlm.isEnabled())
+load_layer_to_qgis(getTweetsLayer())
+save_project_to_file(get_temp_file().name)
+assert(layer_count()==1)
+clickOnOff(gui)
+assert(tlm.isEnabled())
+
+
+## senario 1 -> simple back and forth within a layer, writing settings, adding 2nd layer
+
+new_project()
+load_layer_to_qgis(getTweetsLayer())
 addFirstUnmanagedLayerToTm(gui, "T1965")
-
-sleep(0.1)
 initial_time = tlm.getCurrentTimePosition()
+set_time_frame_type(gui,"minutes")
+goForward(gui)
+goForward(gui)
+goForward(gui)
+goBackward(gui)
 assert(initial_time.year==1965)
-gui.dock.comboBoxTimeExtent.setCurrentIndex(get_index_of(gui.dock.comboBoxTimeExtent,"minutes"))
-sleep(0.1)
 assert(tlm.timeFrameType=="minutes")
-gui.forwardClicked()
-gui.forwardClicked()
-gui.forwardClicked()
-gui.backClicked()
-sleep(0.1)
 assert(tlm.getCurrentTimePosition() == initial_time + timedelta(minutes=2) )
 time_before_animation = tlm.getCurrentTimePosition()
-gui.playClicked()
-assert(0.1)
-gui.playClicked()
-sleep(0.1)
-# no easy way to let animate here
+clickPlay(gui)
+clickPlay(gui)
 assert(ctrl.animationActivated==False)
 time_before_save = tlm.getCurrentTimePosition()
-tmp_file = tempfile.NamedTemporaryFile(delete=False)
-QgsProject.instance().write(QtCore.QFileInfo(tmp_file.name))
-sleep(0.1)
+tmp_file = get_temp_file()
+save_project_to_file(tmp_file.name)
 with open(tmp_file.name) as f:
     text = f.read()
-
 assert("TimeManager" in text)
 assert("active" in text)
 assert("currentMapTimePosition" in text)
-
 #os.remove(tmp_file.name)
 
-# add second layer
-## load tweets layer again but with 2011 timestamps
-QgsMapLayerRegistry.instance().addMapLayer(getTweetsLayer())
+# add second layer with 2011 timestamps
+load_layer_to_qgis(getTweetsLayer())
 addFirstUnmanagedLayerToTm(gui, "T")
-sleep(0.1)
 extents = tlm.getProjectTimeExtents()
 assert(extents[0].year ==1965 and extents[1].year==2011)
+assert("T" in iface.activeLayer().subsetString())
+assert("T965" not in iface.activeLayer().subsetString())
 
-#TODO Scenarios:
-#Delete layer and re-add scenario?
+# delete it
+remove_layer_from_qgis(iface.activeLayer().id())
+extents = tlm.getProjectTimeExtents()
+assert(extents[0].year ==1965 and extents[1].year==1965)
+
+
+
+
+
+
 
 
 

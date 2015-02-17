@@ -12,6 +12,8 @@ from timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
 from timelayer import InvalidTimeLayerError
 import qgis_utils as qgs
 
+from collections import namedtuple
+
 def getSettingsFromSaveStr(saveStr):
     l = saveStr.split(';')
     layer = QgsMapLayerRegistry.instance().mapLayer(l[0]) # get the layer
@@ -36,12 +38,12 @@ def getSettingsFromSaveStr(saveStr):
     return (layer,isEnabled,offset,timeFormat,startTimeAttribute,
                                   endTimeAttribute,interpolation_enabled, idAttr)
 
-def getSettingsFromAddLayersUI(ui):
+def getSettingsFromAddLayersUI(ui,layerIndexToId):
     layerName = ui.comboBoxLayers.currentText()
     startTime = ui.comboBoxStart.currentText()
     endTime = ui.comboBoxEnd.currentText()
     enabled = True
-    layerId =  qgs.getIdFromLayerName(layerName)
+    layerId =  layerIndexToId[ui.comboBoxLayers.currentIndex()]
     timeFormat = DEFAULT_FORMAT #FIXME huh?
     offset = ui.spinBoxOffset.value()
     interpolation_mode = ui.comboBoxInterpolation.currentText()

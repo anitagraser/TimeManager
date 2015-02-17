@@ -67,6 +67,7 @@ class TimeManagerGuiControl(QObject):
         self.labelOptions = TimestampLabelConfig()
         self.optionsDialog = None
         self.path = os.path.dirname( os.path.abspath( __file__ ) )
+        self.tempLayerIndexToId = {} # store the mapping of readable layer name to id temporarily
         
         # load the form
         self.dock = uic.loadUi( os.path.join(self.path, DOCK_WIDGET_FILE ) )
@@ -242,13 +243,16 @@ class TimeManagerGuiControl(QObject):
         that haven't already been added"""
 
         self.addLayerDialog = uic.loadUi(os.path.join(self.path, ADD_LAYER_WIDGET_FILE))
-        existingLayerNames = self.getLayerNamesAlreadyInTable()
+        existingLayerIds = self.getLayerIdsAlreadyInTable()
         # fill the combo box with all available not yet added layers
+        self.tempLayerIndexToId = {}
+        i=0
         for (id,layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
-                unicode_name = unicode(layer.name())
-                #FIXME this doesnt work, it always adds every layer
-                if unicode_name not in existingLayerNames:
+                if id not in existingLayerIds:
+                    unicode_name = unicode(layer.name())
                     self.addLayerDialog.comboBoxLayers.addItem(unicode_name)
+                    self.tempLayerIndexToId[i] = id
+                    i=i+1
 
         if self.addLayerDialog.comboBoxLayers.count() == 0:
             QMessageBox.information(self.optionsDialog,'Error','There are no unmanaged vector layers in the project!')
@@ -275,15 +279,14 @@ class TimeManagerGuiControl(QObject):
             self.addLayerDialog.labelID1.setEnabled(False)
             self.addLayerDialog.labelID2.setEnabled(False)
 
-    def getLayerNamesAlreadyInTable(self):
-        """get list of QgsMapLayers listed in optionsDialog.tableWidget"""
+    def getLayerIdsAlreadyInTable(self):
+        """get list of layer ids listed in optionsDialog.tableWidget"""
         layerList=[]
         if self.optionsDialog.tableWidget is None:
             return layerList
         for row in range(self.optionsDialog.tableWidget.rowCount()):
             layerId=self.optionsDialog.tableWidget.item(row,4).text()
-            layerName = qgs.getNameFromLayerId(layerId)
-            layerList.append(layerName)
+            layerList.append(layerId)
         return layerList
 
     def addInterpolationModes(self, comboBox):
@@ -293,8 +296,7 @@ class TimeManagerGuiControl(QObject):
 
     def addLayerAttributes(self,comboIndex):
         """get list layer attributes and fill the combo boxes"""
-        layerName = self.addLayerDialog.comboBoxLayers.currentText()
-        layerId = qgs.getIdFromLayerName(layerName)
+        layerId = self.tempLayerIndexToId[self.addLayerDialog.comboBoxLayers.currentIndex()]
         fieldmap = qgs.getLayerAttributes(layerId)
         if fieldmap is None:
             return
@@ -310,7 +312,7 @@ class TimeManagerGuiControl(QObject):
 
     def addLayerToOptions(self):
         """write information from addLayerDialog to optionsDialog.tableWidget"""
-        settings = ls.getSettingsFromAddLayersUI(self.addLayerDialog)
+        settings = ls.getSettingsFromAddLayersUI(self.addLayerDialog, self.tempLayerIndexToId)
         self.addRowToOptionsTable(*settings)
 
     def addRowToOptionsTable(self,layerName,enabled,layerId,offset,timeFormat="",

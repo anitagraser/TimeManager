@@ -16,6 +16,7 @@ DEFAULT_ID = 0
 #TODO: Just points types? Why not also lines or polygon move?
 #TODO: What about totimeattr?
 #TODO: Why no exception thrown upon creation when there is sth wrong??
+# that would enable us to show the exceptions when cannot use timevectorinterpolated layer
 #TODO: Make same style as original layer, only a bit moar transparent
 #TODO: Queries need to work even when the timestamp exceeds the first layer .. tests
 #TODO: Think about user scenario testing

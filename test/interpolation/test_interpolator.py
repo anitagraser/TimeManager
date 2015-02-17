@@ -35,10 +35,7 @@ class TestLinearInterpolatorBuilder(unittest.TestCase):
 
     def test_values_beyond_border_return_border(self):
         for id in [1,5,6]:
-            values_for_id = []
-            for (i,val,_) in tuples:
-                if i==id:
-                    values_for_id.append(val)
+            values_for_id = map(lambda (i,v,g):v, filter(lambda (i,v,g):i==id,tuples))
             maxval= max(values_for_id)
             minval = min(values_for_id)
             last_before_min = self.lin.getLastEpochBeforeForId(id,minval)
