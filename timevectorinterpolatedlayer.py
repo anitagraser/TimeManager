@@ -4,11 +4,13 @@ from timelayer import *
 from timevectorlayer import TimeVectorLayer
 from time_util import DEFAULT_FORMAT, datetime_to_epoch, timeval_to_epoch, epoch_to_str,UTC
 from interpolation.interpolator import LinearInterpolator
+import qgis_utils as qgs
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from collections import defaultdict
 from qgis.core import *
+
 
 DEFAULT_ID = 0
 
@@ -17,9 +19,8 @@ DEFAULT_ID = 0
 #TODO: What about totimeattr?
 #TODO: Why no exception thrown upon creation when there is sth wrong??
 # that would enable us to show the exceptions when cannot use timevectorinterpolated layer
-#TODO: Make same style as original layer, only a bit moar transparent
 #TODO: Queries need to work even when the timestamp exceeds the first layer .. tests
-#TODO: Think about user scenario testing
+#TODO: postgresql test (present ids spawn points)
 #TODO: layer_settings.py -> use named tuple
 # minor: Fix bug -> delete layer -> yes -> cancel -> no deletion but gets deleted from ui (cant
 # reproduce)
@@ -47,7 +48,12 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
                                        "interpolated_points_for_{}".format(
             self.layer.name()), "memory")
 
+        # adjust memLayer to have same crs and same color as original layer, only half transparent
         self.memLayer.setCrs(self.layer.crs())
+        qgs.setLayerColor(self.memLayer, qgs.getLayerColor(self.layer))
+        qgs.setLayerTransparency(self.memLayer,0.5)
+        qgs.refreshSymbols(self.iface, self.memLayer)
+
         QgsMapLayerRegistry.instance().addMapLayer(self.memLayer)
 
         provider = self.getProvider()

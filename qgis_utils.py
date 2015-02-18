@@ -1,3 +1,4 @@
+from PyQt4.QtGui import QColor
 from qgis._core import QgsMapLayerRegistry, QgsMessageLog
 
 __author__ = 'carolinux'
@@ -25,3 +26,22 @@ def getIdFromLayerName(layerName):
 def getNameFromLayerId(layerId):
     layer =  QgsMapLayerRegistry.instance().mapLayers()[layerId]
     return unicode(layer.name())
+
+def getLayerColor(layer):
+    renderer = layer.rendererV2()
+    symbol = renderer.symbol()
+    return symbol.color().name()
+
+def setLayerColor(layer, color_name):
+    renderer = layer.rendererV2()
+    symbol = renderer.symbol()
+    symbol.setColor(QColor(color_name))
+
+def setLayerTransparency(layer, alpha):
+    renderer = layer.rendererV2()
+    symbol = renderer.symbol()
+    symbol.setAlpha(alpha)
+
+def refreshSymbols(iface, layer):
+    iface.legendInterface().refreshLayerSymbology(layer)
+    iface.mapCanvas().refresh()
