@@ -16,12 +16,11 @@ DEFAULT_ID = 0
 
 #TODO Modify ctrl.restoreTimeLayers to be able to recreate a TimeVectorInterpolated layer
 #TODO: Just points types? Why not also lines or polygon move?
-#TODO: What about totimeattr?
+#TODO: What about totimeattr? if not supported then disable in ui when interpolation checked
 #TODO: Why no exception thrown upon creation when there is sth wrong??
 # that would enable us to show the exceptions when cannot use timevectorinterpolated layer
-#TODO: Queries need to work even when the timestamp exceeds the first layer .. tests
-#TODO: postgresql test (present ids spawn points)
-#TODO: layer_settings.py -> use named tuple
+#TODO: postgresql test (present ids, spawn points) 2.
+#TODO: layer_settings.py -> use named tuple 1.
 # minor: Fix bug -> delete layer -> yes -> cancel -> no deletion but gets deleted from ui (cant
 # reproduce)
 

@@ -26,6 +26,19 @@ class TestLinearInterpolatorBuilder(unittest.TestCase):
 
         self.lin.sort()
 
+    def testInterpolation(self):
+        result = self.lin.getInterpolatedValue(1, 150, 160)
+        expected = [0.5,0.5]
+        self.assertEquals(result, expected)
+
+    def testInterpolationWhenPointIsInInterval(self):
+        # when point is in interval we shouldn't try to interpolate
+        # if we do interpolates between previous position and next, ie here
+        # 100 and 400 and [0,0],[2,2] fr val = 150
+        result = self.lin.getInterpolatedValue(1, 150, 210)
+        expected = [2*50/300.0, 2*50/300.0]
+        self.assertAlmostEqual(result[0], expected[0], 5)
+        self.assertAlmostEqual(result[1], expected[1], 5)
 
     def test_existing_values_return_themselves(self):
         for tupl in tuples:
