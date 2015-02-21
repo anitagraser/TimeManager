@@ -97,8 +97,8 @@ def getSettingsFromLayer(layer):
     result.startTimeAttribute=times[0]
     result.endTimeAttribute = times[1]
     result.timeFormat= layer.getTimeFormat()
-    result.InterpolationEnabled = layer.isInterpolationEnabled()
-    if result.InterpolationEnabled:
+    result.interpolationEnabled = layer.isInterpolationEnabled()
+    if result.interpolationEnabled:
         result.idAttribute = "" if not layer.hasIdAttribute() else layer.getIdAttribute()
     else:
         result.idAttribute = ""

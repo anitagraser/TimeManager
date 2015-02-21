@@ -15,11 +15,11 @@ from qgis.core import *
 DEFAULT_ID = 0
 
 # Ideas for extending
-#TODO: Just points types? Why not also lines or polygon move?
+#TODO: Just points types? What about lines or polygon move?
 #TODO: What about totimeattr? if not supported then disable in ui when interpolation checked
 
 # Testing
-#TODO: postgresql test (present ids, spawn points) 1.
+#TODO: test with multiple points (traces) 1.
 #TODO: Scenario where 2 layers (one with interpolation and one without) are added and restored 3.
 
 # Essential functionality

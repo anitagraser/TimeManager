@@ -291,8 +291,8 @@ class TimeManagerGuiControl(QObject):
 
     def addInterpolationModes(self, comboBox):
         comboBox.clear()
-        for mode in conf.INTERPOLATION_MODES.keys():
-            comboBox.addItem(mode)
+        comboBox.addItem(conf.NO_INTERPOLATION)
+        comboBox.addItem(conf.LINEAR_INTERPOLATION)
 
     def addLayerAttributes(self,comboIndex):
         """get list layer attributes and fill the combo boxes"""
