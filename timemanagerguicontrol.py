@@ -182,7 +182,7 @@ class TimeManagerGuiControl(QObject):
         # restore settings from layerList:
         for layer in layerList:
             settings = ls.getSettingsFromLayer(layer)
-            self.addRowToOptionsTable(*settings)
+            self.addRowToOptionsTable(settings)
         
         # restore animation options
         self.optionsDialog.spinBoxFrameLength.setValue(animationFrameLength)
@@ -313,16 +313,17 @@ class TimeManagerGuiControl(QObject):
     def addLayerToOptions(self):
         """write information from addLayerDialog to optionsDialog.tableWidget"""
         settings = ls.getSettingsFromAddLayersUI(self.addLayerDialog, self.tempLayerIndexToId)
-        self.addRowToOptionsTable(*settings)
+        self.addRowToOptionsTable(settings)
 
-    def addRowToOptionsTable(self,layerName,enabled,layerId,offset,timeFormat="",
-                             startTime="",endTime="", interpolation_enabled=False,ID=""):
+    def addRowToOptionsTable(self,layerSettings):
         """insert a new row into optionsDialog.tableWidget"""
         row = self.optionsDialog.tableWidget.rowCount()
         self.optionsDialog.tableWidget.insertRow(row)
+        s = layerSettings
         # insert values
-        for i,value in enumerate([layerName, startTime, endTime, enabled, layerId,
-                                 timeFormat, str(offset), interpolation_enabled, ID]):
+        for i,value in enumerate([s.layerName, s.startTimeAttribute, s.endTimeAttribute,
+                                  s.isEnabled, s.layerId, s.timeFormat,
+                                  str(s.offset), s.interpolationEnabled, s.idAttribute]):
             item = QTableWidgetItem()
             if type(value)!=bool:
                 item.setText(value)

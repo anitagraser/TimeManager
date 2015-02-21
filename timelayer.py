@@ -12,6 +12,13 @@ class TimeLayer:
         self.layer = layer
         self.timeEnabled = enabled
 
+    def getOriginalSubsetString(self):
+        return ''
+
+    @abc.abstractmethod
+    def hasSubsetStr(self):
+        pass
+
     def isInterpolationEnabled(self):
         return False
 

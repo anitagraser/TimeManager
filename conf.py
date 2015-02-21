@@ -11,3 +11,5 @@ INTERPOLATION_MODES = {"Linear interpolation (point geometries only":True, # add
                         # interpolation modes where interpolation=True at the beginning
                        "No interpolation (faster)":False,}
 NO_ID_TEXT = "None - every geometry is a position of the same moving object in time"
+
+SAVE_DELIMITER=';'

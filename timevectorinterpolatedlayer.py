@@ -14,75 +14,80 @@ from qgis.core import *
 
 DEFAULT_ID = 0
 
-#TODO Modify ctrl.restoreTimeLayers to be able to recreate a TimeVectorInterpolated layer
+# Ideas for extending
 #TODO: Just points types? Why not also lines or polygon move?
 #TODO: What about totimeattr? if not supported then disable in ui when interpolation checked
-#TODO: Why no exception thrown upon creation when there is sth wrong??
-# that would enable us to show the exceptions when cannot use timevectorinterpolated layer
-#TODO: postgresql test (present ids, spawn points) 2.
-#TODO: layer_settings.py -> use named tuple 1.
-# minor: Fix bug -> delete layer -> yes -> cancel -> no deletion but gets deleted from ui (cant
-# reproduce)
+
+# Testing
+#TODO: postgresql test (present ids, spawn points) 1.
+#TODO: Scenario where 2 layers (one with interpolation and one without) are added and restored 3.
+
+# Essential functionality
+#TODO Modify ctrl.restoreTimeLayers to be able to recreate a TimeVectorInterpolated layer 2.
+
+# Cleaning up
+#TODO delete logging msgs when done testing
 
 class TimeVectorInterpolatedLayer(TimeVectorLayer):
 
     def isInterpolationEnabled(self):
         return True
 
-    def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,
-                 timeFormat=DEFAULT_FORMAT,offset=0, iface=None, idAttribute=None):
-        TimeVectorLayer.__init__(self,layer,fromTimeAttribute,toTimeAttribute,
-                                 enabled=enabled,timeFormat=timeFormat,offset=offset,
-                                 iface=iface)
-        QgsMessageLog.logMessage("Making layer???")
+    def __init__(self,settings, iface):
+        TimeVectorLayer.__init__(self,settings,iface=iface)
         try:
-            import numpy as np
-        except:
-            raise Exception("Need to have numpy installed")
-        if layer.geometryType() != QGis.Point:
-            raise Exception("Want point geometry!")
-        self.idAttribute = idAttribute
+            QgsMessageLog.logMessage("Creating time interpolated layer")
+            try:
+                import numpy as np
+            except:
+                raise Exception("Need to have numpy installed")
 
-        self.memLayer = QgsVectorLayer("Point?crs=epsg:4326&index=yes",
-                                       "interpolated_points_for_{}".format(
-            self.layer.name()), "memory")
+            if self.layer.geometryType() != QGis.Point:
+                raise Exception("Want point geometry!")
+            self.idAttribute = settings.idAttribute
 
-        # adjust memLayer to have same crs and same color as original layer, only half transparent
-        self.memLayer.setCrs(self.layer.crs())
-        qgs.setLayerColor(self.memLayer, qgs.getLayerColor(self.layer))
-        qgs.setLayerTransparency(self.memLayer,0.5)
-        qgs.refreshSymbols(self.iface, self.memLayer)
+            self.memLayer = QgsVectorLayer("Point?crs=epsg:4326&index=yes",
+                                           "interpolated_points_for_{}".format(
+                self.layer.name()), "memory")
 
-        QgsMapLayerRegistry.instance().addMapLayer(self.memLayer)
+            # adjust memLayer to have same crs and same color as original layer, only half transparent
+            self.memLayer.setCrs(self.layer.crs())
+            qgs.setLayerColor(self.memLayer, qgs.getLayerColor(self.layer))
+            qgs.setLayerTransparency(self.memLayer,0.5)
+            qgs.refreshSymbols(self.iface, self.memLayer)
 
-        provider = self.getProvider()
-        self.fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
-        self.toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
+            QgsMapLayerRegistry.instance().addMapLayer(self.memLayer)
 
-        if self.hasIdAttribute():
-            self.idAttributeIndex = provider.fieldNameIndex(self.idAttribute)
-            self.uniqueIdValues = set(provider.uniqueValues(self.idAttributeIndex))
-        else:
-            self.uniqueIdValues = set([DEFAULT_ID])
+            provider = self.getProvider()
+            self.fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
+            self.toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
 
-        self.fromInterpolator = LinearInterpolator()
+            if self.hasIdAttribute():
+                self.idAttributeIndex = provider.fieldNameIndex(self.idAttribute)
+                self.uniqueIdValues = set(provider.uniqueValues(self.idAttributeIndex))
+            else:
+                self.uniqueIdValues = set([DEFAULT_ID])
 
-        features = self.layer.getFeatures(QgsFeatureRequest() )
-        for feat in features:
-            from_time = timeval_to_epoch(feat[self.fromTimeAttributeIndex])
-            to_time = timeval_to_epoch(feat[self.fromTimeAttributeIndex])
-            geom = feat.geometry()
-            if geom.type()!=QGis.Point:
-                QgsMessageLog.logMessage("Ignoring 1 non-point geometry")
-                continue
-            coords = (geom.asPoint().x(), geom.asPoint().y())
-            id = DEFAULT_ID if not self.hasIdAttribute() else feat[self.idAttributeIndex]
-            self.fromInterpolator.addIdEpochTuple(id, from_time, coords)
+            self.fromInterpolator = LinearInterpolator()
 
-        self.fromInterpolator.sort()
-        self.n=0
-        self.previous_ids = set()
-        QgsMessageLog.logMessage("Created layer successfully!")
+            features = self.layer.getFeatures(QgsFeatureRequest() )
+            for feat in features:
+                from_time = timeval_to_epoch(feat[self.fromTimeAttributeIndex])
+                to_time = timeval_to_epoch(feat[self.fromTimeAttributeIndex])
+                geom = feat.geometry()
+                if geom.type()!=QGis.Point:
+                    QgsMessageLog.logMessage("Ignoring 1 non-point geometry")
+                    continue
+                coords = (geom.asPoint().x(), geom.asPoint().y())
+                id = DEFAULT_ID if not self.hasIdAttribute() else feat[self.idAttributeIndex]
+                self.fromInterpolator.addIdEpochTuple(id, from_time, coords)
+
+            self.fromInterpolator.sort()
+            self.n=0
+            self.previous_ids = set()
+            QgsMessageLog.logMessage("Created layer successfully!")
+        except Exception,e :
+            raise InvalidTimeLayerError(e)
 
 
     def __del__(self):
@@ -95,7 +100,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
         return self.idAttribute
 
     def hasIdAttribute(self):
-        return self.idAttribute is not None
+        return self.idAttribute is not None and self.idAttribute!=""
 
 
     def getInterpolatedGeometries(self, start_epoch, end_epoch):
@@ -166,7 +171,3 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
         saveString = TimeVectorLayer.getSaveString(self)
         #TODO encode more info for interpolated layer to allow restoring from save string
         return saveString
-
-
-
-

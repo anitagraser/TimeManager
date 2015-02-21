@@ -244,7 +244,6 @@ class TimeLayerManager(QObject):
     def getSaveString(self):
         """create a save string that can be put into project file"""
         tdfmt = SAVE_STRING_FORMAT
-        saveString = ''
         saveListLayers = []
 
         try: # test if projectTimeExtens are populated with datetimes

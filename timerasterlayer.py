@@ -12,23 +12,25 @@ from timelayer import *
 from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfDatetimeValue
 
 class TimeRasterLayer(TimeLayer):
-    def __init__(self,layer,fromTimeAttribute="",toTimeAttribute="",enabled=True,
-                 timeFormat=DEFAULT_FORMAT,offset=0, iface=None, **kwargs):
-        TimeLayer.__init__(self,layer,enabled)
+    def __init__(self, settings, iface=None):
+        TimeLayer.__init__(self,settings.layer,settings.isEnabled)
         
-        self.layer = layer
+        self.layer = settings.layer
         self.iface = iface
-        self.fromTimeAttribute = fromTimeAttribute
-        self.toTimeAttribute = toTimeAttribute
-        self.timeFormat = getFormatOfDatetimeValue(fromTimeAttribute, hint=timeFormat)
-        self.supportedFormats = SUPPORTED_FORMATS
-        self.offset = int(offset)
+        self.fromTimeAttribute = settings.startTimeAttribute
+        self.toTimeAttribute = settings.endTimeAttribute
+        self.timeFormat = getFormatOfDatetimeValue(settings.startTimeAttribute,
+                                                   hint=settings.timeFormat)
+        self.offset = int(settings.offset)
         
         try:
             self.getTimeExtents()
         except NotATimeAttributeError, e:
             raise InvalidTimeLayerError(e)
-            
+
+    def hasSubsetStr(self):
+        return False
+
     def getTimeAttributes(self):
         """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""
         return(self.fromTimeAttribute,self.toTimeAttribute)

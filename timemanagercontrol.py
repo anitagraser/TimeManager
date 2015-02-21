@@ -439,11 +439,15 @@ class TimeManagerControl(QObject):
                 self.guiControl.enableAnimationExport()
             for l in layerInfos: # for every layer entry
                 try:
-                    layer,isEnabled,offset,timeFormat,startTimeAttribute,\
-                                  endTimeAttribute,interpolation_enabled, idAttr = ls.getSettingsFromSaveStr(l)
+                    settings = ls.getSettingsFromSaveStr(l)
+                    if settings.layer is None:
+                         self.showMessage('Could not restore layer with id {}'.format(
+                             settings.layerId))
+                         continue
 
-                    timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(layer,interpolate=interpolation_enabled)(layer,
-                                                startTimeAttribute,endTimeAttribute,isEnabled,timeFormat,offset)
+                    timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(settings.layer,
+                                interpolate=settings.interpolationEnabled)(settings,iface=self.iface)
+
                 except InvalidTimeLayerError, e:
                     self.showMessage('An error occured while trying to add layer  to \
                             TimeManager.\n'+str(e))
@@ -479,18 +483,17 @@ class TimeManagerControl(QObject):
 
     def createTimeLayerFromRow(self,row):
         """create a TimeLayer from options set in the table row"""
-        layer,isEnabled,layerId,offset,timeFormat,\
-            startTimeAttribute,endTimeAttribute,interpolation_enabled, \
-            idAttr =ls.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
+        settings =ls.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
         try:
-            timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(layer, interpolate=interpolation_enabled)(
-                layer,startTimeAttribute,endTimeAttribute,enabled = isEnabled,
-                timeFormat=timeFormat, offset=offset, iface=self.iface, idAttribute=idAttr)
+            timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(settings.layer,
+                                                    interpolate=settings.interpolationEnabled)(
+                settings, self.iface)
         except Exception,e:
-            QgsMessageLog.logMessage("Error creating timelayer:"+e)
-            QMessageBox.information(self.optionsDialog,'Error',
-                                    'An error occured while trying to add layer '+layer.name()+' to TimeManager.\n'+str(e))
+            QgsMessageLog.logMessage("Error creating timelayer:"+str(e))
+            self.showMessage('An error occured while trying to add layer '
+                                    ''+settings.layer.name()+' to TimeManager.\n'+str(e))
             return None
+        QgsMessageLog.logMessage("iz None:"+str(timeLayer is None))
         return timeLayer
 
     

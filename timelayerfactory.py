@@ -6,6 +6,9 @@ from timevectorlayer import TimeVectorLayer
 from timerasterlayer import TimeRasterLayer
 from timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
 
+
+classes_with_subsetStr = [TimeVectorLayer,]
+
 class TimeLayerFactory:
     """Helper class to determine the class of the time layer ot create"""
     @classmethod
