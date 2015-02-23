@@ -24,7 +24,7 @@ import layer_settings as ls
 # The QTSlider only supports integers as the min and max, therefore the maximum maximum value
 # is whatever can be stored in an int. Making it a signed int to be sure.
 # (http://qt-project.org/doc/qt-4.8/qabstractslider.html)
-MAX_TIME_LENGTH_SECONDS = 2**31-1
+MAX_TIME_LENGTH_SECONDS_SLIDER = 2**31-1
 # according to the docs of QDateTime, the minimum date supported is the first day of
 # year 100  (http://qt-project.org/doc/qt-4.8/qdatetimeedit.html#minimumDate-prop)
 MIN_QDATE = QDate(100, 1, 1)

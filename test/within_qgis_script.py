@@ -182,7 +182,6 @@ assert(extents[0].year ==1965 and extents[1].year==1965)
 
 
 ## senario 3
-# TODO: add interpolated layer + another layer, save project, reload
 print "Start scenario 3"
 new_project()
 set_time_frame_type(gui,"seconds")
@@ -195,9 +194,10 @@ assert(iface.activeLayer().featureCount()==1) # now we have 1 interpolated point
 goForward(gui)
 assert(iface.activeLayer().featureCount()==1) # now we have 1 interpolated point
 load_layer_to_qgis(getTweetsLayer())
-addUnmanagedLayerToTm(gui, "T",name="tweets") #FIXME this deletes the interpolation info :(
+addUnmanagedLayerToTm(gui, "T",name="tweets")
 assert(ls.getSettingsFromLayer(tlm.getTimeLayerList()[0]).interpolationEnabled == True)
 assert(len(get_all_layer_names())==3)
+# TODO: save project, reload, see if everything is as expected
 
 
 

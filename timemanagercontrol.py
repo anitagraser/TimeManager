@@ -10,6 +10,8 @@ from timemanagerprojecthandler import TimeManagerProjectHandler
 from time_util import *
 from conf import *
 
+import math
+
 
 
 class TimeManagerControl(QObject):
@@ -31,6 +33,13 @@ class TimeManagerControl(QObject):
         self.initModelConnections()
         self.initQGISConnections()
         self.restoreDefaults()
+
+    def getGranularitySeconds(self):
+        """Trick to make QtSlider support more than the integer range of seconds"""
+        return self.granularity
+
+    def setGranularitySeconds(self, granularity):
+        self.granularity = granularity
 
     def unload(self):
         """unload the plugin"""
@@ -104,6 +113,7 @@ class TimeManagerControl(QObject):
 
     def restoreDefaults(self):
         """restore plugin default settings"""
+        self.granularity = conf.DEFAULT_GRANULARITY_IN_SECONDS
         self.animationActivated = False
         self.loopAnimation = False
         self.playBackwards = False
@@ -132,10 +142,16 @@ class TimeManagerControl(QObject):
 
             timeLength = datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(timeExtents[0])
 
-            if timeLength> MAX_TIME_LENGTH_SECONDS:
-                raise Exception("Time length of {} seconds is too long for QT Slider to handle ("
-                           "integer overflow). Maximum value allowed: {}".format(timeLength,
-                                                                                 MAX_TIME_LENGTH_SECONDS))
+            if timeLength> MAX_TIME_LENGTH_SECONDS_SLIDER:
+                new_granularity = int(math.ceil(1.0*timeLength/MAX_TIME_LENGTH_SECONDS_SLIDER))
+                self.setGranularitySeconds(new_granularity)
+                # trick because timeLength must fit in an integer
+                # since it interfaces with a C++ class
+                newTimeLength = int(math.ceil(1.0*timeLength/new_granularity))
+                timeLength = newTimeLength
+
+            else:
+                self.setGranularitySeconds(1)
 
             self.guiControl.dock.horizontalTimeSlider.setMinimum(0)
             self.guiControl.dock.horizontalTimeSlider.setMaximum(timeLength)
@@ -338,7 +354,8 @@ class TimeManagerControl(QObject):
             return
         timeExtents = self.getTimeLayerManager().getProjectTimeExtents()
         try:
-            realEpochTime = int(pct * (datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(
+            realEpochTime = int(pct * self.getGranularitySeconds() * (datetime_to_epoch(
+                timeExtents[1]) - datetime_to_epoch(
                 timeExtents[0])) + datetime_to_epoch(timeExtents[0]))
         except:
             # extents are not set
