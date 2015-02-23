@@ -274,10 +274,13 @@ class TimeManagerGuiControl(QObject):
             self.addLayerDialog.comboBoxID.setEnabled(True)
             self.addLayerDialog.labelID1.setEnabled(True)
             self.addLayerDialog.labelID2.setEnabled(True)
+            self.addLayerDialog.comboBoxEnd.setEnabled(False) # end field not yet supported when
+            #  interpolating
         else:
             self.addLayerDialog.comboBoxID.setEnabled(False)
             self.addLayerDialog.labelID1.setEnabled(False)
             self.addLayerDialog.labelID2.setEnabled(False)
+            self.addLayerDialog.comboBoxEnd.setEnabled(True)
 
     def getLayerIdsAlreadyInTable(self):
         """get list of layer ids listed in optionsDialog.tableWidget"""

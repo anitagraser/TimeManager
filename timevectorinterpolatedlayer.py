@@ -93,7 +93,10 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
     def __del__(self):
         QgsMessageLog.logMessage("deleting time interpolated layer")
         QgsMapLayerRegistry.instance().removeMapLayer(self.memLayer.id())
-        del self.memLayer
+        try:
+            del self.memLayer
+        except:
+            pass
 
 
     def getIdAttribute(self):
@@ -124,10 +127,12 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
         return pts
 
     def _clearMemoryLayer(self):
-        #FIXME unclear how to get the layer feat ids exactly, so range works for now
-        res = self.memLayer.dataProvider().deleteFeatures(range(self.n+1))
-        assert(res)
-        self.memLayer.triggerRepaint()
+        try: # theoretically, the user could have already removed the layer from the UI
+            res = self.memLayer.dataProvider().deleteFeatures(range(self.n+1))
+            assert(res)
+            self.memLayer.triggerRepaint()
+        except:
+            pass
 
     def setTimeRestriction(self, timePosition, timeFrame):
         TimeVectorLayer.setTimeRestriction(self, timePosition, timeFrame)
