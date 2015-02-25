@@ -94,8 +94,6 @@ class TimeManagerGuiControl(QObject):
         # put default values
         self.dock.horizontalTimeSlider.setMinimum(conf.MIN_TIMESLIDER_DEFAULT)
         self.dock.horizontalTimeSlider.setMaximum(conf.MAX_TIMESLIDER_DEFAULT)
-        self.setTimeFrameType(conf.DEFAULT_FRAME_UNIT)
-        self.setTimeFrameSize(conf.DEFAULT_FRAME_SIZE)
         self.dock.dateTimeEditCurrentTime.setMinimumDate(MIN_QDATE)
 
     def getOptionsDialog(self):
@@ -160,6 +158,9 @@ class TimeManagerGuiControl(QObject):
         self.signalTimeFrameType.emit(frameType)
         
     def currentTimeFrameSizeChanged(self,frameSize):
+        if frameSize < 1: # time frame size = 0  is meaningless
+            self.dock.spinBoxTimeExtent.setValue(1)
+            return
         self.signalTimeFrameSize.emit(frameSize)
         
     def unload(self):

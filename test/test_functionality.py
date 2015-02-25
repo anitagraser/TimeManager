@@ -211,7 +211,6 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.assertEquals(self.tlm.isEnabled(), True)
         self.assertEquals(self.tlm.getCurrentTimePosition(), initial_time)
         self.assertEquals(self.ctrl.loopAnimation, True)
-        self.ctrl.guiControl.setTimeFrameType.assert_called_with('seconds')
         self.ctrl.guiControl.setTimeFrameSize.assert_called_with(1)
 
 

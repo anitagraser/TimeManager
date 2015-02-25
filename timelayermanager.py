@@ -74,8 +74,8 @@ class TimeLayerManager(QObject):
         us2 = td2.microseconds + 1000000 * (td2.seconds + 86400 * td2.days)
         
         if us2 == 0:
-            raise Exception("Cannot have zero length timeFrame") #TODO(v1.6) Make it impossible
-            # at UI level
+            raise Exception("Cannot have zero length timeFrame") # this should never happen
+            # it's forbidden at UI level
         
         return us1 / us2
 
@@ -103,8 +103,6 @@ class TimeLayerManager(QObject):
 
     def timeFrame(self):
         """returns the current time frame as datetime.timedelta or compatible dateutil.relativedelta.relativedelta object"""
-        # FIXME(v1.6) this doesnt work with languages?
-        QgsMessageLog.logMessage("Timeframe type:"+self.timeFrame)
         if self.timeFrameType == 'years':
             return relativedelta(years=self.timeFrameSize)   # years are not supported by timedelta
         elif self.timeFrameType == 'months':

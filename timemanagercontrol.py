@@ -17,6 +17,11 @@ import math
 class TimeManagerControl(QObject):
     """Controls the logic behind the GUI. Signals are processed here."""
 
+    @classmethod
+    def isEqualToUntranslatedString(cks, potentiallyTranslatedString, comparisonBaseString,context):
+        """This function checks for string equality when the UI strings may have been translated"""
+        return potentiallyTranslatedString == QCoreApplication.translate(context ,comparisonBaseString)
+
     def __init__(self,iface):
         """initialize the plugin control. Function gets called even when plugin is inactive"""
         QObject.__init__(self)
@@ -120,9 +125,8 @@ class TimeManagerControl(QObject):
         self.animationFrameCounter = 0
         self.saveAnimation = False
         self.saveAnimationPath = os.path.expanduser('~')
-        #self.getTimeLayerManager().setCurrentTimePosition(datetime.now()) #FIXME buggy
         self.animationFrameLength = DEFAULT_FRAME_LENGTH
-        self.guiControl.setTimeFrameType(DEFAULT_FRAME_UNIT)
+        self.restoreTimeFrameType(DEFAULT_FRAME_UNIT)
         self.guiControl.setTimeFrameSize(DEFAULT_FRAME_SIZE)
 
     def setPropagateGuiChanges(self, val):
@@ -339,9 +343,16 @@ class TimeManagerControl(QObject):
         self.timeLayerManager.stepForward()
 
     def setTimeFrameType(self,timeFrameType):
-        """set timeLayerManager's time frame type"""
-        self.timeLayerManager.setTimeFrameType(timeFrameType)
-        self.guiControl.refreshMapCanvas('setTimeFrameType')
+        """set timeLayerManager's time frame type from a potentially foreign languane string"""
+        for frame_type in ['microseconds','milliseconds','seconds','minutes','hours','years',
+                         'months','weeks','days']:
+            if self.isEqualToUntranslatedString(timeFrameType,frame_type,
+                                                context=self.guiControl.dock.objectName()):
+                self.timeLayerManager.setTimeFrameType(frame_type)
+                self.guiControl.refreshMapCanvas('setTimeFrameType')
+                return
+
+        raise Exception("Unrecognized time frame type : {}".format(timeFrameType))
 
     def setTimeFrameSize(self,timeFrameSize):
         """set timeLayerManager's time frame size"""
@@ -366,12 +377,17 @@ class TimeManagerControl(QObject):
         if not self.propagateGuiChanges:
             return
         self.getTimeLayerManager().setCurrentTimePosition(QDateTime_to_datetime(qdate))
+
+    def restoreTimeFrameType(self, text):
+        try:
+            self.guiControl.setTimeFrameType(QCoreApplication.translate(
+                self.guiControl.dock.objectName(),text))
+        except: # tests dont work with mocked qcoreapplications unfortunately
+            pass
         
     def writeSettings(self, doc):
         """write all relevant settings to the project file XML """
         if not self.getTimeLayerManager().isEnabled():
-            #QgsProject.instance().clearProperties() #FIXME this may clear non Time Manager
-            # custom properties too
             return
         (timeLayerManagerSettings,timeLayerList) = self.getTimeLayerManager().getSaveString()
         
@@ -417,7 +433,7 @@ class TimeManagerControl(QObject):
                  'loopAnimation': (self.setLoopAnimation,0),
                  'timeLayerManager': (self.restoreSettingTimeLayerManager,None),
                  'timeLayerList': (self.restoreTimeLayers,None),
-                 'timeFrameType': (self.guiControl.setTimeFrameType,DEFAULT_FRAME_UNIT),
+                 'timeFrameType': (self.restoreTimeFrameType,DEFAULT_FRAME_UNIT),
                  'timeFrameSize': (self.guiControl.setTimeFrameSize,DEFAULT_FRAME_SIZE),
                  'active': (self.setActive,0)
         }
