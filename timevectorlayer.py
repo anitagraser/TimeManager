@@ -210,5 +210,5 @@ class TimeVectorLayer(TimeLayer):
         return SAVE_DELIMITER.join([settings.layerId, settings.subsetStr,
                                    settings.startTimeAttribute, settings.endTimeAttribute,
                                    str(settings.isEnabled),settings.timeFormat,
-                                   str(settings.offset)])
-
+                                   str(settings.offset), settings.idAttribute,
+                                   str(settings.interpolationEnabled)])

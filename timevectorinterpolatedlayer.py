@@ -16,17 +16,14 @@ DEFAULT_ID = 0
 
 # Ideas for extending
 #TODO: Just points types? What about lines or polygon move?
-#TODO: What about totimeattr? if not supported then disable in ui when interpolation checked
+#TODO: What about toTimeAttribute and interpolation? Right now it's ignored
 
 # Testing
-#TODO: test with multiple points (traces) 1.
-#TODO: Scenario where 2 layers (one with interpolation and one without) are added and restored 3.
-
-# Essential functionality
-#TODO Modify ctrl.restoreTimeLayers to be able to recreate a TimeVectorInterpolated layer 2.
+#TODO(v1.6): Scenario where 2 layers (one with interpolation and one without) are added and
+# restored
 
 # Cleaning up
-#TODO delete logging msgs when done testing
+#TODO(v1.6) delete logging msgs when done testing
 
 class TimeVectorInterpolatedLayer(TimeVectorLayer):
 
@@ -170,9 +167,3 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
     def deleteTimeRestriction(self):
         TimeVectorLayer.deleteTimeRestriction(self)
         self._clearMemoryLayer()
-
-
-    def getSaveString(self):
-        saveString = TimeVectorLayer.getSaveString(self)
-        #TODO encode more info for interpolated layer to allow restoring from save string
-        return saveString

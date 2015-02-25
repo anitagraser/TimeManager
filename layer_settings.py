@@ -32,16 +32,14 @@ def getSettingsFromSaveStr(saveStr):
     result.startTimeAttribute=l[2]
     result.subsetStr = l[1]
     result.endTimeAttribute=l[3]
-    result.isEnabled=l[4]
+    result.isEnabled=bool(l[4])
     result.timeFormat=l[5]
-
     try:
-        result.offset=l[6]
-    except IndexError: # old versions didn't have an offset option
-        pass
-
-    result.idAttribute=''
-    result.interpolationEnabled = False #FFIXME, actually take values
+        result.offset= int(l[6])
+        result.idAttribute= l[8]
+        result.interpolationEnabled = bool(l[7])
+    except IndexError: # for backwards compatibility
+        pass # this will use default values
     return result
 
 def getSettingsFromAddLayersUI(ui,layerIndexToId):

@@ -471,7 +471,7 @@ class TimeManagerControl(QObject):
                     continue
                
                 self.timeLayerManager.registerTimeLayer(timeLayer) 
-                self.guiControl.showLabel = True #FFIXME
+                self.guiControl.showLabel = True #FIXME(v1.6)
                 self.guiControl.refreshMapCanvas('restoreTimeLayer')
 
     def saveOptions(self):
