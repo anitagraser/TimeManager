@@ -54,7 +54,7 @@ def getTimeSpansLayer():
 
 def load_layer_to_qgis(layer):
     QgsMapLayerRegistry.instance().addMapLayer(layer)
-    sleep(0.1)
+    sleep(0.2)
 
 def remove_layer_from_qgis(id):
     QgsMapLayerRegistry.instance().removeMapLayer(id)
@@ -92,7 +92,7 @@ def addUnmanagedLayerToTm(gui, column,interpolate=False, name=None):
     options = gui.getOptionsDialog()
     assert(options is not None)
     options.pushButtonAdd.clicked.emit(1)
-    sleep(0.1)
+    sleep(0.4)
     if name is not None:
         # dont add the first layer, but the one specified by the name
         gui.addLayerDialog.comboBoxLayers.setCurrentIndex(
