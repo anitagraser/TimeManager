@@ -59,7 +59,8 @@ class TimeLayerManager(QObject):
         return self.timeFrameSize
         
     def getFrameCount(self):
-        """returns the number of frames that can be generated using the current settings"""
+        """returns the number of frames that can be generated using the current settings.
+        It's actually an approximate number that errs on the high side."""
         if len(self.getManagedLayers()) == 0 or not self.isEnabled():
             return 0
 
@@ -69,17 +70,19 @@ class TimeLayerManager(QObject):
             return 0
             
         td2 = self.timeFrame()
+        if type(td2) == relativedelta:
+            # convert back to timedelta
+            # approximately
+            td2 = timedelta(weeks=4*td2.months, days=365*td2.years)
         # this is how you can devide two timedeltas (not supported by default):
-        # FIXME(v1.6): This is buggy with relativedelta and year, should probably convert
-        # to timedelta to get the frames
-        us1 = td1.microseconds + 1000000 * (td1.seconds + 86400 * td1.days)
-        us2 = td2.microseconds + 1000000 * (td2.seconds + 86400 * td2.days)
+        us1 = td1.total_seconds()
+        us2 = td2.total_seconds()
         
         if us2 == 0:
             raise Exception("Cannot have zero length timeFrame") # this should never happen
             # it's forbidden at UI level
         
-        return us1 / us2
+        return int(us1 *1.0 / us2)
 
     def hasLayers(self):
         """returns true if the manager has at least one layer registered"""

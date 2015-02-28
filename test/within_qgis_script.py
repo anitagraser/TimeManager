@@ -97,16 +97,16 @@ def addUnmanagedLayerToTm(gui, column,interpolate=False, name=None):
     options = gui.getOptionsDialog()
     assert(options is not None)
     options.pushButtonAdd.clicked.emit(1)
-    sleep(0.4)
+    sleep(0.1)
     if name is not None:
         # dont add the first layer, but the one specified by the name
-        #FIXME (v1.6): This has timing problems
+        assert(name in get_all_items(gui.addLayerDialog.comboBoxLayers))
         gui.addLayerDialog.comboBoxLayers.setCurrentIndex(
         get_index_of(gui.addLayerDialog.comboBoxLayers,name))
-        sleep(0.4)
+        sleep(0.1)
 
     options.pushButtonAdd.clicked.emit(1)
-    sleep(0.3)
+    sleep(0.1)
     #print "cols:"+str(get_all_items(gui.addLayerDialog.comboBoxStart))
     gui.addLayerDialog.comboBoxStart.setCurrentIndex(
         get_index_of(gui.addLayerDialog.comboBoxStart,column))
@@ -180,11 +180,15 @@ extents = tlm.getProjectTimeExtents()
 assert(extents[0].year ==1965 and extents[1].year==2011)
 assert("T" in iface.activeLayer().subsetString())
 assert("T965" not in iface.activeLayer().subsetString())
+set_time_frame_type(gui,"years")
+goForward(gui)
+assert(tlm.getCurrentTimePosition().year==1966)
 
 # delete it
 remove_layer_from_qgis(iface.activeLayer().id())
 extents = tlm.getProjectTimeExtents()
 assert(extents[0].year ==1965 and extents[1].year==1965)
+
 
 
 ## senario 3
