@@ -40,14 +40,14 @@ class TestLinearInterpolatorBuilder(unittest.TestCase):
         self.assertAlmostEqual(result[0], expected[0], 5)
         self.assertAlmostEqual(result[1], expected[1], 5)
 
-    def test_existing_values_return_themselves(self):
+    def test_existing_values_return_self(self):
         for tupl in tuples:
             id, start_time, geom = tupl
-            result = self.lin.getInterpolatedValue(id, start_time, start_time + span)
+            result = self.lin.getInterpolatedValue(id, start_time, start_time)
             self.assertEquals(geom, result)
 
-    def test_values_beyond_border_return_border(self):
-        for id in [1,5,6]:
+    def test_values_at_border_return_border(self):
+        for id in [1, 5, 6]:
             values_for_id = map(lambda (i,v,g):v, filter(lambda (i,v,g):i==id,tuples))
             maxval= max(values_for_id)
             minval = min(values_for_id)

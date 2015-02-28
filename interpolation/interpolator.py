@@ -41,6 +41,9 @@ class LinearInterpolator(Interpolator):
 
         lastBefore = self.getLastEpochBeforeForId(id, start_epoch)
         firstAfter = self.getFirstEpochAfterForId(id, end_epoch)
+
+        if lastBefore is None or firstAfter is None:
+            return None
         time_values = [lastBefore, firstAfter]
         #QgsMessageLog.logMessage(str(lastBefore)+"..."+str(firstAfter))
         #QgsMessageLog.logMessage(str(self.id_time_to_geom))
@@ -57,6 +60,8 @@ class LinearInterpolator(Interpolator):
 
 
     def getLastEpochBeforeForId(self, id, epoch):
+        if self.id_to_time[id][0] > epoch:
+            return None # already at smallest timestamp
         idx = np.searchsorted(self.id_to_time[id],epoch)
         if idx == len(self.id_to_time[id]): # if exceeding the bounds, return largest epoch
             return self.id_to_time[id][-1]
@@ -65,6 +70,8 @@ class LinearInterpolator(Interpolator):
         return self.id_to_time[id][idx]
 
     def getFirstEpochAfterForId(self, id, epoch):
+        if self.id_to_time[id][-1] < epoch:
+            return None # already at largest timestamp
         idx=np.searchsorted(self.id_to_time[id],epoch)
         if idx == len(self.id_to_time[id]):
             return self.id_to_time[id][-1]

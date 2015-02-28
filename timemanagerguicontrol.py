@@ -324,6 +324,8 @@ class TimeManagerGuiControl(QObject):
         row = self.optionsDialog.tableWidget.rowCount()
         self.optionsDialog.tableWidget.insertRow(row)
         s = layerSettings
+        if s.endTimeAttribute == s.startTimeAttribute:
+            s.endTimeAttribute =""
         # insert values
         for i,value in enumerate([s.layerName, s.startTimeAttribute, s.endTimeAttribute,
                                   s.isEnabled, s.layerId, s.timeFormat,

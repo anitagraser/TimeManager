@@ -50,6 +50,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             # adjust memLayer to have same crs and same color as original layer, only half transparent
             self.memLayer.setCrs(self.layer.crs())
             qgs.setLayerColor(self.memLayer, qgs.getLayerColor(self.layer))
+            qgs.setLayerSize(self.memLayer, qgs.getLayerSize(self.layer))
             qgs.setLayerTransparency(self.memLayer,0.5)
             qgs.refreshSymbols(self.iface, self.memLayer)
 
@@ -119,7 +120,8 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
         pts = []
         for id in idsNotInFrame:
             pt = self.fromInterpolator.getInterpolatedValue(id,start_epoch, end_epoch)
-            pts.append(QgsPoint(*pt))
+            if pt is not None:
+                pts.append(QgsPoint(*pt))
         # 3. return  points list
         return pts
 

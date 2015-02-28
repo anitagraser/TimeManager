@@ -32,10 +32,21 @@ def getLayerColor(layer):
     symbol = renderer.symbol()
     return symbol.color().name()
 
+def getLayerSize(layer):
+    renderer = layer.rendererV2()
+    symbol = renderer.symbol()
+    return symbol.size()
+
 def setLayerColor(layer, color_name):
     renderer = layer.rendererV2()
     symbol = renderer.symbol()
     symbol.setColor(QColor(color_name))
+
+
+def setLayerSize(layer, size):
+    renderer = layer.rendererV2()
+    symbol = renderer.symbol()
+    symbol.setSize(size)
 
 def setLayerTransparency(layer, alpha):
     renderer = layer.rendererV2()
