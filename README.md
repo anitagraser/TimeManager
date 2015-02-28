@@ -48,6 +48,12 @@ The biggest tested dataset was a Spatialite table with indexed timestamps contai
 
 Time Manager supports exporting image series based on the defined animation settings. Our goal for future versions is to include a tool that creates actual animations from these image series. Until then, external programs can be used for this last step. See VideoTutorial.md for instructions on how to create a video from the images.
 
+### Examples
+
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/p9MPbvbpu6E/0.jpg)](http://www.youtube.com/watch?v=p9MPbvbpu6E)
+
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/ax_jzqJTjgc/0.jpg)](http://www.youtube.com/watch?v=ax_jzqJTjgc)
+
 ## Limitations
 
 The plug-in uses Python's datetime module for calculations. It is therefore limited to the module's functionality. This enfolds (not exhaustive):
