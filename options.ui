@@ -176,7 +176,7 @@
          </property>
         </spacer>
        </item>
-       <item row="2" column="0" colspan="3">
+       <item row="3" column="0" colspan="3">
         <widget class="QCheckBox" name="checkBoxLabel">
          <property name="text">
           <string>display frame start time on map</string>
@@ -190,10 +190,17 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="3">
+       <item row="3" column="3">
         <widget class="QPushButton" name="show_label_options_button">
          <property name="text">
           <string>Time display Options</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QCheckBox" name="checkBoxDontExportEmpty">
+         <property name="text">
+          <string>Do not export empty frames</string>
          </property>
         </widget>
        </item>

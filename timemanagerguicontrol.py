@@ -64,6 +64,7 @@ class TimeManagerGuiControl(QObject):
         QObject.__init__(self)
         self.iface = iface
         self.showLabel = False
+        self.exportEmpty = True
         self.labelOptions = TimestampLabelConfig()
         self.optionsDialog = None
         self.path = os.path.dirname( os.path.abspath( __file__ ) )
@@ -189,6 +190,7 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.spinBoxFrameLength.setValue(animationFrameLength)
         self.optionsDialog.checkBoxBackwards.setChecked(playBackwards)
         self.optionsDialog.checkBoxLabel.setChecked(self.showLabel)
+        self.optionsDialog.checkBoxDontExportEmpty.setChecked(not self.exportEmpty)
         self.optionsDialog.checkBoxLoop.setChecked(loopAnimation)
         self.optionsDialog.show_label_options_button.clicked.connect(self.showLabelOptions)
         self.optionsDialog.checkBoxLabel.stateChanged.connect(self.showOrHideLabelOptions)

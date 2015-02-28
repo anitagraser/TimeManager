@@ -70,6 +70,8 @@ class TimeLayerManager(QObject):
             
         td2 = self.timeFrame()
         # this is how you can devide two timedeltas (not supported by default):
+        # FIXME(v1.6): This is buggy with relativedelta and year, should probably convert
+        # to timedelta to get the frames
         us1 = td1.microseconds + 1000000 * (td1.seconds + 86400 * td1.days)
         us2 = td2.microseconds + 1000000 * (td2.seconds + 86400 * td2.days)
         
@@ -171,14 +173,11 @@ class TimeLayerManager(QObject):
                 if i==0:
                     self.setProjectTimeExtents(timeLayer.getTimeExtents())
                     continue
-            except NotATimeAttributeError:
-                continue # TODO: we should probably show something informative here
-            if extents[0] < self.getProjectTimeExtents()[0]:
-                extents = (extents[0],self.getProjectTimeExtents()[1])
-            if extents[1] > self.getProjectTimeExtents()[1]:
-                extents = (self.getProjectTimeExtents()[0],extents[1])
-
-        self.setProjectTimeExtents(extents)
+            except NotATimeAttributeError, e:
+                raise Exception(str(e))
+            start = min(self.getProjectTimeExtents()[0],extents[0])
+            end = max(self.getProjectTimeExtents()[1], extents[1])
+            self.setProjectTimeExtents((start,end))
 
 
     def setProjectTimeExtents(self,timeExtents):

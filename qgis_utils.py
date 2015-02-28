@@ -56,3 +56,11 @@ def setLayerTransparency(layer, alpha):
 def refreshSymbols(iface, layer):
     iface.legendInterface().refreshLayerSymbology(layer)
     iface.mapCanvas().refresh()
+
+def haveVisibleFeatures():
+    """Return true if at least one of the layers in the project has featureCount>0"""
+    all_layers = QgsMapLayerRegistry.instance().mapLayers().values()
+    total_features = 0
+    for layer in all_layers:
+        total_features+=layer.featureCount()
+    return total_features>0

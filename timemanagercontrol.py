@@ -271,7 +271,10 @@ class TimeManagerControl(QObject):
     def generate_frame_filename(self, path, frame_index, currentTime):
          return os.path.join(path,"{}{}_{}.png".format(FRAME_FILENAME_PREFIX,
                                                        str(frame_index).zfill(self.exportNameDigits), str(currentTime).replace(" ","_").replace(":","_")))
-        
+
+    def exportEmpty(self):
+        return self.guiControl.exportEmpty
+
     def playAnimation(self,painter=None):
         """play animation in map window"""
         if not self.animationActivated:
@@ -279,7 +282,8 @@ class TimeManagerControl(QObject):
         # check if the end of the project time extents has been reached
         projectTimeExtents = self.timeLayerManager.getProjectTimeExtents()
         currentTime = self.timeLayerManager.getCurrentTimePosition()
-        if self.saveAnimation:
+        if self.saveAnimation and self.exportEmpty() or (not self.exportEmpty() and
+                                                           qgs.haveVisibleFeatures()):
             fileName = self.generate_frame_filename(self.saveAnimationPath,
                                                     self.animationFrameCounter, currentTime)
             # try accessing the file or fail with informative exception
@@ -504,7 +508,9 @@ class TimeManagerControl(QObject):
                 playBackwards = self.guiControl.optionsDialog.checkBoxBackwards.isChecked()
                 loopAnimation = self.guiControl.optionsDialog.checkBoxLoop.isChecked()
                 self.setAnimationOptions(animationFrameLength,playBackwards,loopAnimation)
-
+                self.guiControl.exportEmpty = not \
+                    self.guiControl.optionsDialog.checkBoxDontExportEmpty.isChecked()
+                QgsMessageLog.logMessage("")
                 self.guiControl.showLabel = self.guiControl.optionsDialog.checkBoxLabel.isChecked()
                 self.guiControl.refreshMapCanvas('saveOptions')
                 self.guiControl.dock.pushButtonExportVideo.setEnabled(True)
