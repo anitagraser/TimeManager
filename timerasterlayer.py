@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from qgis.core import *
 from timelayer import *
 from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfDatetimeValue
+import conf
 
 class TimeRasterLayer(TimeLayer):
     def __init__(self, settings, iface=None):
@@ -85,7 +86,7 @@ class TimeRasterLayer(TimeLayer):
         
     def getSaveString(self):
         """get string to save in project file"""
-        delimiter = ';'
+        delimiter = conf.SAVE_DELIMITER
         saveString = self.getLayerId() + delimiter
         saveString += '' + delimiter
         saveString += self.fromTimeAttribute + delimiter

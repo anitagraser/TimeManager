@@ -17,10 +17,21 @@ def getLayerAttributes(layerId):
         return None
 
 
+def doesLayerNameExist(name):
+    return getIdFromLayerName(name) is not None
+
 def getIdFromLayerName(layerName):
+    # Important: If multiple layers with same name exist, it will return the first one it finds
     for (id, layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
         if unicode(layer.name())==layerName:
             return id
+    return None
+
+def getLayerFromLayerName(layerName):
+    # Important: If multiple layers with same name exist, it will return the first one it finds
+    for (id, layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
+        if unicode(layer.name())==layerName:
+            return layer
     return None
 
 def getNameFromLayerId(layerId):

@@ -251,11 +251,9 @@ class TimeLayerManager(QObject):
         except:
             return (None,None)
 
-        saveString  = datetime_to_str(self.getProjectTimeExtents()[0], tdfmt) + ';'
-        saveString += datetime_to_str(self.getProjectTimeExtents()[1], tdfmt) + ';'
-
-        saveString += datetime_to_str(self.getCurrentTimePosition(), tdfmt) + ';'
-        ##self.debug("save string:"+saveString)
+        saveString = conf.SAVE_DELIMITER.join([datetime_to_str(self.getProjectTimeExtents()[0],tdfmt),
+            datetime_to_str(self.getProjectTimeExtents()[1], tdfmt),
+            datetime_to_str(self.getCurrentTimePosition())])
         for timeLayer in self.getTimeLayerList():
             saveListLayers.append(timeLayer.getSaveString())
         
@@ -265,7 +263,7 @@ class TimeLayerManager(QObject):
         """restore settings from loaded project file"""
         tdfmt = SAVE_STRING_FORMAT
         if saveString:
-            saveString = str(saveString).split(';')
+            saveString = str(saveString).split(conf.SAVE_DELIMITER)
             try:
                 timeExtents = (str_to_datetime(saveString[0], tdfmt),
                                str_to_datetime(saveString[1], tdfmt))
@@ -284,4 +282,3 @@ class TimeLayerManager(QObject):
             pos = str_to_datetime(saveString[2], tdfmt)
             ##self.debug("tlmanager: set current time position to:"+str(pos))
             self.setCurrentTimePosition(pos)
-            return saveString[3]

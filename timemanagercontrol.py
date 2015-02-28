@@ -472,6 +472,7 @@ class TimeManagerControl(QObject):
     def restoreTimeLayers(self, layerInfos):
         """restore all time layers"""
         if layerInfos:
+            QgsMessageLog.logMessage("layerinfos:"+str(layerInfos))
             if len(layerInfos)>0:
                 self.guiControl.enableAnimationExport()
             for l in layerInfos: # for every layer entry
@@ -510,7 +511,6 @@ class TimeManagerControl(QObject):
                 self.setAnimationOptions(animationFrameLength,playBackwards,loopAnimation)
                 self.guiControl.exportEmpty = not \
                     self.guiControl.optionsDialog.checkBoxDontExportEmpty.isChecked()
-                QgsMessageLog.logMessage("")
                 self.guiControl.showLabel = self.guiControl.optionsDialog.checkBoxLabel.isChecked()
                 self.guiControl.refreshMapCanvas('saveOptions')
                 self.guiControl.dock.pushButtonExportVideo.setEnabled(True)

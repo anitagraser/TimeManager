@@ -15,7 +15,7 @@ INTERPOLATION_MODES = {LINEAR_INTERPOLATION:True, # add other
                        NO_INTERPOLATION:False,}
 NO_ID_TEXT = "None - every geometry is a position of the same moving object in time"
 
-SAVE_DELIMITER=';' #TODO(v1.6) Replace hardcoded ; with this constant
+SAVE_DELIMITER=';'
 
 
 

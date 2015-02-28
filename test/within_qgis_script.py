@@ -26,6 +26,11 @@ __author__ = 'carolinux'
 def new_project():
     iface.newProject()
 
+def load_project(fn):
+    QgsProject.instance().setFileName(fn)
+    QgsProject.instance().read()
+    iface.projectRead.emit()
+
 def get_all_items(combobox):
     """Get all text items of a QtComboBox"""
     return [combobox.itemText(i) for i in range(combobox.count())]
@@ -95,9 +100,10 @@ def addUnmanagedLayerToTm(gui, column,interpolate=False, name=None):
     sleep(0.4)
     if name is not None:
         # dont add the first layer, but the one specified by the name
+        #FIXME (v1.6): This has timing problems
         gui.addLayerDialog.comboBoxLayers.setCurrentIndex(
         get_index_of(gui.addLayerDialog.comboBoxLayers,name))
-        sleep(0.1)
+        sleep(0.4)
 
     options.pushButtonAdd.clicked.emit(1)
     sleep(0.3)
@@ -197,7 +203,13 @@ load_layer_to_qgis(getTweetsLayer())
 addUnmanagedLayerToTm(gui, "T",name="tweets")
 assert(ls.getSettingsFromLayer(tlm.getTimeLayerList()[0]).interpolationEnabled == True)
 assert(len(get_all_layer_names())==3)
-# TODO: save project, reload, see if everything is as expected
+tmp_file = get_temp_file().name
+tmp_file="/tmp/foo.qgs"
+save_project_to_file(tmp_file)
+new_project()
+load_project(tmp_file)
+assert(len(get_all_layer_names())==3)
+
 
 
 

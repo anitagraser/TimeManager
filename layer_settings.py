@@ -8,6 +8,12 @@ from time_util import DEFAULT_FORMAT
 import conf
 import time_util
 
+def textToBool(text):
+    if text.lower()=="false":
+        return False
+    if text.lower()=="true":
+        return True
+    raise Exception("Invalid boolean string {}".format(text))
 
 class LayerSettings:
     def __init__(self):
@@ -25,19 +31,19 @@ class LayerSettings:
         self.subsetStr = ''
 
 def getSettingsFromSaveStr(saveStr):
-    l = saveStr.split(';')
+    l = saveStr.split(conf.SAVE_DELIMITER)
     result = LayerSettings()
     result.layerId = l[0]
     result.layer = QgsMapLayerRegistry.instance().mapLayer(result.layerId) # get the layer
     result.startTimeAttribute=l[2]
     result.subsetStr = l[1]
     result.endTimeAttribute=l[3]
-    result.isEnabled=bool(l[4])
+    result.isEnabled=textToBool(l[4])
     result.timeFormat=l[5]
     try:
         result.offset= int(l[6])
-        result.idAttribute= l[8]
-        result.interpolationEnabled = bool(l[7])
+        result.idAttribute= l[7]
+        result.interpolationEnabled = textToBool(l[8])
     except IndexError: # for backwards compatibility
         pass # this will use default values
     return result

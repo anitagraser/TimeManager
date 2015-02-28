@@ -18,10 +18,6 @@ DEFAULT_ID = 0
 #TODO: Just points types? What about lines or polygon move?
 #TODO: What about toTimeAttribute and interpolation? Right now it's ignored
 
-# Testing
-#TODO(v1.6): Scenario where 2 layers (one with interpolation and one without) are added and
-# restored
-
 # Cleaning up
 #TODO(v1.6) delete logging msgs when done testing
 
@@ -29,6 +25,17 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
 
     def isInterpolationEnabled(self):
         return True
+
+    def getMemLayer(self):
+        """When restoring a project, the layer will already exist, so we shouldn't
+         create a new one"""
+        name = "interpolated_points_for_{}".format(self.layer.id())
+        if not qgs.doesLayerNameExist(name): #FIXME this will not work if the user renames the memory layer
+            memLayer = QgsVectorLayer("Point?crs=epsg:4326&index=yes",name, "memory")
+        else:
+            memLayer = qgs.getLayerFromLayerName(name)
+        return memLayer
+
 
     def __init__(self,settings, iface):
         TimeVectorLayer.__init__(self,settings,iface=iface)
@@ -43,9 +50,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
                 raise Exception("Want point geometry!")
             self.idAttribute = settings.idAttribute
 
-            self.memLayer = QgsVectorLayer("Point?crs=epsg:4326&index=yes",
-                                           "interpolated_points_for_{}".format(
-                self.layer.name()), "memory")
+            self.memLayer = self.getMemLayer()
 
             # adjust memLayer to have same crs and same color as original layer, only half transparent
             self.memLayer.setCrs(self.layer.crs())
