@@ -3,6 +3,7 @@ import re # for hacking strftime
 
 from datetime import datetime, timedelta
 from PyQt4.QtCore import QDateTime
+import PyQt4.QtCore as QtCore
 
 
 """ A module to have time related functionality """
@@ -19,6 +20,12 @@ UTC = "UTC"
 
 class UnsupportedFormatException(Exception):
     pass
+
+def cast_to_int_or_float(val):
+    if int(val)==float(val):
+        return int(val)
+    else:
+        return float(val)
 
 def _str_switch(str, substr1, substr2):
     """Switch the location in a string of two substrings"""
@@ -59,6 +66,21 @@ SUPPORTED_FORMATS = list(set(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS +
                              DMY_SUPPORTED_FORMATS))
 
 
+def timeval_to_epoch(val):
+    """Converts any string, number, datetime or Qdate or QDatetime to epoch"""
+    try:
+        return int(val)
+    except:
+        try:
+            return float(val)
+        except:
+            if type(val) in [ QtCore.QDate, QtCore.QDateTime]:
+                val = QDateTime_to_datetime(val)
+            if type(val) in [str,basestring,unicode]:
+                val= str_to_datetime(val,DEFAULT_FORMAT)
+            return datetime_to_epoch(val)
+
+
 def QDateTime_to_datetime(date):
     try:
         return date.toPyDateTime()
@@ -84,7 +106,8 @@ def epoch_to_str(seconds_from_epoch, fmt):
 
 def datetime_to_epoch(dt):
     """ convert a datetime to seconds after (or possibly before) 1970-1-1 """
-    return int((dt - datetime(1970,1,1)).total_seconds())
+    res = ((dt - datetime(1970,1,1)).total_seconds())
+    return cast_to_int_or_float(res)
 
 def datetime_to_str(dt, fmt=DEFAULT_FORMAT):
     """ strftime has a bug for years<1900, so fixing it as well as we can """
@@ -148,6 +171,12 @@ def getFormatOfDatetimeValue(datetimeValue, hint=DEFAULT_FORMAT):
     except:
         pass
 
+    try:
+        seconds = float(datetimeValue)
+        return UTC
+    except:
+        pass
+
     formatsToTry = [hint] + SUPPORTED_FORMATS
     for format in formatsToTry:
         try:
@@ -177,7 +206,13 @@ def strToDatetimeWithFormatHint(datetimeString, hint=DEFAULT_FORMAT):
         return datetime.utcfromtimestamp(seconds)
     except:
         pass
-     
+
+    try:
+        seconds = float(datetimeString)
+        return datetime.utcfromtimestamp(seconds)
+    except:
+        pass
+
     # is it a string in a known format?
     try:
        # Try the hinted format, if not, try all known formats.

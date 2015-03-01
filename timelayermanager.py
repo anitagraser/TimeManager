@@ -59,7 +59,8 @@ class TimeLayerManager(QObject):
         return self.timeFrameSize
         
     def getFrameCount(self):
-        """returns the number of frames that can be generated using the current settings"""
+        """returns the number of frames that can be generated using the current settings.
+        It's actually an approximate number that errs on the high side."""
         if len(self.getManagedLayers()) == 0 or not self.isEnabled():
             return 0
 
@@ -69,14 +70,19 @@ class TimeLayerManager(QObject):
             return 0
             
         td2 = self.timeFrame()
+        if type(td2) == relativedelta:
+            # convert back to timedelta
+            # approximately
+            td2 = timedelta(weeks=4*td2.months, days=365*td2.years)
         # this is how you can devide two timedeltas (not supported by default):
-        us1 = td1.microseconds + 1000000 * (td1.seconds + 86400 * td1.days)
-        us2 = td2.microseconds + 1000000 * (td2.seconds + 86400 * td2.days)
+        us1 = td1.total_seconds()
+        us2 = td2.total_seconds()
         
         if us2 == 0:
-            return 1000 # this is just a stupid default, TODO!
+            raise Exception("Cannot have zero length timeFrame") # this should never happen
+            # it's forbidden at UI level
         
-        return us1 / us2
+        return int(us1 *1.0 / us2)
 
     def hasLayers(self):
         """returns true if the manager has at least one layer registered"""
@@ -97,6 +103,7 @@ class TimeLayerManager(QObject):
         """clear the timeLayerList"""
         for timeLayer in self.getTimeLayerList():
             timeLayer.deleteTimeRestriction()
+            del timeLayer
         self.timeLayerList = []
 
     def timeFrame(self):
@@ -115,9 +122,9 @@ class TimeLayerManager(QObject):
             return timedelta(minutes=self.timeFrameSize)
         elif self.timeFrameType == 'seconds':
             return timedelta(seconds=self.timeFrameSize)
-        # current code only supports down to seconds!
         elif self.timeFrameType == 'milliseconds':
             return timedelta(milliseconds=self.timeFrameSize)
+        # FIXME(v1.6) current microsecond support is buggy
         elif self.timeFrameType == 'microseconds':
             return timedelta(microseconds=self.timeFrameSize)
 
@@ -138,6 +145,7 @@ class TimeLayerManager(QObject):
                 
     def registerTimeLayer( self, timeLayer ):
             """Register a new layer for management and update the project's temporal extent"""
+            QgsMessageLog.logMessage("Registering time layer")
             self.getTimeLayerList().append( timeLayer )
             if self.getCurrentTimePosition() is None:
                 self.setCurrentTimePosition(timeLayer.getTimeExtents()[0])
@@ -168,14 +176,11 @@ class TimeLayerManager(QObject):
                 if i==0:
                     self.setProjectTimeExtents(timeLayer.getTimeExtents())
                     continue
-            except NotATimeAttributeError:
-                continue # TODO: we should probably show something informative here
-            if extents[0] < self.getProjectTimeExtents()[0]:
-                extents = (extents[0],self.getProjectTimeExtents()[1])
-            if extents[1] > self.getProjectTimeExtents()[1]:
-                extents = (self.getProjectTimeExtents()[0],extents[1])
-
-        self.setProjectTimeExtents(extents)
+            except NotATimeAttributeError, e:
+                raise Exception(str(e))
+            start = min(self.getProjectTimeExtents()[0],extents[0])
+            end = max(self.getProjectTimeExtents()[1], extents[1])
+            self.setProjectTimeExtents((start,end))
 
 
     def setProjectTimeExtents(self,timeExtents):
@@ -242,7 +247,6 @@ class TimeLayerManager(QObject):
     def getSaveString(self):
         """create a save string that can be put into project file"""
         tdfmt = SAVE_STRING_FORMAT
-        saveString = ''
         saveListLayers = []
 
         try: # test if projectTimeExtens are populated with datetimes
@@ -250,11 +254,9 @@ class TimeLayerManager(QObject):
         except:
             return (None,None)
 
-        saveString  = datetime_to_str(self.getProjectTimeExtents()[0], tdfmt) + ';'
-        saveString += datetime_to_str(self.getProjectTimeExtents()[1], tdfmt) + ';'
-
-        saveString += datetime_to_str(self.getCurrentTimePosition(), tdfmt) + ';'
-        ##self.debug("save string:"+saveString)
+        saveString = conf.SAVE_DELIMITER.join([datetime_to_str(self.getProjectTimeExtents()[0],tdfmt),
+            datetime_to_str(self.getProjectTimeExtents()[1], tdfmt),
+            datetime_to_str(self.getCurrentTimePosition())])
         for timeLayer in self.getTimeLayerList():
             saveListLayers.append(timeLayer.getSaveString())
         
@@ -264,19 +266,18 @@ class TimeLayerManager(QObject):
         """restore settings from loaded project file"""
         tdfmt = SAVE_STRING_FORMAT
         if saveString:
-            self.isFirstRun = False
-            saveString = str(saveString).split(';')
+            saveString = str(saveString).split(conf.SAVE_DELIMITER)
             try:
                 timeExtents = (str_to_datetime(saveString[0], tdfmt),
                                str_to_datetime(saveString[1], tdfmt))
-            except ValueError:
+            except:
                 try:
                     # Try converting without the fractional seconds for
                     # backward compatibility.
                     tdfmt = DEFAULT_FORMAT
                     timeExtents = (str_to_datetime(saveString[0], tdfmt),
                                    str_to_datetime(saveString[1], tdfmt))
-                except ValueError:
+                except:
                     # avoid error message for projects without
                     # time-managed layers
                     return
@@ -284,4 +285,3 @@ class TimeLayerManager(QObject):
             pos = str_to_datetime(saveString[2], tdfmt)
             ##self.debug("tlmanager: set current time position to:"+str(pos))
             self.setCurrentTimePosition(pos)
-            return saveString[3]

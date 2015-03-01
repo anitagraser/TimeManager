@@ -13,6 +13,7 @@ from test_functionality import TestWithQGISLauncher, RiggedTimeManagerControl
 import TimeManager.time_util as time_util
 import TimeManager.timevectorlayer as timevectorlayer
 from TimeManager.query_builder import  STRINGCAST_FORMAT,INT_FORMAT, STRING_FORMAT
+from TimeManager.layer_settings import LayerSettings
 from mock import Mock
 
 
@@ -69,8 +70,11 @@ class TestSpatialite(TestWithQGISLauncher):
     def test_datetime_loaded_by_vector(self):
         layer = self.layer_loaded_as_vector
         attr=STRING_TIMESTAMP
-        timeLayer = timevectorlayer.TimeVectorLayer(layer,attr,attr,True,
-                                                    time_util.DEFAULT_FORMAT,0)
+        settings = LayerSettings()
+        settings.layer = layer
+        settings.startTimeAttribute = attr
+        settings.endTimeAttribute = attr
+        timeLayer = timevectorlayer.TimeVectorLayer(settings, iface=Mock())
         self.tlm.registerTimeLayer(timeLayer)
 
         self.assertEquals(timeLayer.getDateType(), timevectorlayer.DateTypes.DatesAsQDateTimes)
@@ -79,8 +83,11 @@ class TestSpatialite(TestWithQGISLauncher):
         """Testing for the file provided by https://github.com/henrikkriisa"""
         layer = self.layer_dtimes
         attr="measuredts"
-        timeLayer = timevectorlayer.TimeVectorLayer(layer,attr,attr,True,
-                                                    time_util.DEFAULT_FORMAT,0)
+        settings = LayerSettings()
+        settings.layer = layer
+        settings.startTimeAttribute = attr
+        settings.endTimeAttribute = attr
+        timeLayer = timevectorlayer.TimeVectorLayer(settings, iface=Mock())
         self.tlm.registerTimeLayer(timeLayer)
 
         self.assertEquals(timeLayer.getDateType(), timevectorlayer.DateTypes.DatesAsQDateTimes)
@@ -105,8 +112,12 @@ class TestSpatialite(TestWithQGISLauncher):
 
     def _test_spatialite_layer(self, attr, layer, is_int=False):
 
-        timeLayer = timevectorlayer.TimeVectorLayer(layer,attr,attr,True,
-                                                    time_util.DEFAULT_FORMAT,0)
+        settings = LayerSettings()
+        settings.layer = layer
+        settings.startTimeAttribute = attr
+        settings.endTimeAttribute = attr
+
+        timeLayer = timevectorlayer.TimeVectorLayer(settings, iface=Mock())
         self.tlm.registerTimeLayer(timeLayer)
         if is_int:
             self.assertEquals(timeLayer.getDateType(), timevectorlayer.DateTypes.IntegerTimestamps)

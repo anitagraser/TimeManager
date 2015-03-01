@@ -60,8 +60,8 @@ The plug-in uses Python's datetime module for calculations. It is therefore limi
 
 * Dates must be according to the formats mentioned above
 * Dates must be according to the Gregorian calendar
-* We fully support years from 100 AD to 8000 in the future, however the number of seconds between the first timestamp and the last timestamp needs to fit in an integer. This is over 2 billion seconds, so most use cases should be fine.
-* Time step can be as small as one second but not smaller
+* We fully support years from 100 AD to 8000 in the future
+* Time step can be as small as one second (smaller timesteps not fully supported yet)
 
 We currently don't support:
 

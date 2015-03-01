@@ -16,6 +16,7 @@ from TimeManager.timelayermanager import TimeLayerManager
 import testcfg
 import TimeManager.time_util as time_util
 import TimeManager.os_util as os_util
+import TimeManager.layer_settings as ls
 
 from abc import ABCMeta, abstractmethod
 import tempfile
@@ -116,8 +117,12 @@ class TestForLayersWithOnePointPerSecond(TestWithQGISLauncher):
     def _test_layer(self,layer, attr, typ, tf, attr2=None):
         if attr2 is None:
             attr2=attr
-        timeLayer = timevectorlayer.TimeVectorLayer(layer,attr,attr2,True,
-                                                    time_util.DEFAULT_FORMAT,0)
+        settings = ls.LayerSettings()
+        settings.layer = layer
+        settings.startTimeAttribute = attr
+        settings.endTimeAttribute = attr2
+
+        timeLayer = timevectorlayer.TimeVectorLayer(settings, iface=Mock())
         self.tlm.registerTimeLayer(timeLayer)
 
         self.assertEquals(timeLayer.getDateType(), typ)
@@ -140,8 +145,11 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
 
     def registerTweetsTimeLayer(self, fromAttr="T", toAttr="T"):
         self.layer = QgsVectorLayer(os.path.join(testcfg.TEST_DATA_DIR, 'tweets.shp'), 'tweets', 'ogr')
-        self.timeLayer = timevectorlayer.TimeVectorLayer(self.layer,fromAttr,toAttr,True,
-                                                    time_util.DEFAULT_FORMAT,0)
+        settings = ls.LayerSettings()
+        settings.layer = self.layer
+        settings.startTimeAttribute = fromAttr
+        settings.endTimeAttribute = toAttr
+        self.timeLayer = timevectorlayer.TimeVectorLayer(settings, iface=Mock())
         self.assertTrue(not self.timeLayer.hasTimeRestriction())
         self.tlm.registerTimeLayer(self.timeLayer)
         # refresh will have set the time restriction
@@ -203,7 +211,6 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.assertEquals(self.tlm.isEnabled(), True)
         self.assertEquals(self.tlm.getCurrentTimePosition(), initial_time)
         self.assertEquals(self.ctrl.loopAnimation, True)
-        self.ctrl.guiControl.setTimeFrameType.assert_called_with('seconds')
         self.ctrl.guiControl.setTimeFrameSize.assert_called_with(1)
 
 

@@ -10,10 +10,17 @@ from timemanagerprojecthandler import TimeManagerProjectHandler
 from time_util import *
 from conf import *
 
+import math
+
 
 
 class TimeManagerControl(QObject):
     """Controls the logic behind the GUI. Signals are processed here."""
+
+    @classmethod
+    def isEqualToUntranslatedString(cks, potentiallyTranslatedString, comparisonBaseString,context):
+        """This function checks for string equality when the UI strings may have been translated"""
+        return potentiallyTranslatedString == QCoreApplication.translate(context ,comparisonBaseString)
 
     def __init__(self,iface):
         """initialize the plugin control. Function gets called even when plugin is inactive"""
@@ -31,6 +38,13 @@ class TimeManagerControl(QObject):
         self.initModelConnections()
         self.initQGISConnections()
         self.restoreDefaults()
+
+    def getGranularitySeconds(self):
+        """Trick to make QtSlider support more than the integer range of seconds"""
+        return self.granularity
+
+    def setGranularitySeconds(self, granularity):
+        self.granularity = granularity
 
     def unload(self):
         """unload the plugin"""
@@ -85,10 +99,7 @@ class TimeManagerControl(QObject):
 
         self.guiControl.signalTimeFrameType.connect(self.setTimeFrameType)
         self.guiControl.signalTimeFrameSize.connect(self.setTimeFrameSize)
-        self.guiControl.saveOptionsStart.connect(self.timeLayerManager.clearTimeLayerList)
-        self.guiControl.saveOptionsEnd.connect(self.timeLayerManager.refreshTimeRestrictions)
-        self.guiControl.signalAnimationOptions.connect(self.setAnimationOptions)
-        self.guiControl.registerTimeLayer.connect(self.timeLayerManager.registerTimeLayer)
+        self.guiControl.signalSaveOptions.connect(self.saveOptions)
 
         # create actions
         # F8 button press - show time manager settings
@@ -107,15 +118,15 @@ class TimeManagerControl(QObject):
 
     def restoreDefaults(self):
         """restore plugin default settings"""
+        self.granularity = conf.DEFAULT_GRANULARITY_IN_SECONDS
         self.animationActivated = False
         self.loopAnimation = False
         self.playBackwards = False
         self.animationFrameCounter = 0
         self.saveAnimation = False
         self.saveAnimationPath = os.path.expanduser('~')
-        #self.getTimeLayerManager().setCurrentTimePosition(datetime.now()) #FIXME buggy
         self.animationFrameLength = DEFAULT_FRAME_LENGTH
-        self.guiControl.setTimeFrameType(DEFAULT_FRAME_UNIT)
+        self.restoreTimeFrameType(DEFAULT_FRAME_UNIT)
         self.guiControl.setTimeFrameSize(DEFAULT_FRAME_SIZE)
 
     def setPropagateGuiChanges(self, val):
@@ -135,10 +146,16 @@ class TimeManagerControl(QObject):
 
             timeLength = datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(timeExtents[0])
 
-            if timeLength> MAX_TIME_LENGTH_SECONDS:
-                raise Exception("Time length of {} seconds is too long for QT Slider to handle ("
-                           "integer overflow). Maximum value allowed: {}".format(timeLength,
-                                                                                 MAX_TIME_LENGTH_SECONDS))
+            if timeLength> MAX_TIME_LENGTH_SECONDS_SLIDER:
+                new_granularity = int(math.ceil(1.0*timeLength/MAX_TIME_LENGTH_SECONDS_SLIDER))
+                self.setGranularitySeconds(new_granularity)
+                # trick because timeLength must fit in an integer
+                # since it interfaces with a C++ class
+                newTimeLength = int(math.ceil(1.0*timeLength/new_granularity))
+                timeLength = newTimeLength
+
+            else:
+                self.setGranularitySeconds(1)
 
             self.guiControl.dock.horizontalTimeSlider.setMinimum(0)
             self.guiControl.dock.horizontalTimeSlider.setMaximum(timeLength)
@@ -254,7 +271,10 @@ class TimeManagerControl(QObject):
     def generate_frame_filename(self, path, frame_index, currentTime):
          return os.path.join(path,"{}{}_{}.png".format(FRAME_FILENAME_PREFIX,
                                                        str(frame_index).zfill(self.exportNameDigits), str(currentTime).replace(" ","_").replace(":","_")))
-        
+
+    def exportEmpty(self):
+        return self.guiControl.exportEmpty
+
     def playAnimation(self,painter=None):
         """play animation in map window"""
         if not self.animationActivated:
@@ -262,7 +282,8 @@ class TimeManagerControl(QObject):
         # check if the end of the project time extents has been reached
         projectTimeExtents = self.timeLayerManager.getProjectTimeExtents()
         currentTime = self.timeLayerManager.getCurrentTimePosition()
-        if self.saveAnimation:
+        if self.saveAnimation and self.exportEmpty() or (not self.exportEmpty() and
+                                                           qgs.haveVisibleFeatures()):
             fileName = self.generate_frame_filename(self.saveAnimationPath,
                                                     self.animationFrameCounter, currentTime)
             # try accessing the file or fail with informative exception
@@ -326,9 +347,16 @@ class TimeManagerControl(QObject):
         self.timeLayerManager.stepForward()
 
     def setTimeFrameType(self,timeFrameType):
-        """set timeLayerManager's time frame type"""
-        self.timeLayerManager.setTimeFrameType(timeFrameType)
-        self.guiControl.refreshMapCanvas('setTimeFrameType')
+        """set timeLayerManager's time frame type from a potentially foreign languane string"""
+        for frame_type in ['microseconds','milliseconds','seconds','minutes','hours','years',
+                         'months','weeks','days']:
+            if self.isEqualToUntranslatedString(timeFrameType,frame_type,
+                                                context=self.guiControl.dock.objectName()):
+                self.timeLayerManager.setTimeFrameType(frame_type)
+                self.guiControl.refreshMapCanvas('setTimeFrameType')
+                return
+
+        raise Exception("Unrecognized time frame type : {}".format(timeFrameType))
 
     def setTimeFrameSize(self,timeFrameSize):
         """set timeLayerManager's time frame size"""
@@ -341,7 +369,8 @@ class TimeManagerControl(QObject):
             return
         timeExtents = self.getTimeLayerManager().getProjectTimeExtents()
         try:
-            realEpochTime = int(pct * (datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(
+            realEpochTime = int(pct * self.getGranularitySeconds() * (datetime_to_epoch(
+                timeExtents[1]) - datetime_to_epoch(
                 timeExtents[0])) + datetime_to_epoch(timeExtents[0]))
         except:
             # extents are not set
@@ -352,12 +381,17 @@ class TimeManagerControl(QObject):
         if not self.propagateGuiChanges:
             return
         self.getTimeLayerManager().setCurrentTimePosition(QDateTime_to_datetime(qdate))
+
+    def restoreTimeFrameType(self, text):
+        try:
+            self.guiControl.setTimeFrameType(QCoreApplication.translate(
+                self.guiControl.dock.objectName(),text))
+        except: # tests dont work with mocked qcoreapplications unfortunately
+            pass
         
     def writeSettings(self, doc):
         """write all relevant settings to the project file XML """
         if not self.getTimeLayerManager().isEnabled():
-            #QgsProject.instance().clearProperties() #FIXME this may clear non Time Manager
-            # custom properties too
             return
         (timeLayerManagerSettings,timeLayerList) = self.getTimeLayerManager().getSaveString()
         
@@ -403,7 +437,7 @@ class TimeManagerControl(QObject):
                  'loopAnimation': (self.setLoopAnimation,0),
                  'timeLayerManager': (self.restoreSettingTimeLayerManager,None),
                  'timeLayerList': (self.restoreTimeLayers,None),
-                 'timeFrameType': (self.guiControl.setTimeFrameType,DEFAULT_FRAME_UNIT),
+                 'timeFrameType': (self.restoreTimeFrameType,DEFAULT_FRAME_UNIT),
                  'timeFrameSize': (self.guiControl.setTimeFrameSize,DEFAULT_FRAME_SIZE),
                  'active': (self.setActive,0)
         }
@@ -435,43 +469,72 @@ class TimeManagerControl(QObject):
         """restore timeLayerManager"""
         self.timeLayerManager.restoreFromSaveString(value)
   
-    def restoreTimeLayers(self, value):
+    def restoreTimeLayers(self, layerInfos):
         """restore all time layers"""
-        #FIXME What is value here?
-        if value:
-            layerInfo = value
-            if len(layerInfo):
+        if layerInfos:
+            QgsMessageLog.logMessage("layerinfos:"+str(layerInfos))
+            if len(layerInfos)>0:
                 self.guiControl.enableAnimationExport()
-            for l in layerInfo: # for every layer entry
-                l = l.split(';')
-                layer = QgsMapLayerRegistry.instance().mapLayer(l[0]) # get the layer
-                if not layer:
-                    continue
-
-                timeLayerClass = TimeLayerFactory.get_timelayer_class_from_layer(layer)
-                if timeLayerClass == TimeVectorLayer:
-                    layer.setSubsetString(l[1]) # restore the original subset string, only available for vector layers!
-                    
-                startTimeAttribute=l[2]
-                endTimeAttribute=l[3]
-                isEnabled=l[4]
-                timeFormat=l[5]
-                
+            for l in layerInfos: # for every layer entry
                 try:
-                    offset=l[6]
-                except IndexError: # old versions didn't have an offset option
-                    offset=0
-                    
-                try: # here we use the previously determined class
-                    timeLayer = timeLayerClass(layer,startTimeAttribute,endTimeAttribute,isEnabled,timeFormat,offset)
+                    settings = ls.getSettingsFromSaveStr(l)
+                    if settings.layer is None:
+                         self.showMessage('Could not restore layer with id {}'.format(
+                             settings.layerId))
+                         continue
+
+                    timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(settings.layer,
+                                interpolate=settings.interpolationEnabled)(settings,iface=self.iface)
+
                 except InvalidTimeLayerError, e:
-                    self.showMessage('An error occured while trying to add layer '+layer.name()+' to \
-                            TimeManager.\n'+e.value)
-                    return
+                    self.showMessage('An error occured while trying to add layer  to \
+                            TimeManager.\n'+str(e))
+                    continue
                
                 self.timeLayerManager.registerTimeLayer(timeLayer) 
-                self.guiControl.showLabel = True
+                self.guiControl.showLabel = True #FIXME(v1.6)
                 self.guiControl.refreshMapCanvas('restoreTimeLayer')
+
+    def saveOptions(self):
+        self.getTimeLayerManager().clearTimeLayerList()
+        for row in range(self.guiControl.optionsDialog.tableWidget.rowCount()):
+            try:
+                # add layer from row information
+                layer = self.createTimeLayerFromRow(row)
+                if layer is None:
+                    continue
+                self.getTimeLayerManager().registerTimeLayer(layer)
+                # save animation options
+                animationFrameLength = self.guiControl.optionsDialog.spinBoxFrameLength.value()
+                playBackwards = self.guiControl.optionsDialog.checkBoxBackwards.isChecked()
+                loopAnimation = self.guiControl.optionsDialog.checkBoxLoop.isChecked()
+                self.setAnimationOptions(animationFrameLength,playBackwards,loopAnimation)
+                self.guiControl.exportEmpty = not \
+                    self.guiControl.optionsDialog.checkBoxDontExportEmpty.isChecked()
+                self.guiControl.showLabel = self.guiControl.optionsDialog.checkBoxLabel.isChecked()
+                self.guiControl.refreshMapCanvas('saveOptions')
+                self.guiControl.dock.pushButtonExportVideo.setEnabled(True)
+            except:
+                continue
+
+            self.timeLayerManager.refreshTimeRestrictions()
+
+
+    def createTimeLayerFromRow(self,row):
+        """create a TimeLayer from options set in the table row"""
+        settings =ls.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
+        try:
+            timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(settings.layer,
+                                                    interpolate=settings.interpolationEnabled)(
+                settings, self.iface)
+        except Exception,e:
+            QgsMessageLog.logMessage("Error creating timelayer:"+str(e))
+            self.showMessage('An error occured while trying to add layer '
+                                    ''+settings.layer.name()+' to TimeManager.\n'+str(e))
+            return None
+        QgsMessageLog.logMessage("iz None:"+str(timeLayer is None))
+        return timeLayer
+
     
     def setActive(self,value):
         """de/activate the whole thing"""

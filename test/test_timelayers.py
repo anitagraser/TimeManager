@@ -3,6 +3,7 @@ from TimeManager.timerasterlayer import TimeRasterLayer
 from TimeManager.timevectorlayer import TimeVectorLayer
 from TimeManager.query_builder import INT_FORMAT, STRING_FORMAT
 from TimeManager.time_util import DEFAULT_FORMAT, UTC, datetime_to_epoch
+import TimeManager.layer_settings as ls
 from datetime import datetime, timedelta
 import unittest
 
@@ -20,8 +21,11 @@ class TestLayers(unittest.TestCase):
         layer = Mock()
         renderer = Mock()
         layer.renderer.return_value = renderer
-        raster = TimeRasterLayer(layer,fromTimeAttribute="1970-01-01 00:00:01",
-                             toTimeAttribute="1970-11-01 06:45:26",enabled=True,timeFormat=DEFAULT_FORMAT,offset=0)
+        settings = ls.LayerSettings()
+        settings.layer = layer
+        settings.startTimeAttribute = "1970-01-01 00:00:01"
+        settings.endTimeAttribute = "1970-11-01 06:45:26"
+        raster = TimeRasterLayer(settings, iface=Mock())
 
         assert(raster.getTimeFormat() == DEFAULT_FORMAT)
 
@@ -37,8 +41,11 @@ class TestLayers(unittest.TestCase):
         layer = Mock()
         renderer = Mock()
         layer.renderer.return_value = renderer
-        raster = TimeRasterLayer(layer,fromTimeAttribute=60,
-                             toTimeAttribute=260,enabled=True,timeFormat=DEFAULT_FORMAT,offset=0)
+        settings = ls.LayerSettings()
+        settings.layer = layer
+        settings.startTimeAttribute = 60
+        settings.endTimeAttribute = 260
+        raster = TimeRasterLayer(settings, iface=Mock())
 
         assert(raster.getTimeFormat() == UTC)
         raster.setTimeRestriction(datetime(1970,1,1,0,0,2),timedelta(minutes=5))
@@ -55,10 +62,12 @@ class TestLayers(unittest.TestCase):
         provider.minimumValue.return_value = "1970-01-01 00:01:00"
         provider.maximumValue.return_value = "1970-01-01 00:04:20"
         provider.storageType.return_value ='PostgreSQL database with PostGIS extension'
+        settings = ls.LayerSettings()
+        settings.layer = layer
+        settings.startTimeAttribute =self.from_attr
+        settings.endTimeAttribute =self.to_attr
 
-        vector = TimeVectorLayer(layer,fromTimeAttribute=self.from_attr,
-                             toTimeAttribute=self.to_attr,enabled=True,timeFormat=DEFAULT_FORMAT,
-                             offset=0)
+        vector = TimeVectorLayer(settings, iface=Mock())
 
         assert(vector.getTimeFormat() == DEFAULT_FORMAT)
         td=timedelta(minutes=5)
@@ -86,10 +95,11 @@ class TestLayers(unittest.TestCase):
         provider.minimumValue.return_value = 60
         provider.maximumValue.return_value = 260
         provider.storageType.return_value ='PostgreSQL database with PostGIS extension'
-
-        vector = TimeVectorLayer(layer,fromTimeAttribute=self.from_attr,
-                             toTimeAttribute=self.to_attr,enabled=True,timeFormat=DEFAULT_FORMAT,
-                             offset=0)
+        settings = ls.LayerSettings()
+        settings.layer = layer
+        settings.startTimeAttribute =self.from_attr
+        settings.endTimeAttribute =self.to_attr
+        vector = TimeVectorLayer(settings, iface=Mock())
 
         assert(vector.getTimeFormat() == UTC)
         td=timedelta(minutes=5)

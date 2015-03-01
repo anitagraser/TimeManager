@@ -1,15 +1,44 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-from datetime import datetime, timedelta
-from qgis.core import *
+import abc
 
 class TimeLayer:
     """Manages the properties of a managed (managable) layer."""
 
+    __metaclass__ = abc.ABCMeta # this class cannot be instantiated directly
+
     def __init__(self,layer,enabled=True):
         self.layer = layer
         self.timeEnabled = enabled
+
+    def getOriginalSubsetString(self):
+        return ''
+
+    @abc.abstractmethod
+    def hasSubsetStr(self):
+        pass
+
+    def isInterpolationEnabled(self):
+        return False
+
+    @abc.abstractmethod
+    def getOffset(self):
+        pass
+
+    @abc.abstractmethod
+    def getTimeFormat(self):
+        pass
+
+    @abc.abstractmethod
+    def getTimeAttributes(self):
+        pass
+
+    def hasIdAttribute(self):
+        return False
+
+    def getIdAttribute(self):
+        return None
 
     def getLayer(self):
         """Get the layer associated with the current timeLayer"""

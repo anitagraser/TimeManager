@@ -13,6 +13,9 @@ from time_util import DEFAULT_FORMAT, strToDatetimeWithFormatHint, \
     getFormatOfDatetimeValue, datetime_to_str, QDateTime_to_datetime, str_to_datetime
 from query_builder import QueryIdioms, DateTypes
 import query_builder
+from datetime import timedelta
+from conf import SAVE_DELIMITER
+import layer_settings as ls
 
 POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
 DELIMITED_TEXT_TYPE='Delimited text file'
@@ -30,31 +33,38 @@ class TimeVectorLayer(TimeLayer):
             tf = DateTypes.get_type_format(self.type)
         return tf
 
-    def __init__(self,layer,fromTimeAttribute,toTimeAttribute,enabled=True,
-                 timeFormat=DEFAULT_FORMAT,offset=0, iface=None):
-        TimeLayer.__init__(self,layer,enabled)
+    def getOriginalSubsetString(self):
+        return self.originalSubsetString
+
+    def __init__(self,settings, iface=None):
+        TimeLayer.__init__(self,settings.layer,settings.isEnabled)
         
-        self.layer = layer
+        self.layer = settings.layer
         self.iface = iface
         self.minValue,self.maxValue = None,None
-        self.fromTimeAttribute = fromTimeAttribute
-        self.toTimeAttribute = toTimeAttribute
-        self.timeEnabled = enabled
-        self.originalSubsetString = self.layer.subsetString()
+        self.fromTimeAttribute = settings.startTimeAttribute
+        self.toTimeAttribute = settings.endTimeAttribute
+        self.originalSubsetString = settings.subsetStr
+        self.setSubsetString(self.originalSubsetString)
+        self.provider = self.layer.dataProvider()
         self.type = DateTypes.determine_type(self.getRawMinValue())
         type2 = DateTypes.determine_type(self.getRawMaxValue())
-        self.timeFormat = self._infer_time_format(self.getRawMinValue(),hint=str(timeFormat))
-        tf2 = self._infer_time_format(self.getRawMaxValue(),hint=str(timeFormat))
+        self.timeFormat = self._infer_time_format(self.getRawMinValue(),hint=str(
+            settings.timeFormat))
+        tf2 = self._infer_time_format(self.getRawMaxValue(),hint=str(settings.timeFormat))
 
         if self.type!=type2 or self.timeFormat!=tf2:
             raise InvalidTimeLayerError("Invalid time layer: To and From attributes must have "
                                         "exact same format")
 
-        self.offset = int(offset)
+        self.offset = int(settings.offset)
         try:
             self.getTimeExtents()
         except Exception, e:
-            raise InvalidTimeLayerError(e.value)
+            raise InvalidTimeLayerError(e)
+
+    def hasSubsetStr(self):
+        return True
 
     def getDateType(self):
         """return the type of dates this layer has stored"""
@@ -75,26 +85,27 @@ class TimeVectorLayer(TimeLayer):
     def debug(self, msg):
             QMessageBox.information(self.iface.mainWindow(),'Info', msg)
 
+    def getProvider(self):
+        return self.provider
+
     def getRawMinValue(self):
         """returns the raw minimum value. May not be the expected minimum value semantically if we
         have dates that are saves as strings because of lexicographic comparisons"""
-        provider = self.layer.dataProvider()
-        fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
-        minValue =  provider.minimumValue(fromTimeAttributeIndex)
+        fromTimeAttributeIndex = self.getProvider().fieldNameIndex(self.fromTimeAttribute)
+        minValue =  self.getProvider().minimumValue(fromTimeAttributeIndex)
         return minValue
 
     def getRawMaxValue(self):
         """returns the raw minimum value. May not be the expected minimum value semantically if we
         have dates that are saves as strings because of lexicographic comparisons"""
-        provider = self.layer.dataProvider()
-        toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
-        maxValue =  provider.minimumValue(toTimeAttributeIndex)
+        toTimeAttributeIndex = self.getProvider().fieldNameIndex(self.toTimeAttribute)
+        maxValue =  self.getProvider().minimumValue(toTimeAttributeIndex)
         return maxValue
 
     def getMinMaxValues(self):
         """Returns str"""
         if self.minValue is None or self.maxValue is None: # if not already computed
-            provider = self.layer.dataProvider()
+            provider = self.getProvider()
             fmt = self.getTimeFormat()
             fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
             toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
@@ -139,21 +150,27 @@ class TimeVectorLayer(TimeLayer):
         endTime += timedelta(seconds=self.offset)
         return startTime, endTime
 
+    def getStartTime(self, timePosition, timeFrame):
+        return timePosition + timedelta(seconds=self.offset)
+
+    def getEndTime(self, timePosition, timeFrame):
+        return timePosition + timeFrame + timedelta(seconds=self.offset)
+
     def setTimeRestriction(self, timePosition, timeFrame):
         """Constructs the query, including the original subset"""
-        if not self.timeEnabled:
+        if not self.isEnabled():
             self.deleteTimeRestriction()
             return
 
-        startTime = timePosition + timedelta(seconds=self.offset)
-        endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
+        startTime = self.getStartTime(timePosition, timeFrame)
+        endTime = self.getEndTime(timePosition, timeFrame)
 
         idioms_to_try = [QueryIdioms.SQL, QueryIdioms.OGR]
 
         if self.getDateType() in DateTypes.QDateTypes:
             idioms_to_try = [QueryIdioms.OGR]
 
-        if self.layer.dataProvider().storageType() in STORAGE_TYPES_WITH_SQL:
+        if self.getProvider().storageType() in STORAGE_TYPES_WITH_SQL:
             idioms_to_try = [QueryIdioms.SQL]
 
         for idiom in idioms_to_try:
@@ -189,12 +206,9 @@ class TimeVectorLayer(TimeLayer):
         
     def getSaveString(self):
         """get string to save in project file"""
-        delimiter = ';'
-        saveString = self.getLayerId() + delimiter
-        saveString += self.originalSubsetString + delimiter
-        saveString += self.fromTimeAttribute + delimiter
-        saveString += self.toTimeAttribute + delimiter
-        saveString += str(self.timeEnabled) + delimiter
-        saveString += self.timeFormat + delimiter
-        saveString += str(self.offset)
-        return saveString
+        settings = ls.getSettingsFromLayer(self)
+        return SAVE_DELIMITER.join([settings.layerId, settings.subsetStr,
+                                   settings.startTimeAttribute, settings.endTimeAttribute,
+                                   str(settings.isEnabled),settings.timeFormat,
+                                   str(settings.offset), settings.idAttribute,
+                                   str(settings.interpolationEnabled)])

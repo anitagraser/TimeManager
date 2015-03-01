@@ -100,8 +100,9 @@ def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, qu
         ioy=date_format.find("%Y")
         iom=date_format.find("%m")
         iod=date_format.find("%d")
-        sub1=create_ymd_substring(ioy,iom,iod,from_attr,quote_type='"')
-        sub2=create_ymd_substring(ioy,iom,iod,end_str, quote_type='\'')
+        sub1=create_ymd_substring(ioy,iom,iod,from_attr,quote_type='"') # quote type for column
+        # names
+        sub2=create_ymd_substring(ioy,iom,iod,end_str, quote_type='\'') # quote type for values
         sub3=create_ymd_substring(ioy,iom,iod,to_attr, quote_type='"')
         sub4=create_ymd_substring(ioy,iom,iod,start_str, quote_type='\'')
         return "CONCAT({}) {} CONCAT({}) AND CONCAT({})>=CONCAT({})".format(sub1,comparison,
