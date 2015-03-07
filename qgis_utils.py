@@ -70,7 +70,7 @@ def refreshSymbols(iface, layer):
 
 def haveVisibleFeatures(timelayermanager):
     """Return true if at least one of the layers in the project has featureCount>0"""
-    all_layers = timelayermanager.getTimeLayerList()
+    all_layers = map(lambda x: x.layer, timelayermanager.getTimeLayerList())
     total_features = 0
     for layer in all_layers:
         total_features+=layer.featureCount()
