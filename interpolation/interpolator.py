@@ -8,6 +8,10 @@ except:
 __author__ = 'carolinux'
 
 
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+
+
 
 class Interpolator:
     __metaclass__ = abc.ABCMeta
@@ -39,10 +43,14 @@ class LinearInterpolator(Interpolator):
 
     def getInterpolatedValue(self, id, start_epoch, end_epoch):
 
+        QgsMessageLog.logMessage("value for id{}, start{}, end{}".format(id,start_epoch,
+         end_epoch))
+
         lastBefore = self.getLastEpochBeforeForId(id, start_epoch)
         firstAfter = self.getFirstEpochAfterForId(id, end_epoch)
 
         if lastBefore is None or firstAfter is None:
+            QgsMessageLog.logMessage("None")
             return None
         time_values = [lastBefore, firstAfter]
         #QgsMessageLog.logMessage(str(lastBefore)+"..."+str(firstAfter))
@@ -53,9 +61,9 @@ class LinearInterpolator(Interpolator):
         #TODO could also work for non points?
         x_pos = [xpos1, xpos2]
         y_pos = [ypos1, ypos2]
-        #TODO probably if the point hasnt appeared yet, we shouldnt interpolate left or right
         interp_x = np.interp(start_epoch,time_values,x_pos)
         interp_y = np.interp(start_epoch,time_values,y_pos)
+        QgsMessageLog.logMessage(str(interp_x)+" "+str(interp_y))
         return [interp_x, interp_y]
 
 
