@@ -283,7 +283,7 @@ class TimeManagerControl(QObject):
         projectTimeExtents = self.timeLayerManager.getProjectTimeExtents()
         currentTime = self.timeLayerManager.getCurrentTimePosition()
         if self.saveAnimation and (self.exportEmpty() or (not self.exportEmpty() and
-                                                           qgs.haveVisibleFeatures())):
+                                                           qgs.haveVisibleFeatures(self.getTimeLayerManager()))):
             fileName = self.generate_frame_filename(self.saveAnimationPath,
                                                     self.animationFrameCounter, currentTime)
             # try accessing the file or fail with informative exception

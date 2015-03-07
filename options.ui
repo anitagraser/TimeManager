@@ -200,7 +200,7 @@
        <item row="2" column="0" colspan="2">
         <widget class="QCheckBox" name="checkBoxDontExportEmpty">
          <property name="text">
-          <string>Do not export empty frames</string>
+          <string>Do not export empty frames in time managed layers</string>
          </property>
         </widget>
        </item>
