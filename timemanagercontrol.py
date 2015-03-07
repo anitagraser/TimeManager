@@ -282,8 +282,8 @@ class TimeManagerControl(QObject):
         # check if the end of the project time extents has been reached
         projectTimeExtents = self.timeLayerManager.getProjectTimeExtents()
         currentTime = self.timeLayerManager.getCurrentTimePosition()
-        if self.saveAnimation and self.exportEmpty() or (not self.exportEmpty() and
-                                                           qgs.haveVisibleFeatures()):
+        if self.saveAnimation and (self.exportEmpty() or (not self.exportEmpty() and
+                                                           qgs.haveVisibleFeatures())):
             fileName = self.generate_frame_filename(self.saveAnimationPath,
                                                     self.animationFrameCounter, currentTime)
             # try accessing the file or fail with informative exception
