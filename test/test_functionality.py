@@ -249,6 +249,24 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.tlm.stepForward()
         assert( start_time + timedelta(hours=1,seconds=1)==self.tlm.getCurrentTimePosition())
 
+
+    def test_export_with_empty(self):
+        """The tweets layer doesn't have tweets for every second. Test that when exporting part
+        of it with exportEmpty = False, not all possible frames are exported"""
+        self.registerTweetsTimeLayer()
+        tmpdir = tempfile.mkdtemp()
+        self.tlm.setTimeFrameType("seconds")
+        self.ctrl.exportEmpty = lambda: False
+        assert(self.ctrl.exportEmpty() == False)
+        end_time = time_util.strToDatetime(self.timeLayer.getMinMaxValues()[1])
+        start_time = end_time - timedelta(seconds=100)
+        self.tlm.setCurrentTimePosition(start_time)
+        layer_duration_in_seconds = (end_time-start_time).total_seconds()
+        self.ctrl.exportVideoAtPath(tmpdir)
+        screenshots_generated =  glob.glob(os.path.join(tmpdir, FRAME_FILENAME_PREFIX+"*"))
+        self.assertTrue(len(screenshots_generated) < math.ceil(layer_duration_in_seconds + 1))
+        shutil.rmtree(tmpdir)
+
     def test_export(self):
         self.registerTweetsTimeLayer()
         tmpdir = tempfile.mkdtemp()
