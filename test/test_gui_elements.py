@@ -89,7 +89,8 @@ class TestApp(QtGui.QWidget):
     def __init__(self):
         QtGui.QWidget.__init__(self)
         iface = Mock()
-        self.gui = guicontrol.TimeManagerGuiControl(iface)
+        model = Mock()
+        self.gui = guicontrol.TimeManagerGuiControl(iface, model)
 
     def getGui(self):
         return self.gui

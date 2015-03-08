@@ -22,6 +22,7 @@ class TimeManagerControl(QObject):
         """This function checks for string equality when the UI strings may have been translated"""
         return potentiallyTranslatedString == QCoreApplication.translate(context ,comparisonBaseString)
 
+
     def __init__(self,iface):
         """initialize the plugin control. Function gets called even when plugin is inactive"""
         QObject.__init__(self)
@@ -33,7 +34,7 @@ class TimeManagerControl(QObject):
         """ Load the plugin"""
         # order matters
         self.timeLayerManager = TimeLayerManager(self.iface)
-        self.guiControl = TimeManagerGuiControl(self.iface)
+        self.guiControl = TimeManagerGuiControl(self.iface, self.timeLayerManager)
         self.initViewConnections()
         self.initModelConnections()
         self.initQGISConnections()
@@ -109,6 +110,7 @@ class TimeManagerControl(QObject):
             self.guiControl.addActionShowSettings(self.actionShowSettings)
             self.actionShowSettings.triggered.connect(self.showOptionsDialog)
 
+
     def initModelConnections(self):
 
         # establish connections to timeLayerManager
@@ -178,6 +180,8 @@ class TimeManagerControl(QObject):
         if currentTimePosition is None:
             self.setPropagateGuiChanges(True)
             return
+
+        QgsMessageLog.logMessage("Setting current time: "+str(currentTimePosition))
 
         self.guiControl.dock.dateTimeEditCurrentTime.setDateTime(currentTimePosition)
         timeval = datetime_to_epoch(currentTimePosition)
@@ -348,12 +352,19 @@ class TimeManagerControl(QObject):
 
     def setTimeFrameType(self,timeFrameType):
         """set timeLayerManager's time frame type from a potentially foreign languane string"""
+        ctx = self.guiControl.dock.objectName()
         for frame_type in ['microseconds','milliseconds','seconds','minutes','hours','years',
                          'months','weeks','days']:
             if self.isEqualToUntranslatedString(timeFrameType,frame_type,
-                                                context=self.guiControl.dock.objectName()):
+                                                context=ctx):
                 self.timeLayerManager.setTimeFrameType(frame_type)
                 self.guiControl.refreshMapCanvas('setTimeFrameType')
+                if self.isEqualToUntranslatedString(timeFrameType,"microseconds",ctx) or \
+                        self.isEqualToUntranslatedString(timeFrameType,"milliseconds",ctx):
+                    QMessageBox.information(self.iface.mainWindow(),'Information',
+                        "Microsecond and millisecond support works best when the input data "\
+                        "contains millisecond information (ie, a decimal part)")
+
                 return
 
         raise Exception("Unrecognized time frame type : {}".format(timeFrameType))

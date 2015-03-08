@@ -59,10 +59,11 @@ class TimeManagerGuiControl(QObject):
     signalTimeFrameSize = pyqtSignal(int)
     signalSaveOptions = pyqtSignal()
     
-    def __init__ (self,iface):
+    def __init__ (self,iface, model):
         """initialize the GUI control"""
         QObject.__init__(self)
         self.iface = iface
+        self.model = model
         self.showLabel = False
         self.exportEmpty = True
         self.labelOptions = TimestampLabelConfig()
@@ -84,7 +85,9 @@ class TimeManagerGuiControl(QObject):
         self.dock.dateTimeEditCurrentTime.dateTimeChanged.connect(self.currentTimeChangedDateText)
         self.dock.horizontalTimeSlider.valueChanged.connect(self.currentTimeChangedSlider)
         self.dock.comboBoxTimeExtent.currentIndexChanged[str].connect(self.currentTimeFrameTypeChanged)
-        self.dock.spinBoxTimeExtent.valueChanged.connect(self.currentTimeFrameSizeChanged)          
+        self.dock.spinBoxTimeExtent.valueChanged.connect(self.currentTimeFrameSizeChanged)
+
+        # this signal is responsible for rendering the label
         self.iface.mapCanvas().renderComplete.connect(self.renderLabel)
 
         # create shortcuts
@@ -374,13 +377,18 @@ class TimeManagerGuiControl(QObject):
         if self.dock.pushButtonPlay.isChecked():
             self.dock.pushButtonPlay.toggle()
 
+
     def renderLabel(self, painter):
         """render the current timestamp on the map canvas"""        
         if not self.showLabel:
             return
 
-        labelString = datetime_to_str(QDateTime_to_datetime(self.dock.dateTimeEditCurrentTime.dateTime()),\
-                      self.labelOptions.fmt)
+        dt = self.model.getCurrentTimePosition()
+        if dt is None:
+            # this is only a fallback because QDateTime loses microsecond precision
+            dt = QDateTime_to_datetime(self.dock.dateTimeEditCurrentTime.getDateTime())
+
+        labelString = datetime_to_str(dt, self.labelOptions.fmt)
 
         # Determine placement of label given cardinal directions
         flags = 0

@@ -124,7 +124,6 @@ class TimeLayerManager(QObject):
             return timedelta(seconds=self.timeFrameSize)
         elif self.timeFrameType == 'milliseconds':
             return timedelta(milliseconds=self.timeFrameSize)
-        # FIXME(v1.6) current microsecond support is buggy
         elif self.timeFrameType == 'microseconds':
             return timedelta(microseconds=self.timeFrameSize)
 

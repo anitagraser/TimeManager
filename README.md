@@ -56,12 +56,12 @@ Time Manager supports exporting image series based on the defined animation sett
 
 ## Limitations
 
-The plug-in uses Python's datetime module for calculations. It is therefore limited to the module's functionality. This enfolds (not exhaustive):
+The plug-in uses Python's datetime module and QDateTime for calculations. It is therefore limited to these modules' functionality. This enfolds (not exhaustive):
 
 * Dates must be according to the formats mentioned above
 * Dates must be according to the Gregorian calendar
 * We fully support years from 100 AD to 8000 in the future
-* Time step can be as small as one second (smaller timesteps not fully supported yet)
+* Time step can be as small as one second (smaller timesteps not fully supported yet). Millisecond steps work well, but to avoid problems your dataset should have a timeformat that itself includes milliseconds, even if that means adding a trailing .0 to your time stamps. Microseconds also work, but QDateTime limitations prevent it from displaying correctly always.
 
 We currently don't support:
 
