@@ -284,3 +284,13 @@ class TimeLayerManager(QObject):
             pos = str_to_datetime(saveString[2], tdfmt)
             ##self.debug("tlmanager: set current time position to:"+str(pos))
             self.setCurrentTimePosition(pos)
+
+    def haveVisibleFeatures(self):
+        """Return true if at least one of the time managed layers in the project has
+        featureCount>0"""
+        all_layers = map(lambda x: x.layer,filter(lambda x: x.isEnabled(),
+                                                  self.getTimeLayerList()))
+        total_features = 0
+        for layer in all_layers:
+            total_features+=layer.featureCount()
+        return total_features>0

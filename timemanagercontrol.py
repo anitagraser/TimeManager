@@ -33,8 +33,8 @@ class TimeManagerControl(QObject):
     def load(self):
         """ Load the plugin"""
         # order matters
-        self.timeLayerManager = TimeLayerManager(self.iface)
-        self.guiControl = TimeManagerGuiControl(self.iface, self.timeLayerManager)
+        self.timeLayerManager = TimeLayerManager(self.iface) # the model
+        self.guiControl = TimeManagerGuiControl(self.iface, self.timeLayerManager) # the view
         self.initViewConnections()
         self.initModelConnections()
         self.initQGISConnections()
@@ -287,7 +287,7 @@ class TimeManagerControl(QObject):
         projectTimeExtents = self.timeLayerManager.getProjectTimeExtents()
         currentTime = self.timeLayerManager.getCurrentTimePosition()
         if self.saveAnimation and (self.exportEmpty() or (not self.exportEmpty() and
-                                                           qgs.haveVisibleFeatures(self.getTimeLayerManager()))):
+                                                           self.tlm.haveVisibleFeatures())):
             fileName = self.generate_frame_filename(self.saveAnimationPath,
                                                     self.animationFrameCounter, currentTime)
             # try accessing the file or fail with informative exception
