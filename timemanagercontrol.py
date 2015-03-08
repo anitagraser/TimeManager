@@ -502,8 +502,7 @@ class TimeManagerControl(QObject):
                             TimeManager.\n'+str(e))
                     continue
                
-                self.timeLayerManager.registerTimeLayer(timeLayer) 
-                self.guiControl.showLabel = True #FIXME(v1.6)
+                self.timeLayerManager.registerTimeLayer(timeLayer)
                 self.guiControl.refreshMapCanvas('restoreTimeLayer')
 
     def saveOptions(self):
@@ -543,13 +542,12 @@ class TimeManagerControl(QObject):
             self.showMessage('An error occured while trying to add layer '
                                     ''+settings.layer.name()+' to TimeManager.\n'+str(e))
             return None
-        QgsMessageLog.logMessage("iz None:"+str(timeLayer is None))
         return timeLayer
 
     
     def setActive(self,value):
         """de/activate the whole thing"""
-        if value==True:
+        if value:
             self.timeLayerManager.activateTimeManagement()
             self.guiControl.setActive(True)            
         else: # if the status indicates "off"

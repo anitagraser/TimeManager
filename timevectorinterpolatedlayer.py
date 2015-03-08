@@ -19,7 +19,7 @@ DEFAULT_ID = 0
 #TODO: What about toTimeAttribute and interpolation? Right now it's ignored
 
 # Cleaning up
-#TODO(v1.6) delete logging msgs when done testing
+#TODO(v1.6) delete logging msgs when done (beta) testing
 
 class TimeVectorInterpolatedLayer(TimeVectorLayer):
 

@@ -64,9 +64,6 @@ class TimeManagerGuiControl(QObject):
         QObject.__init__(self)
         self.iface = iface
         self.model = model
-        self.showLabel = False
-        self.exportEmpty = True
-        self.labelOptions = TimestampLabelConfig()
         self.optionsDialog = None
         self.path = os.path.dirname( os.path.abspath( __file__ ) )
         self.tempLayerIndexToId = {} # store the mapping of readable layer name to id temporarily
@@ -99,6 +96,9 @@ class TimeManagerGuiControl(QObject):
         self.dock.horizontalTimeSlider.setMinimum(conf.MIN_TIMESLIDER_DEFAULT)
         self.dock.horizontalTimeSlider.setMaximum(conf.MAX_TIMESLIDER_DEFAULT)
         self.dock.dateTimeEditCurrentTime.setMinimumDate(MIN_QDATE)
+        self.showLabel = conf.DEFAULT_SHOW_LABEL
+        self.exportEmpty = conf.DEFAULT_EXPORT_EMPTY
+        self.labelOptions = TimestampLabelConfig()
 
     def getOptionsDialog(self):
         return self.optionsDialog
