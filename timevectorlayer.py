@@ -93,13 +93,17 @@ class TimeVectorLayer(TimeLayer):
         have dates that are saves as strings because of lexicographic comparisons"""
         fromTimeAttributeIndex = self.getProvider().fieldNameIndex(self.fromTimeAttribute)
         minValue =  self.getProvider().minimumValue(fromTimeAttributeIndex)
+        if minValue is None: # if we are unlucky and have some null data we need to sort through the values
+           minValue =  max(filter(lambda x:x is not None,self.getProvider().uniqueValues(fromTimeAttributeIndex)))
         return minValue
 
     def getRawMaxValue(self):
-        """returns the raw minimum value. May not be the expected minimum value semantically if we
+        """returns the raw maximum value. May not be the expected minimum value semantically if we
         have dates that are saves as strings because of lexicographic comparisons"""
         toTimeAttributeIndex = self.getProvider().fieldNameIndex(self.toTimeAttribute)
-        maxValue =  self.getProvider().minimumValue(toTimeAttributeIndex)
+        maxValue =  self.getProvider().maximumValue(toTimeAttributeIndex)
+        if maxValue is None:
+           maxValue =  max(filter(lambda x:x is not None,self.getProvider().uniqueValues(toTimeAttributeIndex)))
         return maxValue
 
     def getMinMaxValues(self):
@@ -117,13 +121,21 @@ class TimeVectorLayer(TimeLayer):
                 # QGIS doesn't get sorting right
                 unique_vals = provider.uniqueValues(fromTimeAttributeIndex)
                 # those can be either strings or qdate(time) values
-                unique_vals = map(lambda x:timeval_to_datetime(x,fmt),unique_vals)
+                def vals_to_dt(vals, fmt):
+                    res = []
+                    for val in vals:
+                        try:
+                            res.append(timeval_to_datetime(val,fmt))
+                        except:
+                            pass
+                    return res
+                unique_vals = vals_to_dt(unique_vals, fmt)
                 minValue= datetime_to_str(min(unique_vals),fmt)
                 if fromTimeAttributeIndex == toTimeAttributeIndex:
                     maxValue = datetime_to_str(max(unique_vals),fmt)
                 else:
                     unique_vals = provider.uniqueValues(toTimeAttributeIndex)
-                    unique_vals = map(lambda x:timeval_to_datetime(x,fmt),unique_vals)
+                    unique_vals = vals_to_dt(unique_vals,fmt)
                     maxValue= datetime_to_str(max(unique_vals),fmt)
 
                 if type(minValue) in [QtCore.QDate, QtCore.QDateTime]:
