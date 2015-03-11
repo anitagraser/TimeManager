@@ -163,6 +163,7 @@ class TimeManagerControl(QObject):
             self.guiControl.dock.horizontalTimeSlider.setMaximum(timeLength)
 
         else: # set to default values
+            self.setGranularitySeconds(1)
             self.guiControl.dock.labelStartTime.setText('not set')
             self.guiControl.dock.labelEndTime.setText('not set')
             self.guiControl.dock.horizontalTimeSlider.setMinimum(conf.MIN_TIMESLIDER_DEFAULT)
@@ -189,6 +190,7 @@ class TimeManagerControl(QObject):
         try:
             pct = (timeval - datetime_to_epoch(timeExtents[0]))*1.0 / (datetime_to_epoch(
                 timeExtents[1]) - datetime_to_epoch(timeExtents[0]))
+            QgsMessageLog.logMessage("new pct"+str(pct))
 
             sliderVal = self.guiControl.dock.horizontalTimeSlider.minimum() + int(pct * (
                 self.guiControl.dock.horizontalTimeSlider.maximum()
@@ -378,14 +380,16 @@ class TimeManagerControl(QObject):
         """See the percentage the slider is at and determine the datetime"""
         if not self.propagateGuiChanges:
             return
+        #QgsMessageLog.logMessage("inital pct"+str(pct))
         timeExtents = self.getTimeLayerManager().getProjectTimeExtents()
         try:
-            realEpochTime = int(pct * self.getGranularitySeconds() * (datetime_to_epoch(
-                timeExtents[1]) - datetime_to_epoch(
-                timeExtents[0])) + datetime_to_epoch(timeExtents[0]))
+            realEpochTime = int(pct  * (datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(
+                timeExtents[0]))  + datetime_to_epoch(timeExtents[0]))
         except:
             # extents are not set
             realEpochTime = 0
+
+        #QgsMessageLog.logMessage("matching dt"+str(epoch_to_datetime(realEpochTime)))
         self.getTimeLayerManager().setCurrentTimePosition(epoch_to_datetime(realEpochTime))
 
     def updateTimePositionFromTextBox(self,qdate):
