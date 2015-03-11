@@ -23,6 +23,16 @@ class TestQueryBuilder(unittest.TestCase):
     start_dt = datetime(2014,5,6,1,0,2)
     end_dt = datetime(2015,4,3,11,0,2)
 
+    def test_lexicographically_comparable(self):
+        fmts=["%Y/%m/%d", "%Y.%m.%d"]
+        for fmt in fmts:
+            self.assertTrue(qb.can_compare_lexicographically(fmt))
+
+    def test_not_lexicographically_comparable(self):
+        fmts=["%m/%Y/%d", "%d.%m.%Y"]
+        for fmt in fmts:
+            self.assertTrue(not qb.can_compare_lexicographically(fmt))
+
     def test_query_for_lexicographically_comparable_format_(self):
         fmts=["%d/%m/%Y %H:%M","%m.%d.%Y %H:%M:%S"]
 

@@ -66,7 +66,7 @@ SUPPORTED_FORMATS = list(set(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS +
                              DMY_SUPPORTED_FORMATS))
 
 
-def timeval_to_epoch(val):
+def timeval_to_epoch(val, fmt=DEFAULT_FORMAT):
     """Converts any string, number, datetime or Qdate or QDatetime to epoch"""
     try:
         return int(val)
@@ -77,9 +77,12 @@ def timeval_to_epoch(val):
             if type(val) in [ QtCore.QDate, QtCore.QDateTime]:
                 val = QDateTime_to_datetime(val)
             if type(val) in [str,basestring,unicode]:
-                val= str_to_datetime(val,DEFAULT_FORMAT)
+                val= str_to_datetime(val,fmt)
             return datetime_to_epoch(val)
 
+def timeval_to_datetime(val, fmt):
+    epoch = timeval_to_epoch(val, fmt)
+    return epoch_to_datetime(epoch)
 
 def QDateTime_to_datetime(date):
     try:
@@ -111,6 +114,8 @@ def datetime_to_epoch(dt):
 
 def datetime_to_str(dt, fmt=DEFAULT_FORMAT):
     """ strftime has a bug for years<1900, so fixing it as well as we can """
+    if "%" not in fmt:
+        raise Exception("{} does not look like a time format".format(DEFAULT_FORMAT))
     if dt.year>=1900:
         return datetime.strftime(dt, fmt)
     else:

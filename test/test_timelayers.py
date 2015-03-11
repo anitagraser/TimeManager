@@ -61,6 +61,7 @@ class TestLayers(unittest.TestCase):
         layer.subsetString.return_value =""
         provider.minimumValue.return_value = "1970-01-01 00:01:00"
         provider.maximumValue.return_value = "1970-01-01 00:04:20"
+        provider.uniqueValues.return_value = ["1970-01-01 00:04:20", "1970-01-01 00:01:00"]
         provider.storageType.return_value ='PostgreSQL database with PostGIS extension'
         settings = ls.LayerSettings()
         settings.layer = layer

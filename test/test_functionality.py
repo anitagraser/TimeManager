@@ -121,8 +121,8 @@ class TestForLayersWithOnePointPerSecond(TestWithQGISLauncher):
         settings.layer = layer
         settings.startTimeAttribute = attr
         settings.endTimeAttribute = attr2
-
-        timeLayer = timevectorlayer.TimeVectorLayer(settings, iface=Mock())
+        iface=Mock()
+        timeLayer = timevectorlayer.TimeVectorLayer(settings, iface)
         self.tlm.registerTimeLayer(timeLayer)
 
         self.assertEquals(timeLayer.getDateType(), typ)

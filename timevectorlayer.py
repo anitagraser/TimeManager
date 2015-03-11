@@ -9,7 +9,7 @@ from PyQt4 import QtCore
 
 from PyQt4.QtGui import QMessageBox
 from timelayer import *
-from time_util import DEFAULT_FORMAT, strToDatetimeWithFormatHint, \
+from time_util import DEFAULT_FORMAT, timeval_to_datetime, \
     getFormatOfDatetimeValue, datetime_to_str, QDateTime_to_datetime, str_to_datetime
 from query_builder import QueryIdioms, DateTypes
 import query_builder
@@ -109,28 +109,28 @@ class TimeVectorLayer(TimeLayer):
             fmt = self.getTimeFormat()
             fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
             toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
-            if query_builder.can_compare_lexicographically(fmt):
-                minValue =  provider.minimumValue(fromTimeAttributeIndex)
-                maxValue = provider.maximumValue(toTimeAttributeIndex)
+            if self.getDateType() == DateTypes.IntegerTimestamps:
+                self.minValue = self.getRawMinValue()
+                self.maxValue = self.getRawMaxValue()
             else:
                 # need to find min max by looking at all the unique values
                 # QGIS doesn't get sorting right
-
                 unique_vals = provider.uniqueValues(fromTimeAttributeIndex)
-                unique_vals = map(lambda x:str_to_datetime(x,fmt),unique_vals)
+                # those can be either strings or qdate(time) values
+                unique_vals = map(lambda x:timeval_to_datetime(x,fmt),unique_vals)
                 minValue= datetime_to_str(min(unique_vals),fmt)
                 if fromTimeAttributeIndex == toTimeAttributeIndex:
-                    maxValue =  datetime_to_str(max(unique_vals),fmt)
+                    maxValue = datetime_to_str(max(unique_vals),fmt)
                 else:
                     unique_vals = provider.uniqueValues(toTimeAttributeIndex)
-                    unique_vals = map(lambda x:str_to_datetime(x,fmt),unique_vals)
+                    unique_vals = map(lambda x:timeval_to_datetime(x,fmt),unique_vals)
                     maxValue= datetime_to_str(max(unique_vals),fmt)
 
-            if type(minValue) in [QtCore.QDate, QtCore.QDateTime]:
-                minValue = datetime_to_str(QDateTime_to_datetime(minValue), self.getTimeFormat())
-                maxValue = datetime_to_str(QDateTime_to_datetime(maxValue), self.getTimeFormat())
-            self.minValue = minValue
-            self.maxValue = maxValue
+                if type(minValue) in [QtCore.QDate, QtCore.QDateTime]:
+                    minValue = datetime_to_str(QDateTime_to_datetime(minValue), self.getTimeFormat())
+                    maxValue = datetime_to_str(QDateTime_to_datetime(maxValue), self.getTimeFormat())
+                self.minValue = minValue
+                self.maxValue = maxValue
         return self.minValue, self.maxValue
 
     def getTimeExtents(self):
@@ -138,11 +138,11 @@ class TimeVectorLayer(TimeLayer):
          using the fields and the format defined in the layer"""
         start_str, end_str = self.getMinMaxValues()
         try:
-            startTime = strToDatetimeWithFormatHint(start_str,  self.getTimeFormat())
+            startTime = str_to_datetime(start_str,  self.getTimeFormat())
         except ValueError:
             raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+start_str+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
         try:
-            endTime = strToDatetimeWithFormatHint(end_str,  self.getTimeFormat())
+            endTime = str_to_datetime(end_str,  self.getTimeFormat())
         except ValueError:
             raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+end_str)
         # apply offset
