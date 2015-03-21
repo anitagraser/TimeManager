@@ -10,7 +10,7 @@ from timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
 classes_with_subsetStr = [TimeVectorLayer,]
 
 class TimeLayerFactory:
-    """Helper class to determine the class of the time layer ot create"""
+    """Helper class to determine the class of the time layer to create"""
     @classmethod
     def get_timelayer_class_from_layer(cls, layer, interpolate=False):
         if type(layer) == QgsVectorLayer and not interpolate:

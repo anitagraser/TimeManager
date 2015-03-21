@@ -114,7 +114,7 @@ def addUnmanagedLayerToTm(gui, column,interpolate=False, name=None):
     if interpolate is True:
         gui.addLayerDialog.comboBoxInterpolation\
             .setCurrentIndex(get_index_of(gui.addLayerDialog.comboBoxInterpolation,
-                                          conf.LINEAR_INTERPOLATION))
+                                          conf.LINEAR_POINT_INTERPOLATION))
         sleep(0.1)
 
     gui.addLayerDialog.buttonBox.accepted.emit()
@@ -208,6 +208,7 @@ addUnmanagedLayerToTm(gui, "T",name="tweets")
 assert(ls.getSettingsFromLayer(tlm.getTimeLayerList()[0]).interpolationEnabled == True)
 assert(len(get_all_layer_names())==3)
 tmp_file = get_temp_file().name
+tmp_file = "/tmp/foo"
 save_project_to_file(tmp_file)
 new_project()
 load_project(tmp_file)

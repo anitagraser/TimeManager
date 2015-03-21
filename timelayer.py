@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+import conf
 import abc
 
 class TimeLayer:
@@ -21,6 +22,9 @@ class TimeLayer:
 
     def isInterpolationEnabled(self):
         return False
+
+    def interpolationMode(self):
+        return conf.NO_INTERPOLATION
 
     @abc.abstractmethod
     def getOffset(self):

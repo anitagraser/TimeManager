@@ -536,15 +536,15 @@ class TimeManagerControl(QObject):
 
     def createTimeLayerFromRow(self,row):
         """create a TimeLayer from options set in the table row"""
-        settings =ls.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
         try:
+            settings =ls.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
             timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(settings.layer,
                                                     interpolate=settings.interpolationEnabled)(
                 settings, self.iface)
         except Exception,e:
             QgsMessageLog.logMessage("Error creating timelayer:"+str(e))
             self.showMessage('An error occured while trying to add layer '
-                                    ''+settings.layer.name()+' to TimeManager.\n'+str(e))
+                    ''+settings.layer.name()+' to TimeManager.\n'+str(e))
             return None
         return timeLayer
 

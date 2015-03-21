@@ -4,7 +4,7 @@ from timelayer import *
 from timevectorlayer import TimeVectorLayer
 from time_util import DEFAULT_FORMAT, datetime_to_epoch, timeval_to_epoch, epoch_to_str,UTC
 from conf import DEFAULT_ID
-from interpolation.interpolator import LinearPointInterpolator
+import interpolation.interpolator_factory as ifactory
 import qgis_utils as qgs
 
 from PyQt4.QtCore import *
@@ -23,6 +23,9 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
 
     def isInterpolationEnabled(self):
         return True
+
+    def interpolationMode(self):
+        return self.mode
 
     def getMemLayer(self):
         """When restoring a project, the layer will already exist, so we shouldn't
@@ -47,7 +50,8 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             if self.layer.geometryType() != QGis.Point:
                 raise Exception("Want point geometry!")
             self.idAttribute = settings.idAttribute
-
+             
+            QgsMessageLog.logMessage("interpolation mode:"+settings.interpolationMode)
             self.memLayer = self.getMemLayer()
 
             # adjust memLayer to have same crs and same color as original layer, only half transparent
@@ -69,7 +73,8 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             else:
                 self.uniqueIdValues = set([DEFAULT_ID])
 
-            self.fromInterpolator = LinearPointInterpolator()
+            self.mode = settings.interpolationMode
+            self.fromInterpolator = ifactory.get_interpolator_from_text(self.mode)
             self.fromInterpolator.load(self)
             self.n=0
             self.previous_ids = set()

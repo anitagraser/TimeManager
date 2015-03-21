@@ -26,7 +26,7 @@ class LayerSettings:
         self.timeFormat = time_util.DEFAULT_FORMAT
         self.offset = 0
         self.interpolationEnabled = False
-        self.interpolationMode = '' # TODO: when we have multiple modes, work on this
+        self.interpolationMode = conf.NO_INTERPOLATION 
         self.idAttribute = ''
         self.subsetStr = ''
 
@@ -44,6 +44,7 @@ def getSettingsFromSaveStr(saveStr):
         result.offset= int(l[6])
         result.idAttribute= l[7]
         result.interpolationEnabled = textToBool(l[8])
+        result.interpolationMode = l[9]
     except IndexError: # for backwards compatibility
         pass # this will use default values
     return result
@@ -80,11 +81,11 @@ def getSettingsFromRow(table, rowNum):
         result.endTimeAttribute = result.startTimeAttribute
     else:
         result.endTimeAttribute = table.item(rowNum,2).text()
-
     # time format
     result.timeFormat = table.item(rowNum,5).text()
     result.interpolationEnabled =(table.item(rowNum,7).checkState() ==  Qt.Checked)
     result.idAttribute = table.item(rowNum,8).text()
+    result.interpolationMode = table.item(rowNum,9).text()
     
     return result
 
@@ -102,6 +103,7 @@ def getSettingsFromLayer(layer):
     result.endTimeAttribute = times[1]
     result.timeFormat= layer.getTimeFormat()
     result.interpolationEnabled = layer.isInterpolationEnabled()
+    result.interpolationMode = layer.interpolationMode()
     if result.interpolationEnabled:
         result.idAttribute = "" if not layer.hasIdAttribute() else layer.getIdAttribute()
     else:

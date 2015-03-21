@@ -222,8 +222,9 @@ class TimeVectorLayer(TimeLayer):
     def getSaveString(self):
         """get string to save in project file"""
         settings = ls.getSettingsFromLayer(self)
-        return SAVE_DELIMITER.join([settings.layerId, settings.subsetStr,
+        res = SAVE_DELIMITER.join([settings.layerId, settings.subsetStr,
                                    settings.startTimeAttribute, settings.endTimeAttribute,
                                    str(settings.isEnabled),settings.timeFormat,
                                    str(settings.offset), settings.idAttribute,
-                                   str(settings.interpolationEnabled)])
+                                   str(settings.interpolationEnabled), settings.interpolationMode])
+        return res

@@ -8,6 +8,7 @@ from qgis.core import *
 from datetime import datetime, timedelta
 import os
 from TimeManager.layer_settings import LayerSettings
+import TimeManager.conf as conf
 from TimeManager.timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
 from mock import Mock
 import tempfile
@@ -58,6 +59,7 @@ class TestInterpolatedLayer(TestWithQGISLauncher):
     def test_layer_always_has_a_feature_per_unique_id(self):
         settings = LayerSettings()
         settings.layer = self.layer
+        settings.interpolationMode = conf.LINEAR_POINT_INTERPOLATION
         settings.startTimeAttribute = TIMESTAMP
         settings.endTimeAttribute = TIMESTAMP
         settings.interpolationEnabled = True

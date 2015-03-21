@@ -52,7 +52,7 @@
         </size>
        </property>
        <property name="columnCount">
-        <number>9</number>
+        <number>10</number>
        </property>
        <column>
         <property name="text">
@@ -97,6 +97,11 @@
        <column>
         <property name="text">
          <string>id</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>interpolation_mode</string>
         </property>
        </column>
       </widget>
