@@ -3,16 +3,14 @@ __author__ = 'carolinux'
 from timelayer import *
 from timevectorlayer import TimeVectorLayer
 from time_util import DEFAULT_FORMAT, datetime_to_epoch, timeval_to_epoch, epoch_to_str,UTC
-from interpolation.interpolator import LinearInterpolator
+from conf import DEFAULT_ID
+from interpolation.interpolator import LinearPointInterpolator
 import qgis_utils as qgs
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from collections import defaultdict
 from qgis.core import *
-
-
-DEFAULT_ID = 0
 
 # Ideas for extending
 #TODO: Just points types? What about lines or polygon move?
@@ -71,21 +69,8 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             else:
                 self.uniqueIdValues = set([DEFAULT_ID])
 
-            self.fromInterpolator = LinearInterpolator()
-
-            features = self.layer.getFeatures(QgsFeatureRequest() )
-            for feat in features:
-                from_time = timeval_to_epoch(feat[self.fromTimeAttributeIndex])
-                to_time = timeval_to_epoch(feat[self.fromTimeAttributeIndex])
-                geom = feat.geometry()
-                if geom.type()!=QGis.Point:
-                    QgsMessageLog.logMessage("Ignoring 1 non-point geometry")
-                    continue
-                coords = (geom.asPoint().x(), geom.asPoint().y())
-                id = DEFAULT_ID if not self.hasIdAttribute() else feat[self.idAttributeIndex]
-                self.fromInterpolator.addIdEpochTuple(id, from_time, coords)
-
-            self.fromInterpolator.sort()
+            self.fromInterpolator = LinearPointInterpolator()
+            self.fromInterpolator.load(self)
             self.n=0
             self.previous_ids = set()
             QgsMessageLog.logMessage("Created layer successfully!")

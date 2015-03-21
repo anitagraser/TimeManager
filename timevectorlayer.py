@@ -45,6 +45,7 @@ class TimeVectorLayer(TimeLayer):
         self.fromTimeAttribute = settings.startTimeAttribute
         self.toTimeAttribute = settings.endTimeAttribute
         self.originalSubsetString = settings.subsetStr
+        self.currSubsetString  = self.originalSubsetString
         self.setSubsetString(self.originalSubsetString)
         self.provider = self.layer.dataProvider()
         self.type = DateTypes.determine_type(self.getRawMinValue())
@@ -207,6 +208,8 @@ class TimeVectorLayer(TimeLayer):
         success = self.layer.setSubsetString(subsetString)
         if not success:
             raise SubstringException("Could not set substring to".format(subsetString))
+        else:
+            self.currSubsetString = subsetString
 
     def deleteTimeRestriction(self):
         """Restore original subset"""
