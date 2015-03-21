@@ -1,6 +1,6 @@
 from mock import Mock
 
-from TimeManager.interpolation import interpolator
+from TimeManager.interpolation import linearpointinterpolator as lpi
 
 import unittest
 
@@ -20,7 +20,7 @@ class TestLinearInterpolatorBuilder(unittest.TestCase):
 
 
     def setUp(self):
-        self.lin = interpolator.LinearPointInterpolator()
+        self.lin = lpi.LinearPointInterpolator()
         for tupl in tuples:
             self.lin._addIdEpochTuple(*tupl)
         self.lin._sort()

@@ -12,6 +12,8 @@ from PyQt4.QtGui import *
 from collections import defaultdict
 from qgis.core import *
 
+import traceback
+
 # Ideas for extending
 #TODO: Just points types? What about lines or polygon move?
 #TODO: What about toTimeAttribute and interpolation? Right now it's ignored
@@ -80,7 +82,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             self.previous_ids = set()
             QgsMessageLog.logMessage("Created layer successfully!")
         except Exception,e :
-            raise InvalidTimeLayerError(e)
+            raise InvalidTimeLayerError("Traceback:"+traceback.format_exc(e))
 
 
     def __del__(self):

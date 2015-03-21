@@ -17,14 +17,44 @@ from PyQt4.QtGui import *
 
 class Interpolator:
     __metaclass__ = abc.ABCMeta
-    """ Interpolation is done for a function/mapping f(z,x) -> Y
-    where x = time and z is an ID and Y is a geometry type that corresponds
-    to this timestamp and id (for instance a point). """
+    """ Interpolation is done for a function/mapping f(I,T) -> G
+    where T = time and I is an ID and G is a geometry type that corresponds
+    to this timestamp and id (for instance a point). Given an id and some timestamps
+    with corresponding geometries (2 or more) for every value T between Tmin and Tmax we can
+    return an interpolated G value. For T values outside Tmin and Tmax, behavior is
+    determined by interpolate_left and interpolate_right"""
+
+    @abc.abstractmethod
+    def load(self, timeLayer, *args, **kwargs):
+        """How to load the data from the layer/provider. Implementation is completely up to the developer.
+        May choose to have a copy of the data in the class or just the info needed to query
+        the provider"""
+        pass
+
+    @abc.abstractmethod
+    def interpolate(self, Tvalue, Tvalues, Gvalues):
+        pass
+
+    @abc.abstractmethod
+    def get_Tvalue_before(self,id, timestamp):
+        pass
+
+    @abc.abstractmethod
+    def get_Tvalue_after(self,id, timestamp):
+        pass
+
+    @abc.abstractmethod
+    def get_Gvalue(self,id, timestamp):
+        """Return the actual geometry for id and timestamp.
+        The (id,timestamp) pair must exist in the data"""
+        pass
 
     def interpolate_left(self):
+        """Whether to do interpolation for T values < min(T) (otherwise will return None)"""
         return False
 
     def interpolate_right(self):
+        """Whether to do interpolation for T values > max(T) (otherwise will return None)"""
         return False
 
     def num_Tvalues_before(self):
@@ -50,17 +80,6 @@ class Interpolator:
 
         return self.interpolate(t1, Tvalues, Gvalues)
 
-    @abc.abstractmethod
-    def load(self,layer, *args, **kwargs):
-        """How to load the data from the layer/provider. Implementation is completely free.
-        May choose to have a copy of the data in the class or just the info needed to query
-        the provider"""
-        pass
-
-    @abc.abstractmethod
-    def interpolate(self, Tvalue, Tvalues, Gvalues):
-        pass
-
     def get_Tvalues_before(self,id, t):
         res = []
         lastt = t 
@@ -84,21 +103,11 @@ class Interpolator:
                 res.append(lastt)
         return res
 
-    @abc.abstractmethod
-    def get_Tvalue_before(self,id, timestamp):
-        pass
-
-    @abc.abstractmethod
-    def get_Tvalue_after(self,id, timestamp):
-        pass
-
-    @abc.abstractmethod
-    def get_Gvalue(self,id, timestamp):
-        """Return the geometry for id and timestamp.
-        The (id,timestamp) pair must exist in the data"""
-        pass
 
 class MemoryLoadInterpolator(Interpolator):
+    """Interpolator that loads all the data it needs and stores it in
+    internal data structures. Will be less than ideal when dealing with 
+    Big Data"""
 
     @abc.abstractmethod
     def getGeometryFromFeature(feat):
@@ -148,28 +157,4 @@ class MemoryLoadInterpolator(Interpolator):
         if idx == len(self.id_to_time[id]):
             return self.id_to_time[id][-1]
         return self.id_to_time[id][idx]
-
-class LinearPointInterpolator(MemoryLoadInterpolator):
-
-    def getGeometryFromFeature(self,feat):
-        geom = feat.geometry()
-        if geom.type()!=QGis.Point:
-            QgsMessageLog.logMessage("Ignoring 1 non-point geometry")
-            return None
-        coords = (geom.asPoint().x(), geom.asPoint().y())
-        return coords
-
-    def interpolate(self, Tvalue, Tvalues, Gvalues):
-        xpos1,ypos1 = Gvalues[0] 
-        xpos2,ypos2 = Gvalues[1] 
-        # Interpolate
-        x_pos = [xpos1, xpos2]
-        y_pos = [ypos1, ypos2]
-        interp_x = np.interp(Tvalue,Tvalues,x_pos)
-        interp_y = np.interp(Tvalue,Tvalues,y_pos)
-        QgsMessageLog.logMessage(str(interp_x)+" "+str(interp_y))
-        return [interp_x, interp_y]
-
-
-
 
