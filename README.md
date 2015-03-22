@@ -11,6 +11,10 @@ Latest news will be published on Anita's blog: http://anitagraser.com/tag/time-m
 
 The aim of '''Time Manager plugin for QGIS''' is to provide comfortable browsing through temporal geodata. A dock widget provides a time slider and a configuration dialog for your layers to manage.
 
+## Newest features
+
+As of version 1.5.0 TimeManager provides support for linear interpolation between point geometries. Try it out and give feedback.
+
 ## What Time Manager currently does
 
 Time Manager filters your datasets and displays only features with timestamps in the user specified time frame. Timestamps have to be in one of the following formats:
