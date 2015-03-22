@@ -67,7 +67,7 @@ class TestInterpolatedLayer(TestWithQGISLauncher):
         timeLayer = TimeVectorInterpolatedLayer(settings, iface=Mock())
         self.tlm.registerTimeLayer(timeLayer)
         self.tlm.setTimeFrameType("seconds")
-        for i in range(10):
+        for i in range(11):
             self.assertTrue(timeLayer.layer.featureCount()+ timeLayer.memLayer.featureCount() ==
                             UNIQUE_IDS)
             self.tlm.stepForward()

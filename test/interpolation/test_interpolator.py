@@ -39,6 +39,20 @@ class TestLinearInterpolatorBuilder(unittest.TestCase):
         self.assertAlmostEqual(result[0], expected[0], 5)
         self.assertAlmostEqual(result[1], expected[1], 5)
 
+    def testMultipleValuesBefore(self):
+        self.lin.num_Tvalues_before = lambda : 2
+        vals = self.lin.get_Tvalues_before(1,399)
+        self.assertSequenceEqual(vals,[200,100])
+        vals = self.lin.get_Tvalues_before(1,199)
+        self.assertSequenceEqual(vals,[100])
+
+    def testMultipleValuesAfter(self):
+        self.lin.num_Tvalues_after = lambda : 2
+        vals = self.lin.get_Tvalues_after(1,99)
+        self.assertSequenceEqual(vals,[100,200])
+        vals = self.lin.get_Tvalues_after(1,250)
+        self.assertSequenceEqual(vals,[400])
+
     def test_existing_values_return_self(self):
         for tupl in tuples:
             id, start_time, geom = tupl

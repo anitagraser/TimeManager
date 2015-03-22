@@ -13,7 +13,7 @@ __author__ = 'carolinux'
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-
+STEP = 0.0000001
 
 class Interpolator:
     __metaclass__ = abc.ABCMeta
@@ -37,10 +37,12 @@ class Interpolator:
 
     @abc.abstractmethod
     def get_Tvalue_before(self,id, timestamp):
+        """Get the largest T value in the data where T <= timestamp"""
         pass
 
     @abc.abstractmethod
     def get_Tvalue_after(self,id, timestamp):
+        """Get the smallest T value in the data where T >= timestamp"""
         pass
 
     @abc.abstractmethod
@@ -66,7 +68,7 @@ class Interpolator:
         return 1
 
     def getInterpolatedValue(self, id, t1, t2):
-        """Get the interpolated Y value given an id and a timestamp range"""
+        """Get the interpolated G value given an id and a timestamp range"""
 
         QgsMessageLog.logMessage("value for id{}, start{}, end{}".format(id,t1,t2))
 
@@ -75,16 +77,22 @@ class Interpolator:
         if len(before) == 0  or len(after) == 0 :
             QgsMessageLog.logMessage("Could not interpolate")
             return None
+        before.reverse()
         Tvalues = before + after
         Gvalues  = map(lambda x: self.get_Gvalue(id,x), Tvalues)
 
         return self.interpolate(t1, Tvalues, Gvalues)
 
     def get_Tvalues_before(self,id, t):
+        """Get a sequence of T values <= t"""
         res = []
         lastt = t 
+        first = True
         for i in range(self.num_Tvalues_before()):
+            if not first:
+                lastt = lastt - STEP
             lastt = self.get_Tvalue_before(id,lastt)
+            first = False
             if lastt is None:
                 return res
             else: 
@@ -93,10 +101,15 @@ class Interpolator:
 
 
     def get_Tvalues_after(self,id, t ):
+        """ Get a sequence of T values >= t"""
         res = []
         lastt = t 
+        first = True
         for i in range(self.num_Tvalues_after()):
+            if not first:
+                lastt= lastt + STEP
             lastt = self.get_Tvalue_after(id,lastt)
+            first = False
             if lastt is None:
                 return res
             else: 
