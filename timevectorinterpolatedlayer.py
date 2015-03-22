@@ -19,7 +19,7 @@ import traceback
 #TODO: What about toTimeAttribute and interpolation? Right now it's ignored
 
 # Cleaning up
-#TODO(v1.6) delete logging msgs when done (beta) testing
+#TODO(v1.6.1) delete logging msgs when done (beta) testing
 
 class TimeVectorInterpolatedLayer(TimeVectorLayer):
 

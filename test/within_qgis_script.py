@@ -208,16 +208,8 @@ addUnmanagedLayerToTm(gui, "T",name="tweets")
 assert(ls.getSettingsFromLayer(tlm.getTimeLayerList()[0]).interpolationEnabled == True)
 assert(len(get_all_layer_names())==3)
 tmp_file = get_temp_file().name
-tmp_file = "/tmp/foo"
 save_project_to_file(tmp_file)
 new_project()
 load_project(tmp_file)
 assert(len(get_all_layer_names())==3)
-
-
-
-
-
-
-
 
