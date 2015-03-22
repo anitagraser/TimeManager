@@ -543,8 +543,8 @@ class TimeManagerControl(QObject):
                 settings, self.iface)
         except Exception,e:
             QgsMessageLog.logMessage("Error creating timelayer:"+str(e))
-            self.showMessage('An error occured while trying to add layer '
-                    ''+settings.layer.name()+' to TimeManager.\n'+str(e))
+            self.showMessage('An error occured while trying to add layer '\
+                    +settings.layer.name()+' to TimeManager.\n'+str(e))
             return None
         return timeLayer
 
