@@ -74,7 +74,7 @@ def create_ymd_substring(ioy,iom,iod,ioh,col, quote_type):
     dstr = "SUBSTR({}{}{},{},{})".format(q,col,q, iod+1,iod+3)  if iod>=0 else None
     max_index = max(ioy,iom,iod)
     ior = max_index + (2 if max_index!=ioy else 4) # find where the rest of the string is
-    reststr = "SUBSTR({}{}{},{},{})".format(q,col,q, ior+1, ior+1+6+6)  if ioh>=0 else None
+    reststr = "SUBSTR({}{}{},{},{})".format(q,col,q, ior+1, ior+1+8+1+6)  if ioh>=0 else None
     string_components = filter(lambda x: x is not None,[ystr,mstr,dstr,reststr])
     return ",".join(string_components)
 
