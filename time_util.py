@@ -162,7 +162,7 @@ def fixed_strftime(dt, fmt):
         if site in sites2:
             sites.append(site)
     s = s1
-    syear = "%4d" % (dt.year,)
+    syear = "%04d" % (dt.year,)
     for site in sites:
         s = s[:site] + syear + s[site+4:]
     return s

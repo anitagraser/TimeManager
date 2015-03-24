@@ -4,7 +4,7 @@ Created on Thu Mar 22 17:28:19 2012
 
 @author: Anita
 """
-
+import traceback
 from PyQt4 import QtCore
 
 from PyQt4.QtGui import QMessageBox
@@ -62,7 +62,7 @@ class TimeVectorLayer(TimeLayer):
         try:
             self.getTimeExtents()
         except Exception, e:
-            raise InvalidTimeLayerError(e)
+            raise InvalidTimeLayerError(traceback.format_exc(e))
 
     def hasSubsetStr(self):
         return True
@@ -153,11 +153,12 @@ class TimeVectorLayer(TimeLayer):
         try:
             startTime = str_to_datetime(start_str,  self.getTimeFormat())
         except ValueError:
-            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as start time contains invalid data:\n\n'+start_str+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
+            raise NotATimeAttributeError('The attribute specified for use as start time contains invalid data:\n\n'+
+                    start_str+'\n\nis not one of the supported formats')
         try:
             endTime = str_to_datetime(end_str,  self.getTimeFormat())
         except ValueError:
-            raise NotATimeAttributeError(str(self.getName())+': The attribute specified for use as end time contains invalid data:\n'+end_str)
+            raise NotATimeAttributeError('The attribute specified for use as end time contains invalid data:\n'+end_str)
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
@@ -186,6 +187,7 @@ class TimeVectorLayer(TimeLayer):
         if self.getProvider().storageType() in STORAGE_TYPES_WITH_SQL:
             idioms_to_try = [QueryIdioms.SQL]
 
+        tried = []
         for idiom in idioms_to_try:
 
             subsetString = query_builder.build_query(startTime, endTime, self.fromTimeAttribute,
@@ -194,12 +196,13 @@ class TimeVectorLayer(TimeLayer):
             try:
                 self.setSubsetString(subsetString)
             except SubstringException:
+                tried.append(subsetString)
                 # try the other one
                 # not sure if trying several idioms could make the screen flash
                 continue
             return
 
-        raise SubstringException
+        raise SubstringException("Tried: {}".format(tried))
 
     def setSubsetString(self,subsetString):
 

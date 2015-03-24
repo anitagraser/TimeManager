@@ -12,6 +12,13 @@ __email__="karolina.alexiou@teralytics.ch"
 
 class TestTimeUtil(unittest.TestCase):
 
+
+    def strftime_before_1900_works(self):
+        dtstr="01/12/0100"
+        fmt="%d/%m/%Y"
+        dt = datetime.strptime(dtstr,fmt)
+        assert(dt.strftime(fmt)==dtstr)
+
     def test_str_with_microseconds_returns_float(self):
         dtstr ="2013-06-14 11:30:23.100000"
         dt = time_util.str_to_datetime(dtstr,time_util.DEFAULT_FORMAT)

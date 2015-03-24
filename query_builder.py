@@ -66,7 +66,7 @@ def can_compare_lexicographically(date_format):
     return ioy<=iom and iom<=iod and (iod<=ioh or ioh==-1) and (ioh<=iomin or iomin==-1) and \
     (iomin<=ios or ios==-1)
 
-def create_ymd_substring(ioy,iom,iod,col, quote_type):
+def create_ymd_substring(ioy,iom,iod,ioh,col, quote_type):
     q=quote_type
     ystr = "SUBSTR({}{}{},{},{})".format(q,col,q, ioy+1,ioy+5) if ioy>=0 else None # adding 1
     # because SQL indexing is 1-based
@@ -74,7 +74,7 @@ def create_ymd_substring(ioy,iom,iod,col, quote_type):
     dstr = "SUBSTR({}{}{},{},{})".format(q,col,q, iod+1,iod+3)  if iod>=0 else None
     max_index = max(ioy,iom,iod)
     ior = max_index + (2 if max_index!=ioy else 4) # find where the rest of the string is
-    reststr = "SUBSTR({}{}{},{})".format(q,col,q, ior+1)  if iod>=0 else None
+    reststr = "SUBSTR({}{}{},{},{})".format(q,col,q, ior+1, ior+1+6+6)  if ioh>=0 else None
     string_components = filter(lambda x: x is not None,[ystr,mstr,dstr,reststr])
     return ",".join(string_components)
 
@@ -105,12 +105,13 @@ def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, qu
         ioy=date_format.find("%Y")
         iom=date_format.find("%m")
         iod=date_format.find("%d")
+        ioh=date_format.find("%H")
 
-        sub1=create_ymd_substring(ioy,iom,iod,from_attr,quote_type='"') # quote type for column
+        sub1=create_ymd_substring(ioy,iom,iod,ioh,from_attr,quote_type='"') # quote type for column
         # names
-        sub2=create_ymd_substring(ioy,iom,iod,end_str, quote_type='\'') # quote type for values
-        sub3=create_ymd_substring(ioy,iom,iod,to_attr, quote_type='"')
-        sub4=create_ymd_substring(ioy,iom,iod,start_str, quote_type='\'')
+        sub2=create_ymd_substring(ioy,iom,iod,ioh,end_str, quote_type='\'') # quote type for values
+        sub3=create_ymd_substring(ioy,iom,iod,ioh,to_attr, quote_type='"')
+        sub4=create_ymd_substring(ioy,iom,iod,ioh,start_str, quote_type='\'')
         query = "CONCAT({}) {} CONCAT({}) AND CONCAT({})>=CONCAT({})".format(sub1,comparison,
                                                                             sub2,sub3,sub4)
         return query

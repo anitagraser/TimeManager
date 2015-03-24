@@ -11,7 +11,7 @@ from time_util import *
 from conf import *
 
 import math
-
+import traceback
 
 
 class TimeManagerControl(QObject):
@@ -544,7 +544,7 @@ class TimeManagerControl(QObject):
         except Exception,e:
             QgsMessageLog.logMessage("Error creating timelayer:"+str(e))
             self.showMessage('An error occured while trying to add layer '\
-                    +settings.layer.name()+' to TimeManager.\n'+str(e))
+                    +settings.layer.name()+' to TimeManager.\n'+traceback.format_exc(e))
             return None
         return timeLayer
 
