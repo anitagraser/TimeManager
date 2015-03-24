@@ -13,7 +13,7 @@ The aim of '''Time Manager plugin for QGIS''' is to provide comfortable browsing
 
 ## Newest features
 
-As of version 1.5.0 TimeManager provides support for linear interpolation between point geometries. Try it out and give feedback.
+As of version 1.6.0 TimeManager provides support for linear interpolation between point geometries. Please try it out and give feedback.
 
 ## What Time Manager currently does
 
