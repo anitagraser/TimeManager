@@ -23,6 +23,7 @@ import time_util
 import resources # loads the icons
 import os
 import locale
+import conf
 
 I18N_FOLDER="i18n"
 
@@ -32,7 +33,7 @@ class timemanager:
     name = "timemanager"
     longName = "TimeManager Plugin for QGIS >= 2.0"
     description = "Working with temporal vector data"
-    version = "Version 1.0.2" 
+    version = "Version 1.6.0" 
     qgisMinimumVersion = '2.0' 
     author = "Anita Graser"
     pluginUrl = "https://github.com/anitagraser/TimeManager"
@@ -47,7 +48,7 @@ class timemanager:
                 lang=locale.getdefaultlocale()[0].split("_")[0]
             except:
                 lang="en" # could not get locale, OSX may have this bug
-                
+            QgsMessageLog.logMessage("Plugin language loaded: {}".format(lang), conf.LOG_TAG, QgsMessageLog.INFO)
             self.change_i18n(lang)
             control = TimeManagerControl(iface)
 
@@ -74,7 +75,6 @@ class timemanager:
         translation_path = os.path.join(
             root, self.name, I18N_FOLDER,
             self.name+'_' + str(new_lang) + '.qm')
-        #QgsMessageLog.logMessage(translation_path)
         if os.path.exists(translation_path):
             self.translator = QTranslator()
             result = self.translator.load(translation_path)
@@ -82,15 +82,14 @@ class timemanager:
                 QgsMessageLog.logMessage(translation_path+" was not loaded properly, "
                                                           "using English" )
                 return
-            # QgsMessageLog.logMessage("Setting translator...{}".format(new_lang))
             if  qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
             else:
-                QgsMessageLog.logMessage("Translation not supported for Qt <= {}".format(qVersion()))
+                QgsMessageLog.logMessage("Translation not supported for Qt <= {}".format(qVersion()),conf.LOG_TAG)
         else:
-             QgsMessageLog.logMessage("Timemanager: No translation found for locale {}, "
-                                      "using English!!".format(new_lang))
-
+            if new_lang !="en":
+                QgsMessageLog.logMessage("Translation failed for lang {}, falling back to English".format(new_lang),conf.LOG_TAG)
+        
     @qgsfunction(0, "TimeManager")
     def animation_datetime(values, feature, parent):
         """called by QGIS to determine the current animation time"""
