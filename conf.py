@@ -26,5 +26,7 @@ NO_ID_TEXT = "None - every geometry is a position of the same moving object in t
 ## load/save settings
 SAVE_DELIMITER=';'
 
+## logging settings 
 
+LOG_TAG="TimeManager"
 

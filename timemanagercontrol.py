@@ -182,7 +182,7 @@ class TimeManagerControl(QObject):
             self.setPropagateGuiChanges(True)
             return
 
-        QgsMessageLog.logMessage("Setting current time: "+str(currentTimePosition))
+        #QgsMessageLog.logMessage("Setting current time: "+str(currentTimePosition))
 
         self.guiControl.dock.dateTimeEditCurrentTime.setDateTime(currentTimePosition)
         timeval = datetime_to_epoch(currentTimePosition)
@@ -190,7 +190,7 @@ class TimeManagerControl(QObject):
         try:
             pct = (timeval - datetime_to_epoch(timeExtents[0]))*1.0 / (datetime_to_epoch(
                 timeExtents[1]) - datetime_to_epoch(timeExtents[0]))
-            QgsMessageLog.logMessage("new pct"+str(pct))
+            #QgsMessageLog.logMessage("new pct"+str(pct))
 
             sliderVal = self.guiControl.dock.horizontalTimeSlider.minimum() + int(pct * (
                 self.guiControl.dock.horizontalTimeSlider.maximum()
@@ -353,7 +353,8 @@ class TimeManagerControl(QObject):
         self.timeLayerManager.stepForward()
 
     def setTimeFrameType(self,timeFrameType):
-        """set timeLayerManager's time frame type from a potentially foreign languane string"""
+        """set timeLayerManager's time frame type from a potentially foreign languange string"""
+        
         ctx = self.guiControl.dock.objectName()
         for frame_type in ['microseconds','milliseconds','seconds','minutes','hours','years',
                          'months','weeks','days']:
@@ -369,7 +370,7 @@ class TimeManagerControl(QObject):
 
                 return
 
-        raise Exception("Unrecognized time frame type : {}".format(timeFrameType))
+        QgsMessageLog.logMessage("Unrecognized time frame type : {}".format(timeFrameType),LOG_TAG)
 
     def setTimeFrameSize(self,timeFrameSize):
         """set timeLayerManager's time frame size"""
@@ -487,7 +488,7 @@ class TimeManagerControl(QObject):
     def restoreTimeLayers(self, layerInfos):
         """restore all time layers"""
         if layerInfos:
-            QgsMessageLog.logMessage("layerinfos:"+str(layerInfos))
+            #QgsMessageLog.logMessage("layerinfos:"+str(layerInfos))
             if len(layerInfos)>0:
                 self.guiControl.enableAnimationExport()
             for l in layerInfos: # for every layer entry
