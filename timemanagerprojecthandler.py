@@ -39,7 +39,6 @@ class TimeManagerProjectHandler(QObject):
         """read plugin settings from QgsProject instance
         :param settings: a dictionary of setting names mapped to the expected type
         """
-
         prj = QgsProject.instance()
 
         # use QProjects functions to extract the settings from the project XML
@@ -61,7 +60,4 @@ class TimeManagerProjectHandler(QObject):
                 settings[setting_name] = setting_value
             except:
                 pass
-                #QgsMessageLog.logMessage("Could not extract setting {} from project xml. "
-                #                         "Expected type {}. Will use default value".format(
-                # setting_name, type))
         return settings

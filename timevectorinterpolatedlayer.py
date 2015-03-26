@@ -6,6 +6,7 @@ from time_util import DEFAULT_FORMAT, datetime_to_epoch, timeval_to_epoch, epoch
 from conf import DEFAULT_ID
 import interpolation.interpolator_factory as ifactory
 import qgis_utils as qgs
+from logging import info, warn, error
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -19,7 +20,7 @@ import traceback
 #TODO: What about toTimeAttribute and interpolation? Right now it's ignored
 
 # Cleaning up
-#TODO(v1.6.1) delete logging msgs when done (beta) testing
+#TODO(v1.6.1) clean up logging msgs when done (beta) testing
 
 class TimeVectorInterpolatedLayer(TimeVectorLayer):
 
@@ -43,7 +44,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
     def __init__(self,settings, iface):
         TimeVectorLayer.__init__(self,settings,iface=iface)
         try:
-            QgsMessageLog.logMessage("Creating time interpolated layer")
+            info("Trying to create time interpolated layer with interpolation mode: {}".format(settings.interpolationMode))
             try:
                 import numpy as np
             except:
@@ -52,8 +53,6 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             if self.layer.geometryType() != QGis.Point:
                 raise Exception("Want point geometry!")
             self.idAttribute = settings.idAttribute
-             
-            QgsMessageLog.logMessage("interpolation mode:"+settings.interpolationMode)
             self.memLayer = self.getMemLayer()
 
             # adjust memLayer to have same crs and same color as original layer, only half transparent
@@ -80,13 +79,13 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             self.fromInterpolator.load(self)
             self.n=0
             self.previous_ids = set()
-            QgsMessageLog.logMessage("Created layer successfully!")
+            info("Interpolated layer {} created successfully!".format(self.layer.name()))
         except Exception,e :
             raise InvalidTimeLayerError("Traceback:"+traceback.format_exc(e))
 
 
     def __del__(self):
-        QgsMessageLog.logMessage("deleting time interpolated layer")
+        info("Cleaning up interpolated layer {}".format(self.layer.name()))
         QgsMapLayerRegistry.instance().removeMapLayer(self.memLayer.id())
         try:
             del self.memLayer
@@ -136,10 +135,8 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
         start_epoch = datetime_to_epoch(self.getStartTime(timePosition, timeFrame))
         end_epoch =  datetime_to_epoch(self.getEndTime(timePosition, timeFrame))
 
-        QgsMessageLog.logMessage("setTimeRestriction Called {} times".format(self.n))
-        QgsMessageLog.logMessage("size of layer at {}:{}".format(start_epoch,
-                                                                 self.memLayer.featureCount(),
-                                                              ))
+        #info("setTimeRestriction Called {} times".format(self.n))
+        #info("size of layer at {}:{}".format(start_epoch,self.memLayer.featureCount(),))
 
         geoms = self.getInterpolatedGeometries(start_epoch, end_epoch)
         #Add the geometries as features
@@ -157,7 +154,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             self.previous_ids.add(feature.id())
             self.n = self.n + 1
 
-        QgsMessageLog.logMessage("add {}features:".format(len(features)))
+        #info("add {}features:".format(len(features)))
         res = self.memLayer.dataProvider().addFeatures(features)
         assert(res)
         self.memLayer.triggerRepaint()
