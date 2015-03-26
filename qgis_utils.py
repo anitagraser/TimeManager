@@ -1,5 +1,6 @@
 from PyQt4.QtGui import QColor
-from qgis._core import QgsMapLayerRegistry, QgsMessageLog
+from qgis._core import QgsMapLayerRegistry
+from logging import warn
 
 __author__ = 'carolinux'
 
@@ -7,15 +8,12 @@ __author__ = 'carolinux'
 def getLayerAttributes(layerId):
     try:
         layer=QgsMapLayerRegistry.instance().mapLayers()[layerId]
-        #QgsMessageLog.logMessage(str(QgsMapLayerRegistry.instance().mapLayers()))
-        #QgsMessageLog.logMessage("layer"+str(layer))
         provider=layer.dataProvider() # this will crash on OpenLayers layers
         fieldmap=provider.fields() # this function will crash on raster layers
         return fieldmap
     except:
-        QgsMessageLog.logMessage("Could not get attributes of layer {}".format(layerId))
+        warn("Could not get attributes of layer {}".format(layerId))
         return None
-
 
 def doesLayerNameExist(name):
     return getIdFromLayerName(name) is not None

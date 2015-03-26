@@ -9,6 +9,7 @@ from timelayermanager import *
 from timemanagerprojecthandler import TimeManagerProjectHandler
 from time_util import *
 from conf import *
+from logging import info, warn, error
 
 import math
 import traceback
@@ -182,20 +183,16 @@ class TimeManagerControl(QObject):
             self.setPropagateGuiChanges(True)
             return
 
-        #QgsMessageLog.logMessage("Setting current time: "+str(currentTimePosition))
-
         self.guiControl.dock.dateTimeEditCurrentTime.setDateTime(currentTimePosition)
         timeval = datetime_to_epoch(currentTimePosition)
         timeExtents = self.getTimeLayerManager().getProjectTimeExtents()
         try:
             pct = (timeval - datetime_to_epoch(timeExtents[0]))*1.0 / (datetime_to_epoch(
                 timeExtents[1]) - datetime_to_epoch(timeExtents[0]))
-            #QgsMessageLog.logMessage("new pct"+str(pct))
 
             sliderVal = self.guiControl.dock.horizontalTimeSlider.minimum() + int(pct * (
                 self.guiControl.dock.horizontalTimeSlider.maximum()
                 - self.guiControl.dock.horizontalTimeSlider.minimum()))
-            #self.debug("Slider val at refresh:{}".format(sliderVal))
             self.guiControl.dock.horizontalTimeSlider.setValue(sliderVal)
             self.guiControl.refreshMapCanvas()
         except:
@@ -249,8 +246,6 @@ class TimeManagerControl(QObject):
 
     def toggleAnimation(self):
         """toggle animation on/off"""
-        #QgsMessageLog.logMessage("Toggle animation called with curr value = {}".format(
-        #    self.animationActivated))
         if self.animationActivated: 
             self.animationActivated = False 
         else:
@@ -325,7 +320,6 @@ class TimeManagerControl(QObject):
     def stopAnimation(self):
         """stop the animation in case it's running"""
         if self.saveAnimation:
-
             self.showMessage('The export finished successfully!')
             self.saveAnimation = False
         self.animationActivated = False 
@@ -370,7 +364,7 @@ class TimeManagerControl(QObject):
 
                 return
 
-        QgsMessageLog.logMessage("Unrecognized time frame type : {}".format(timeFrameType),LOG_TAG)
+        warn("Unrecognized time frame type : {}".format(timeFrameType))
 
     def setTimeFrameSize(self,timeFrameSize):
         """set timeLayerManager's time frame size"""
@@ -381,7 +375,6 @@ class TimeManagerControl(QObject):
         """See the percentage the slider is at and determine the datetime"""
         if not self.propagateGuiChanges:
             return
-        #QgsMessageLog.logMessage("inital pct"+str(pct))
         timeExtents = self.getTimeLayerManager().getProjectTimeExtents()
         try:
             realEpochTime = int(pct  * (datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(
@@ -390,7 +383,6 @@ class TimeManagerControl(QObject):
             # extents are not set
             realEpochTime = 0
 
-        #QgsMessageLog.logMessage("matching dt"+str(epoch_to_datetime(realEpochTime)))
         self.getTimeLayerManager().setCurrentTimePosition(epoch_to_datetime(realEpochTime))
 
     def updateTimePositionFromTextBox(self,qdate):
@@ -444,8 +436,6 @@ class TimeManagerControl(QObject):
 
         settings = TimeManagerProjectHandler.readSettings(self.METASETTINGS)
 
-        #QgsMessageLog.logMessage("Read settings "+str(settings))
-
         restore_functions={
                  'currentMapTimePosition': (self.restoreTimePositionFromSettings,None),
                  'animationFrameLength': (self.setAnimationFrameLength,DEFAULT_FRAME_LENGTH),
@@ -488,23 +478,26 @@ class TimeManagerControl(QObject):
     def restoreTimeLayers(self, layerInfos):
         """restore all time layers"""
         if layerInfos:
-            #QgsMessageLog.logMessage("layerinfos:"+str(layerInfos))
             if len(layerInfos)>0:
                 self.guiControl.enableAnimationExport()
             for l in layerInfos: # for every layer entry
                 try:
                     settings = ls.getSettingsFromSaveStr(l)
                     if settings.layer is None:
-                         self.showMessage('Could not restore layer with id {}'.format(
-                             settings.layerId))
-                         continue
+                        error_msg = "Could not restore layer with id {} from saved project line {}".\
+                                format(settings.layerId, l)
+                        error(error_msg)
+                        self.showMessage(error_msg)
+                        continue
 
                     timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(settings.layer,
                                 interpolate=settings.interpolationEnabled)(settings,iface=self.iface)
 
                 except InvalidTimeLayerError, e:
-                    self.showMessage('An error occured while trying to add layer  to \
-                            TimeManager.\n'+str(e))
+                    error_msg = "An error occured while trying to restore layer "+settings.layerId\
+                            +" to TimeManager."+traceback.format_exc(e)
+                    error(error_msg)
+                    self.showMessage(error_msg)
                     continue
                
                 self.timeLayerManager.registerTimeLayer(timeLayer)
@@ -543,9 +536,10 @@ class TimeManagerControl(QObject):
                                                     interpolate=settings.interpolationEnabled)(
                 settings, self.iface)
         except Exception,e:
-            QgsMessageLog.logMessage("Error creating timelayer:"+str(e))
-            self.showMessage('An error occured while trying to add layer '\
-                    +settings.layer.name()+' to TimeManager.\n'+traceback.format_exc(e))
+            error_msg = "An error occured while trying to add layer "\
+                    +settings.layer.name()+" to TimeManager."+traceback.format_exc(e)
+            error(error_msg)
+            self.showMessage(error_msg)
             return None
         return timeLayer
 

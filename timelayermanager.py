@@ -11,6 +11,7 @@ from qgis.core import *
 from timelayer import NotATimeAttributeError
 from time_util import *
 import conf
+from logging import info
 
 class TimeLayerManager(QObject):
     """Manages all layers that can be queried temporally and provides navigation in time"""
@@ -47,9 +48,6 @@ class TimeLayerManager(QObject):
         """returns the manager's currentTimePosition in datetime format"""
         return self.currentTimePosition
         
-    def debug(self, msg):
-        QMessageBox.information(self.iface.mainWindow(),'Info', msg)
-
     def getTimeFrameType(self):
         """returns the type of the time frame, e.g. minutes, hours, days"""
         return self.timeFrameType
@@ -144,7 +142,7 @@ class TimeLayerManager(QObject):
                 
     def registerTimeLayer( self, timeLayer ):
             """Register a new layer for management and update the project's temporal extent"""
-            QgsMessageLog.logMessage("Registering time layer")
+            info("Registering time layer {} at {}".format(timeLayer.getLayerId(), datetime.now()))
             self.getTimeLayerList().append( timeLayer )
             if self.getCurrentTimePosition() is None:
                 self.setCurrentTimePosition(timeLayer.getTimeExtents()[0])
@@ -282,7 +280,6 @@ class TimeLayerManager(QObject):
                     return
             self.setProjectTimeExtents(timeExtents)
             pos = str_to_datetime(saveString[2], tdfmt)
-            ##self.debug("tlmanager: set current time position to:"+str(pos))
             self.setCurrentTimePosition(pos)
 
     def haveVisibleFeatures(self):
