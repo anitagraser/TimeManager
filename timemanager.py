@@ -15,7 +15,7 @@
 # ***************************************************************************
 
 
-from qgis.utils import qgsfunction
+from qgis.utils import qgsfunction, QgsExpression
 from PyQt4.QtCore import QTranslator, QCoreApplication, qVersion
 from timemanagercontrol import TimeManagerControl
 import time_util
@@ -62,6 +62,7 @@ class timemanager:
     def unload( self ):
         """Unload the plugin"""
         control.unload()
+        QgsExpression.unregisterFunction("$animation_datetime")
 
     def change_i18n(self, new_lang):
         """Change internationalisation for the plugin.

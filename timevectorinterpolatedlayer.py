@@ -4,7 +4,7 @@ from timelayer import *
 from timevectorlayer import TimeVectorLayer
 from time_util import DEFAULT_FORMAT, datetime_to_epoch, timeval_to_epoch, epoch_to_str,UTC
 from conf import DEFAULT_ID
-import interpolation.interpolator_factory as ifactory
+from interpolation import interpolator_factory as ifactory
 import qgis_utils as qgs
 from logging import info, warn, error
 
