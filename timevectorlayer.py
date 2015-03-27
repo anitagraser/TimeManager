@@ -47,7 +47,6 @@ class TimeVectorLayer(TimeLayer):
         self.originalSubsetString = settings.subsetStr
         self.currSubsetString  = self.originalSubsetString
         self.setSubsetString(self.originalSubsetString)
-        self.provider = self.layer.dataProvider()
         self.type = DateTypes.determine_type(self.getRawMinValue())
         type2 = DateTypes.determine_type(self.getRawMaxValue())
         self.timeFormat = self._infer_time_format(self.getRawMinValue(),hint=str(
@@ -87,7 +86,8 @@ class TimeVectorLayer(TimeLayer):
             QMessageBox.information(self.iface.mainWindow(),'Info', msg)
 
     def getProvider(self):
-        return self.provider
+        return self.layer # the layer itself can be the provider,
+        # which means that it can now about joined fields
 
     def getRawMinValue(self):
         """returns the raw minimum value. May not be the expected minimum value semantically if we
@@ -184,8 +184,8 @@ class TimeVectorLayer(TimeLayer):
         if self.getDateType() in DateTypes.QDateTypes:
             idioms_to_try = [QueryIdioms.OGR]
 
-        if self.getProvider().storageType() in STORAGE_TYPES_WITH_SQL:
-            idioms_to_try = [QueryIdioms.SQL]
+        #if self.layer.dataProvider().storageType() in STORAGE_TYPES_WITH_SQL:
+        #    idioms_to_try = [QueryIdioms.SQL]
 
         tried = []
         for idiom in idioms_to_try:
@@ -202,7 +202,7 @@ class TimeVectorLayer(TimeLayer):
                 continue
             return
 
-        raise SubstringException("Tried: {}".format(tried))
+        raise SubstringException("Could not update subset string for layer {}. Tried: {}".format(self.layer.name(), tried))
 
     def setSubsetString(self,subsetString):
 

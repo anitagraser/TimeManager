@@ -56,13 +56,10 @@ class TestLayers(unittest.TestCase):
 
     def test_vector(self):
         layer = Mock()
-        provider = Mock()
-        layer.dataProvider.return_value = provider
         layer.subsetString.return_value =""
-        provider.minimumValue.return_value = "1970-01-01 00:01:00"
-        provider.maximumValue.return_value = "1970-01-01 00:04:20"
-        provider.uniqueValues.return_value = ["1970-01-01 00:04:20", "1970-01-01 00:01:00"]
-        provider.storageType.return_value ='PostgreSQL database with PostGIS extension'
+        layer.minimumValue.return_value = "1970-01-01 00:01:00"
+        layer.maximumValue.return_value = "1970-01-01 00:04:20"
+        layer.uniqueValues.return_value = ["1970-01-01 00:04:20", "1970-01-01 00:01:00"]
         settings = ls.LayerSettings()
         settings.layer = layer
         settings.startTimeAttribute =self.from_attr
@@ -90,12 +87,9 @@ class TestLayers(unittest.TestCase):
 
     def test_vector_with_int_timestamps(self):
         layer = Mock()
-        provider = Mock()
-        layer.dataProvider.return_value = provider
         layer.subsetString.return_value =""
-        provider.minimumValue.return_value = 60
-        provider.maximumValue.return_value = 260
-        provider.storageType.return_value ='PostgreSQL database with PostGIS extension'
+        layer.minimumValue.return_value = 60
+        layer.maximumValue.return_value = 260
         settings = ls.LayerSettings()
         settings.layer = layer
         settings.startTimeAttribute =self.from_attr

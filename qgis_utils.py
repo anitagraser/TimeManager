@@ -8,10 +8,10 @@ __author__ = 'carolinux'
 def getLayerAttributes(layerId):
     try:
         layer=QgsMapLayerRegistry.instance().mapLayers()[layerId]
-        provider=layer.dataProvider() # this will crash on OpenLayers layers
-        fieldmap=provider.fields() # this function will crash on raster layers
+        fieldmap = layer.pendingFields() 
         return fieldmap
     except:
+        # OpenLayers, Raster layers don't work with this
         warn("Could not get attributes of layer {}".format(layerId))
         return None
 
