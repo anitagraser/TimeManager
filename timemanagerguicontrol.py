@@ -181,7 +181,8 @@ class TimeManagerGuiControl(QObject):
     def unload(self):
         """unload the plugin"""
         self.iface.removeDockWidget(self.dock)
-        
+        self.iface.removePluginMenu("TimeManager", self.action)
+
     def showOptionsDialog(self,layerList,animationFrameLength,playBackwards=False,
                           loopAnimation=False):
         """show the optionsDialog and populate it with settings from timeLayerManager"""
