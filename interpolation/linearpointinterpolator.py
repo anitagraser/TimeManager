@@ -3,13 +3,15 @@ from interpolator import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+from .. import logging as logging
+from logging import info, warn, error
 
 class LinearPointInterpolator(MemoryLoadInterpolator):
 
     def getGeometryFromFeature(self,feat):
         geom = feat.geometry()
         if geom.type()!=QGis.Point:
-            QgsMessageLog.logMessage("Ignoring 1 non-point geometry")
+            warn("Ignoring 1 non-point geometry")
             return None
         coords = (geom.asPoint().x(), geom.asPoint().y())
         return coords
@@ -22,5 +24,5 @@ class LinearPointInterpolator(MemoryLoadInterpolator):
         y_pos = [ypos1, ypos2]
         interp_x = np.interp(Tvalue,Tvalues,x_pos)
         interp_y = np.interp(Tvalue,Tvalues,y_pos)
-        QgsMessageLog.logMessage(str(interp_x)+" "+str(interp_y))
+        #info(str(interp_x)+" "+str(interp_y))
         return [interp_x, interp_y]

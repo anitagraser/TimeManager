@@ -87,11 +87,5 @@ class TimeRasterLayer(TimeLayer):
     def getSaveString(self):
         """get string to save in project file"""
         delimiter = conf.SAVE_DELIMITER
-        saveString = self.getLayerId() + delimiter
-        saveString += '' + delimiter
-        saveString += self.fromTimeAttribute + delimiter
-        saveString += self.toTimeAttribute + delimiter
-        saveString += str(self.timeEnabled) + delimiter
-        saveString += self.timeFormat + delimiter
-        saveString += str(self.offset)
-        return saveString
+        return delimiter.join([self.getLayerId(),'',self.fromTimeAttribute,self.toTimeAttribute,str(self.timeEnabled),
+                self.timeFormat,str(self.offset)])

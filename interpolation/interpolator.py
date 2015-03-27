@@ -3,6 +3,9 @@ from collections import defaultdict
 from qgis.core import *
 from .. import time_util as time_util
 from .. import conf as conf
+from .. import logging as logging
+from logging import info, warn, error
+
 try:
     import numpy as np
 except:
@@ -70,12 +73,12 @@ class Interpolator:
     def getInterpolatedValue(self, id, t1, t2):
         """Get the interpolated G value given an id and a timestamp range"""
 
-        QgsMessageLog.logMessage("value for id{}, start{}, end{}".format(id,t1,t2))
+        #info("value for id{}, start{}, end{}".format(id,t1,t2))
 
         before = self.get_Tvalues_before(id, t1)
         after = self.get_Tvalues_after(id, t2)
         if len(before) == 0  or len(after) == 0 :
-            QgsMessageLog.logMessage("Could not interpolate")
+            warn("Could not interpolate for time range: {}-{}. Not enough values before or after".format(t1,t2))
             return None
         before.reverse()
         Tvalues = before + after
