@@ -88,7 +88,7 @@ class TimeManagerGuiControl(QObject):
         self.iface.mapCanvas().renderComplete.connect(self.renderLabel)
 
         # create shortcuts
-        self.focusSC = QShortcut(QKeySequence("Ctrl+Space"), self.dock);
+        self.focusSC = QShortcut(QKeySequence("Ctrl+Space"), self.dock)
         self.connect(self.focusSC, QtCore.SIGNAL('activated()'),
                      self.dock.horizontalTimeSlider.setFocus)
 

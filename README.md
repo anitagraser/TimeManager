@@ -42,6 +42,10 @@ Other formats can be added by appending to the YMD_SUPPORTED_FORMATS  list in `t
 
 Users of the plugin can define a start and (optionally) an end time field that describes the geometries of the layer. If only start time is defined, the plugin will select only the features that have a timestamp within the current time interval (current time until current time + time step). If an end time field is defined, then the features whose [startTime-endTime] period overlaps with the [current time, current time+time step] interval are shown. Intuitively, if we have a dataset of buildings and the dates they were built (startTime) and demolished (endTime), with TimeManager we are able to show the state of the village at any point in time. If you want to have a kind of cumulative animation where the shown points do not disappear, an often used trick is to create an artificial endTime field which is sufficiently far in the future.
 
+## Shortcuts
+
+Use Ctrl+Space (or Command+Space) if you are using a Mac to focus on the time slider. The left and right arrows can then move the slider.
+
 ## Supported Layer Types
 
 TimeManager has been tested with PostgreSQL layers, Spatialite layers, delimited text layers, and .shp shapefiles. If you find that a layer of the types mentioned above doesn't behave correctly, please file a bug. If you want us to support new formats, file a feature request.
