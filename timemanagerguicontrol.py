@@ -100,6 +100,17 @@ class TimeManagerGuiControl(QObject):
         self.exportEmpty = conf.DEFAULT_EXPORT_EMPTY
         self.labelOptions = TimestampLabelConfig()
 
+        # add to plugins toolbar
+        try:
+            self.action = QAction("Toggle visibility", self.iface.mainWindow())
+            self.action.triggered.connect(self.toggleDock)
+            self.iface.addPluginToMenu("&TimeManager", self.action)
+        except:
+            pass # OK for testing
+
+    def toggleDock(self):
+        self.dock.setVisible(not self.dock.isVisible())
+
     def getOptionsDialog(self):
         return self.optionsDialog
 
