@@ -19,9 +19,6 @@ import traceback
 #TODO: Just points types? What about lines or polygon move?
 #TODO: What about toTimeAttribute and interpolation? Right now it's ignored
 
-# Cleaning up
-#TODO(v1.6.1) clean up logging msgs when done (beta) testing
-
 class TimeVectorInterpolatedLayer(TimeVectorLayer):
 
     def isInterpolationEnabled(self):
