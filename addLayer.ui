@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>408</width>
-    <height>246</height>
+    <width>476</width>
+    <height>288</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -138,6 +138,17 @@
        </property>
        <property name="text">
         <string>(for interpolation)</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QCheckBox" name="exportEmptyCheckbox">
+       <property name="text">
+        <string>Ignore this layer when checking if scene is empty (for animation)</string>
        </property>
       </widget>
      </item>

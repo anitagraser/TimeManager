@@ -29,6 +29,7 @@ class LayerSettings:
         self.interpolationMode = conf.NO_INTERPOLATION 
         self.idAttribute = ''
         self.subsetStr = ''
+        self.geometriesCount = True
 
 def getSettingsFromSaveStr(saveStr):
     l = saveStr.split(conf.SAVE_DELIMITER)
@@ -45,6 +46,7 @@ def getSettingsFromSaveStr(saveStr):
         result.idAttribute= l[7]
         result.interpolationEnabled = textToBool(l[8])
         result.interpolationMode = l[9]
+        result.geometriesCount = l[10]
     except IndexError: # for backwards compatibility
         pass # this will use default values
     return result
@@ -62,6 +64,7 @@ def getSettingsFromAddLayersUI(ui,layerIndexToId):
     result.interpolationEnabled = conf.INTERPOLATION_MODES[result.interpolationMode]
     result.idAttribute= ui.comboBoxID.currentText() if result.interpolationEnabled else None
     result.idAttribute = "" if result.idAttribute==conf.NO_ID_TEXT else result.idAttribute
+    result.geometriesCount = not ui.exportEmptyCheckbox.checkState() == Qt.Checked
     return result
 
 
@@ -86,6 +89,7 @@ def getSettingsFromRow(table, rowNum):
     result.interpolationEnabled =(table.item(rowNum,7).checkState() ==  Qt.Checked)
     result.idAttribute = table.item(rowNum,8).text()
     result.interpolationMode = table.item(rowNum,9).text()
+    result.geometriesCount = not (table.item(rowNum,10).checkState() ==  Qt.Checked)
     
     return result
 
@@ -108,4 +112,5 @@ def getSettingsFromLayer(layer):
         result.idAttribute = "" if not layer.hasIdAttribute() else layer.getIdAttribute()
     else:
         result.idAttribute = ""
+    result.geometriesCount = layer.geometriesCountForExport()
     return result

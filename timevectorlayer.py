@@ -36,6 +36,9 @@ class TimeVectorLayer(TimeLayer):
     def getOriginalSubsetString(self):
         return self.originalSubsetString
 
+    def geometriesCountForExport(self):
+        return self.geometriesCount
+
     def __init__(self,settings, iface=None):
         TimeLayer.__init__(self,settings.layer,settings.isEnabled)
         
@@ -47,6 +50,7 @@ class TimeVectorLayer(TimeLayer):
         self.originalSubsetString = settings.subsetStr
         self.currSubsetString  = self.originalSubsetString
         self.setSubsetString(self.originalSubsetString)
+        self.geometriesCount = settings.geometriesCount
         self.type = DateTypes.determine_type(self.getRawMinValue())
         type2 = DateTypes.determine_type(self.getRawMaxValue())
         self.timeFormat = self._infer_time_format(self.getRawMinValue(),hint=str(

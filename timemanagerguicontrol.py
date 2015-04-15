@@ -285,6 +285,7 @@ class TimeManagerGuiControl(QObject):
         self.addLayerDialog.comboBoxLayers.currentIndexChanged.connect(self.addLayerAttributes)
         QObject.connect(self.addLayerDialog.comboBoxInterpolation,SIGNAL("currentIndexChanged(const QString &)"),
             self.maybeEnableIDBox)
+        self.addLayerDialog.exportEmptyCheckbox.setChecked(Qt.Unchecked)
         self.addLayerDialog.buttonBox.accepted.connect(self.addLayerToOptions)
 
     def maybeEnableIDBox(self, interpolation_mode):
@@ -347,7 +348,7 @@ class TimeManagerGuiControl(QObject):
         # insert values
         for i,value in enumerate([s.layerName, s.startTimeAttribute, s.endTimeAttribute,
                                   s.isEnabled, s.layerId, s.timeFormat,
-                                  str(s.offset), s.interpolationEnabled, s.idAttribute, s.interpolationMode]):
+                                  str(s.offset), s.interpolationEnabled, s.idAttribute, s.interpolationMode, not s.geometriesCount]):
             item = QTableWidgetItem()
             if type(value)!=bool:
                 item.setText(value)

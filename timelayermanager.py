@@ -283,9 +283,10 @@ class TimeLayerManager(QObject):
             self.setCurrentTimePosition(pos)
 
     def haveVisibleFeatures(self):
-        """Return true if at least one of the time managed layers in the project has
+        """Return true if at least one of the time managed layers
+        which are not ignored for emptiness detection in the project has
         featureCount>0"""
-        all_layers = map(lambda x: x.layer,filter(lambda x: x.isEnabled(),
+        all_layers = map(lambda x: x.layer,filter(lambda x: x.isEnabled() and x.geometriesCountForExport(),
                                                   self.getTimeLayerList()))
         total_features = 0
         for layer in all_layers:
