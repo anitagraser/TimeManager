@@ -16,6 +16,7 @@ import query_builder
 from datetime import timedelta
 from conf import SAVE_DELIMITER
 import layer_settings as ls
+from logging import info
 
 POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
 DELIMITED_TEXT_TYPE='Delimited text file'
@@ -23,6 +24,10 @@ STORAGE_TYPES_WITH_SQL=[POSTGRES_TYPE, DELIMITED_TEXT_TYPE]
 
 class SubstringException(Exception):
     pass
+
+def isNull(val):
+    """Determine null values from providers"""
+    return val is None or val=="NULL" or str(val)=="NULL" # yes it's possible the string "NULL" is returned (!)
 
 class TimeVectorLayer(TimeLayer):
 
@@ -98,8 +103,9 @@ class TimeVectorLayer(TimeLayer):
         have dates that are saves as strings because of lexicographic comparisons"""
         fromTimeAttributeIndex = self.getProvider().fieldNameIndex(self.fromTimeAttribute)
         minValue =  self.getProvider().minimumValue(fromTimeAttributeIndex)
-        if minValue is None: # if we are unlucky and have some null data we need to sort through the values
-           minValue =  max(filter(lambda x:x is not None,self.getProvider().uniqueValues(fromTimeAttributeIndex)))
+        if isNull(minValue): # if we are unlucky and have some null data we need to sort through the values
+           minValue =  min(filter(lambda x: not isNull(x),self.getProvider().uniqueValues(fromTimeAttributeIndex)))
+        #info("Min value:"+str(minValue)+str(isNull(minValue)))
         return minValue
 
     def getRawMaxValue(self):
@@ -107,8 +113,8 @@ class TimeVectorLayer(TimeLayer):
         have dates that are saves as strings because of lexicographic comparisons"""
         toTimeAttributeIndex = self.getProvider().fieldNameIndex(self.toTimeAttribute)
         maxValue =  self.getProvider().maximumValue(toTimeAttributeIndex)
-        if maxValue is None:
-           maxValue =  max(filter(lambda x:x is not None,self.getProvider().uniqueValues(toTimeAttributeIndex)))
+        if isNull(maxValue):
+            maxValue =  max(filter(lambda x: not isNull(x),self.getProvider().uniqueValues(toTimeAttributeIndex)))
         return maxValue
 
     def getMinMaxValues(self):
