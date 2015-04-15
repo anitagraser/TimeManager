@@ -233,5 +233,5 @@ class TimeVectorLayer(TimeLayer):
                                    settings.startTimeAttribute, settings.endTimeAttribute,
                                    str(settings.isEnabled),settings.timeFormat,
                                    str(settings.offset), settings.idAttribute,
-                                   str(settings.interpolationEnabled), settings.interpolationMode])
+                                   str(settings.interpolationEnabled), settings.interpolationMode, str(settings.geometriesCount)])
         return res
