@@ -45,11 +45,11 @@ class timemanager:
             control
         except NameError:
             try:
-				overrideLocale = bool(QSettings().value("locale/overrideFlag", False))
-				if not overrideLocale:
-					lang = QLocale.system().name().split("_")[0]
-				else:
-					lang = QSettings().value("locale/userLocale", "").split("_")[0]
+                overrideLocale = bool(QSettings().value("locale/overrideFlag", False))
+                if not overrideLocale:
+                    lang = QLocale.system().name().split("_")[0]
+                else:
+                    lang = QSettings().value("locale/userLocale", "").split("_")[0]
             except:
                 lang="en" # could not get locale, OSX may have this bug
             info("Plugin language loaded: {}".format(lang))
