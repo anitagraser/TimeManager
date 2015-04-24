@@ -16,7 +16,7 @@
 
 
 from qgis.utils import qgsfunction, QgsExpression
-from PyQt4.QtCore import QTranslator, QCoreApplication, qVersion
+from PyQt4.QtCore import QTranslator, QCoreApplication, qVersion, QSettings, QLocale
 from timemanagercontrol import TimeManagerControl
 import time_util
 import resources # loads the icons
@@ -45,7 +45,11 @@ class timemanager:
             control
         except NameError:
             try:
-                lang=locale.getdefaultlocale()[0].split("_")[0]
+				overrideLocale = bool(QSettings().value("locale/overrideFlag", False))
+				if not overrideLocale:
+					lang = QLocale.system().name().split("_")[0]
+				else:
+					lang = QSettings().value("locale/userLocale", "").split("_")[0]
             except:
                 lang="en" # could not get locale, OSX may have this bug
             info("Plugin language loaded: {}".format(lang))
