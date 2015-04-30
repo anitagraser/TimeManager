@@ -493,8 +493,13 @@ class TimeManagerControl(QObject):
                     timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(settings.layer,
                                 interpolate=settings.interpolationEnabled)(settings,iface=self.iface)
 
-                except InvalidTimeLayerError, e:
-                    error_msg = "An error occured while trying to restore layer "+settings.layerId\
+                except Exception, e:
+                    layerId = "unknown"
+                    try:
+                        layerId = settings.layerId
+                    except:
+                        pass
+                    error_msg = "An error occured while trying to restore layer "+layerId\
                             +" to TimeManager."+traceback.format_exc(e)
                     error(error_msg)
                     self.showMessage(error_msg)
@@ -531,13 +536,18 @@ class TimeManagerControl(QObject):
     def createTimeLayerFromRow(self,row):
         """create a TimeLayer from options set in the table row"""
         try:
-            settings =ls.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
+            settings = ls.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
             timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(settings.layer,
                                                     interpolate=settings.interpolationEnabled)(
                 settings, self.iface)
-        except Exception,e:
+        except Exception, e:
+            layer_name = "unknown"
+            try:
+                layer_name = settings.layer.name()
+            except:
+                pass
             error_msg = "An error occured while trying to add layer "\
-                    +settings.layer.name()+" to TimeManager."+traceback.format_exc(e)
+                    +layer_name+" to TimeManager."+traceback.format_exc(e)
             error(error_msg)
             self.showMessage(error_msg)
             return None

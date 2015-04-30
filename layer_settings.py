@@ -72,7 +72,11 @@ def getSettingsFromRow(table, rowNum):
     """Get settings from table widget rowNum"""
     result = LayerSettings()
     result.layer=QgsMapLayerRegistry.instance().mapLayer(table.item(rowNum,4).text())
-    result.subsetStr = result.layer.subsetString()
+    try:
+        result.subsetStr = result.layer.subsetString()
+    except:
+        # raster layers do not have subset strings
+        pass
     result.isEnabled = (table.item(rowNum,3).checkState() ==
                  Qt.Checked)
     # offset
