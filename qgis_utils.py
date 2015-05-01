@@ -1,5 +1,6 @@
 from PyQt4.QtGui import QColor
 from qgis._core import QgsMapLayerRegistry
+from qgis.core import QgsRasterLayer
 from logging import warn
 
 __author__ = 'carolinux'
@@ -14,6 +15,9 @@ def getLayerAttributes(layerId):
         # OpenLayers, Raster layers don't work with this
         warn("Could not get attributes of layer {}".format(layerId))
         return None
+
+def isRaster(layer):
+    return type(layer) == QgsRasterLayer
 
 def doesLayerNameExist(name):
     return getIdFromLayerName(name) is not None

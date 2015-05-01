@@ -12,6 +12,7 @@ from timelayer import NotATimeAttributeError
 from time_util import *
 import conf
 from logging import info
+import qgis_utils as qgs
 
 class TimeLayerManager(QObject):
     """Manages all layers that can be queried temporally and provides navigation in time"""
@@ -292,3 +293,7 @@ class TimeLayerManager(QObject):
         for layer in all_layers:
             total_features+=layer.featureCount()
         return total_features>0
+
+    def getActiveRasters(self):
+        return filter(lambda x: qgs.isRaster(x.layer) and x.isEnabled(), self.getTimeLayerList())
+

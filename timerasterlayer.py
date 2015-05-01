@@ -11,6 +11,7 @@ from qgis.core import *
 from timelayer import *
 from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfDatetimeValue
 import conf
+from logging import info
 
 class TimeRasterLayer(TimeLayer):
     def __init__(self, settings, iface=None):
@@ -69,7 +70,6 @@ class TimeRasterLayer(TimeLayer):
 
         startTime = timePosition + timedelta(seconds=self.offset)
         endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
-
         if strToDatetimeWithFormatHint(self.fromTimeAttribute, self.getTimeFormat()) < endTime and strToDatetimeWithFormatHint(self.toTimeAttribute, self.getTimeFormat()) >= startTime:
             # if the timestamp is within the extent --> show the raster
             self.layer.renderer().setOpacity(1) # no transparency  

@@ -173,7 +173,8 @@ class TimeManagerControl(QObject):
         self.setPropagateGuiChanges(True)
 
     def refreshGuiWithCurrentTime(self,currentTimePosition,sender=None):
-        """update current time showing in dateTimeEditCurrentTime and horizontalTimeSlider"""
+        """update the gui when time has changed by refreshing/repainting the layers
+        and changing the time showing in dateTimeEditCurrentTime and horizontalTimeSlider"""
 
         # setting the gui elements should not fire the event for
         # timeChanged, since they were changed to be in sync with the rest of the system on
@@ -194,6 +195,7 @@ class TimeManagerControl(QObject):
                 self.guiControl.dock.horizontalTimeSlider.maximum()
                 - self.guiControl.dock.horizontalTimeSlider.minimum()))
             self.guiControl.dock.horizontalTimeSlider.setValue(sliderVal)
+            self.guiControl.repaintRasters()
             self.guiControl.refreshMapCanvas()
         except:
             pass

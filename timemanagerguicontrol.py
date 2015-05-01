@@ -428,3 +428,7 @@ class TimeManagerGuiControl(QObject):
         painter.translate(x, y)
         layout.draw(painter, QAbstractTextDocumentLayout.PaintContext())
         painter.translate(-x, -y)  # translate back
+
+    def repaintRasters(self):
+        rasters = self.model.getActiveRasters()
+        map(lambda x: x.layer.triggerRepaint(), rasters)
