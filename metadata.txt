@@ -1,11 +1,13 @@
 [general]
 name=TimeManager
 description=TimeManager adds time controls to QGIS. Using these time controls, you can animate vector features based on a time attribute. There is also an experimental raster layer support. You can create animations directly in the map window and export image series.
-version=1.6.1
+version=1.6.2
 qgisMinimumVersion=2.3
 author=Anita Graser, Karolina Alexiou (aka carolinux)
 email=anitagraser@gmx.at, carolinegr@gmail.com
-changelog=1.6.1
+changelog=1.6.2
+    - fixed basic raster support, see #21
+    1.6.1
     - added Time Manager to the plugin drop down menu
     - bugfixes
     1.6.0
