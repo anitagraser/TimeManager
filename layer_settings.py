@@ -4,6 +4,7 @@ __author__ = 'carolinux'
 layer, the addLayerOptions gui, the widget table and the save string"""
 from qgis.core import *
 from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 from time_util import DEFAULT_FORMAT
 import conf
 import time_util
@@ -67,6 +68,24 @@ def getSettingsFromAddLayersUI(ui,layerIndexToId):
     result.geometriesCount = not ui.exportEmptyCheckbox.checkState() == Qt.Checked
     return result
 
+
+def addSettingsToRow(settings, out_table):
+    s = settings
+    row = out_table.rowCount()
+    out_table.insertRow(row)
+    s = settings
+    if s.endTimeAttribute == s.startTimeAttribute:
+        s.endTimeAttribute =""
+    # insert values
+    for i,value in enumerate([s.layerName, s.startTimeAttribute, s.endTimeAttribute,
+                          s.isEnabled, s.layerId, s.timeFormat,
+                          str(s.offset), s.interpolationEnabled, s.idAttribute, s.interpolationMode, not s.geometriesCount]):
+        item = QTableWidgetItem()
+        if type(value)!=bool:
+            item.setText(value)
+        else:
+            item.setCheckState(Qt.Checked if value else Qt.Unchecked)
+        out_table.setItem(row,i,item)
 
 def getSettingsFromRow(table, rowNum):
     """Get settings from table widget rowNum"""

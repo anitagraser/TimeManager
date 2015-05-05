@@ -20,6 +20,8 @@ import conf
 import qgis_utils as qgs
 from ui import label_options
 import layer_settings as ls
+from vectorlayerdialog import VectorLayerDialog, AddLayerDialog
+#from rasterlayerdialog import RasterLayerDialog
 
 # The QTSlider only supports integers as the min and max, therefore the maximum maximum value
 # is whatever can be stored in an int. Making it a signed int to be sure.
@@ -66,7 +68,6 @@ class TimeManagerGuiControl(QObject):
         self.model = model
         self.optionsDialog = None
         self.path = os.path.dirname( os.path.abspath( __file__ ) )
-        self.tempLayerIndexToId = {} # store the mapping of readable layer name to id temporarily
         
         # load the form
         self.dock = uic.loadUi( os.path.join(self.path, DOCK_WIDGET_FILE ) )
@@ -199,7 +200,7 @@ class TimeManagerGuiControl(QObject):
         # restore settings from layerList:
         for layer in layerList:
             settings = ls.getSettingsFromLayer(layer)
-            self.addRowToOptionsTable(settings)
+            ls.addSettingsToRow(settings, self.optionsDialog.tableWidget)
         
         # restore animation options
         self.optionsDialog.spinBoxFrameLength.setValue(animationFrameLength)
@@ -214,8 +215,11 @@ class TimeManagerGuiControl(QObject):
         self.showOrHideLabelOptions()
         self.optionsDialog.show()
 
+        # create raster and vector dialogs
+        #self.rasterDialog = RasterLayerDialog()
+        self.vectorDialog = VectorLayerDialog(os.path.join(self.path,ADD_LAYER_WIDGET_FILE), self.optionsDialog.tableWidget)
         # establish connections
-        self.optionsDialog.pushButtonAdd.clicked.connect(self.showAddLayerDialog)
+        self.optionsDialog.pushButtonAdd.clicked.connect(self.vectorDialog.show)
         self.optionsDialog.pushButtonRemove.clicked.connect(self.removeLayer)
         self.optionsDialog.buttonBox.accepted.connect(self.saveOptions)
         self.optionsDialog.buttonBox.accepted.connect(self.setOptionsDialogToNone)
@@ -255,106 +259,6 @@ class TimeManagerGuiControl(QObject):
             return
         if QMessageBox.question(self.optionsDialog,'Remove Layer','Do you really want to remove layer '+layerName+'?',QMessageBox.Ok,QMessageBox.Cancel) == QMessageBox.Ok:
             self.optionsDialog.tableWidget.removeRow(self.optionsDialog.tableWidget.currentRow())     
-            
-    def showAddLayerDialog(self):
-        """show the addLayerDialog and populate it with layers from QgsMapLayerRegistry
-        that haven't already been added"""
-
-        self.addLayerDialog = uic.loadUi(os.path.join(self.path, ADD_LAYER_WIDGET_FILE))
-        existingLayerIds = self.getLayerIdsAlreadyInTable()
-        # fill the combo box with all available not yet added layers
-        self.tempLayerIndexToId = {}
-        i=0
-        for (id,layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
-                if id not in existingLayerIds:
-                    unicode_name = unicode(layer.name())
-                    self.addLayerDialog.comboBoxLayers.addItem(unicode_name)
-                    self.tempLayerIndexToId[i] = id
-                    i=i+1
-
-        if self.addLayerDialog.comboBoxLayers.count() == 0:
-            QMessageBox.information(self.optionsDialog,'Error','There are no unmanaged vector layers in the project!')
-            return
-
-        # get attributes of the first layer for gui initialization
-        self.addLayerAttributes(0)
-        self.addInterpolationModes(self.addLayerDialog.comboBoxInterpolation)
-        self.addLayerDialog.show()
-
-        # establish connections
-        self.addLayerDialog.comboBoxLayers.currentIndexChanged.connect(self.addLayerAttributes)
-        QObject.connect(self.addLayerDialog.comboBoxInterpolation,SIGNAL("currentIndexChanged(const QString &)"),
-            self.maybeEnableIDBox)
-        self.addLayerDialog.exportEmptyCheckbox.setChecked(Qt.Unchecked)
-        self.addLayerDialog.buttonBox.accepted.connect(self.addLayerToOptions)
-
-    def maybeEnableIDBox(self, interpolation_mode):
-        if conf.INTERPOLATION_MODES[interpolation_mode]:
-            self.addLayerDialog.comboBoxID.setEnabled(True)
-            self.addLayerDialog.labelID1.setEnabled(True)
-            self.addLayerDialog.labelID2.setEnabled(True)
-            self.addLayerDialog.comboBoxEnd.setEnabled(False) # end field not yet supported when
-            #  interpolating
-        else:
-            self.addLayerDialog.comboBoxID.setEnabled(False)
-            self.addLayerDialog.labelID1.setEnabled(False)
-            self.addLayerDialog.labelID2.setEnabled(False)
-            self.addLayerDialog.comboBoxEnd.setEnabled(True)
-
-    def getLayerIdsAlreadyInTable(self):
-        """get list of layer ids listed in optionsDialog.tableWidget"""
-        layerList=[]
-        if self.optionsDialog.tableWidget is None:
-            return layerList
-        for row in range(self.optionsDialog.tableWidget.rowCount()):
-            layerId=self.optionsDialog.tableWidget.item(row,4).text()
-            layerList.append(layerId)
-        return layerList
-
-    def addInterpolationModes(self, comboBox):
-        comboBox.clear()
-        comboBox.addItem(conf.NO_INTERPOLATION)
-        for mode in conf.INTERPOLATION_MODE_TO_CLASS.keys():
-            comboBox.addItem(mode)
-
-    def addLayerAttributes(self,comboIndex):
-        """get list layer attributes and fill the combo boxes"""
-        layerId = self.tempLayerIndexToId[self.addLayerDialog.comboBoxLayers.currentIndex()]
-        fieldmap = qgs.getLayerAttributes(layerId)
-        if fieldmap is None:
-            return
-        self.addLayerDialog.comboBoxStart.clear()
-        self.addLayerDialog.comboBoxEnd.clear()
-        self.addLayerDialog.comboBoxID.clear()
-        self.addLayerDialog.comboBoxEnd.addItem('') # this box is optional, so we add an empty item
-        self.addLayerDialog.comboBoxID.addItem(conf.NO_ID_TEXT)
-        for attr in fieldmap: 
-            self.addLayerDialog.comboBoxStart.addItem(attr.name())
-            self.addLayerDialog.comboBoxEnd.addItem(attr.name())
-            self.addLayerDialog.comboBoxID.addItem(attr.name())
-
-    def addLayerToOptions(self):
-        """write information from addLayerDialog to optionsDialog.tableWidget"""
-        settings = ls.getSettingsFromAddLayersUI(self.addLayerDialog, self.tempLayerIndexToId)
-        self.addRowToOptionsTable(settings)
-
-    def addRowToOptionsTable(self,layerSettings):
-        """insert a new row into optionsDialog.tableWidget"""
-        row = self.optionsDialog.tableWidget.rowCount()
-        self.optionsDialog.tableWidget.insertRow(row)
-        s = layerSettings
-        if s.endTimeAttribute == s.startTimeAttribute:
-            s.endTimeAttribute =""
-        # insert values
-        for i,value in enumerate([s.layerName, s.startTimeAttribute, s.endTimeAttribute,
-                                  s.isEnabled, s.layerId, s.timeFormat,
-                                  str(s.offset), s.interpolationEnabled, s.idAttribute, s.interpolationMode, not s.geometriesCount]):
-            item = QTableWidgetItem()
-            if type(value)!=bool:
-                item.setText(value)
-            else:
-                item.setCheckState(Qt.Checked if value else Qt.Unchecked)
-            self.optionsDialog.tableWidget.setItem(row,i,item)
 
     def disableAnimationExport(self):
         """disable the animation export button"""

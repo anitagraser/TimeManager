@@ -16,6 +16,22 @@ def getLayerAttributes(layerId):
         warn("Could not get attributes of layer {}".format(layerId))
         return None
 
+def getAllLayerIds(filter_func):
+    # FIXME Make this nicer
+    res = []
+    for (id, layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
+        if filter_func(layer):
+            res.append(id)
+    return res
+
+def getLayerFromId(layerId):
+    try:
+        layer=QgsMapLayerRegistry.instance().mapLayers()[layerId]
+        return layer
+    except:
+        warn("Could not get layer for id {}".format(layerId))
+        return None
+
 def isRaster(layer):
     return type(layer) == QgsRasterLayer
 
