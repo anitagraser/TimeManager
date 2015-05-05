@@ -18,6 +18,9 @@ class AddLayerDialog:
         self.out_table = out_table
         # TODO assert it has a buttonbox and comboBoxLayers
 
+    def getDialog(self):
+        return self.dialog
+
     def get_ids_already_in_out_table(self):
         """get list of layer ids listed in the tableWidget"""
         layerList=[]

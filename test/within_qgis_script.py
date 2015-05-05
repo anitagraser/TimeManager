@@ -100,24 +100,24 @@ def addUnmanagedLayerToTm(gui, column,interpolate=False, name=None):
     options.pushButtonAdd.clicked.emit(1)
     if name is not None:
         # dont add the first layer, but the one specified by the name
-        assert(name in get_all_items(gui.addLayerDialog.comboBoxLayers))
-        gui.addLayerDialog.comboBoxLayers.setCurrentIndex(
-        get_index_of(gui.addLayerDialog.comboBoxLayers,name))
+        assert(name in get_all_items(gui.vectorDialog.getDialog().comboBoxLayers))
+        gui.vectorDialog.getDialog().comboBoxLayers.setCurrentIndex(
+        get_index_of(gui.vectorDialog.getDialog().comboBoxLayers,name))
         sleep(0.1)
 
     sleep(0.1)
-    get_all_items(gui.addLayerDialog.comboBoxStart)
+    get_all_items(gui.vectorDialog.getDialog().comboBoxStart)
     sleep(0.3)
-    gui.addLayerDialog.comboBoxStart.setCurrentIndex(
-        get_index_of(gui.addLayerDialog.comboBoxStart,column))
+    gui.vectorDialog.getDialog().comboBoxStart.setCurrentIndex(
+        get_index_of(gui.vectorDialog.getDialog().comboBoxStart,column))
     sleep(0.1)
     if interpolate is True:
-        gui.addLayerDialog.comboBoxInterpolation\
-            .setCurrentIndex(get_index_of(gui.addLayerDialog.comboBoxInterpolation,
+        gui.vectorDialog.getDialog().comboBoxInterpolation\
+            .setCurrentIndex(get_index_of(gui.vectorDialog.getDialog().comboBoxInterpolation,
                                           conf.LINEAR_POINT_INTERPOLATION))
         sleep(0.1)
 
-    gui.addLayerDialog.buttonBox.accepted.emit()
+    gui.vectorDialog.getDialog().buttonBox.accepted.emit()
     options.buttonBox.accepted.emit()
 
 def set_time_frame_type(gui,typ):
