@@ -8,6 +8,7 @@ from qgis._core import QgsMapLayerRegistry
 import qgis_utils as qgs
 import layer_settings as ls
 import conf
+from logging import info, warn, error
 
 class AddLayerDialog:
     __metaclass__ = abc.ABCMeta
@@ -20,6 +21,9 @@ class AddLayerDialog:
 
     def getDialog(self):
         return self.dialog
+
+    def getSelectedLayerName(self):
+        return self.dialog.comboBoxLayers.currentText()
 
     def get_ids_already_in_out_table(self):
         """get list of layer ids listed in the tableWidget"""
@@ -39,6 +43,7 @@ class AddLayerDialog:
         return self.dialog.comboBoxLayers.count()
 
     def populate(self, layerIds):
+        self.tempLayerIndexToId = {}
         i = 0
         for (id,layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
             if id in layerIds:
@@ -48,8 +53,9 @@ class AddLayerDialog:
                 i+=1
 
         if self.layer_count()== 0:
-            QMessageBox.information(self.optionsDialog,'Error','There are no unmanaged layers of requested type in the project!')
-            return
+            msg = 'There are no unmanaged layers of requested type in the project!'
+            QMessageBox.information(self.dialog,'Error', msg)
+            raise Exception(msg)
 
         # add the attributes of the first layer in the select for gui initialization
         self.add_layer_attributes(0)
@@ -69,6 +75,10 @@ class AddLayerDialog:
     def extract_settings(self):
         pass
 
+    @abc.abstractmethod
+    def show(self):
+        pass
+
     def add_connections(self):
         self.dialog.comboBoxLayers.currentIndexChanged.connect(self.add_layer_attributes)
         self.dialog.buttonBox.accepted.connect(self.add_layer_to_table)
@@ -79,7 +89,7 @@ class VectorLayerDialog(AddLayerDialog):
         super(VectorLayerDialog, self).__init__(*args)
     
     def extract_settings(self):
-        return ls.getSettingsFromAddLayersUI(self.dialog, self.tempLayerIndexToId)
+        return ls.getSettingsFromAddVectorLayersUI(self.dialog, self.tempLayerIndexToId)
     
     def add_layer_attributes(self, idx):
         """get list layer attributes, fill the combo boxes"""
@@ -107,7 +117,11 @@ class VectorLayerDialog(AddLayerDialog):
     def show(self):
         idsToIgnore = set(self.get_ids_already_in_out_table())
         allVectorIds = set(qgs.getAllLayerIds(lambda x:not qgs.isRaster(x)))
-        self.populate(allVectorIds - idsToIgnore)
+        try:
+            self.populate(allVectorIds - idsToIgnore)
+        except Exception,e:
+            warn(e)
+            return
         self.add_interpolation_modes(self.dialog.comboBoxInterpolation)
         self.dialog.show()
        

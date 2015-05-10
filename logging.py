@@ -5,11 +5,11 @@ import conf
 a separate tab just for Time Manager"""
 
 def info(msg):
-    QgsMessageLog.logMessage(msg, conf.LOG_TAG, QgsMessageLog.INFO)
+    QgsMessageLog.logMessage(str(msg), conf.LOG_TAG, QgsMessageLog.INFO)
 
 def warn(msg):
-    QgsMessageLog.logMessage(msg, conf.LOG_TAG)
+    QgsMessageLog.logMessage(str(msg), conf.LOG_TAG)
 
 def error(msg):
-    QgsMessageLog.logMessage(msg, conf.LOG_TAG, QgsMessageLog.CRITICAL)
+    QgsMessageLog.logMessage(str(msg), conf.LOG_TAG, QgsMessageLog.CRITICAL)
 

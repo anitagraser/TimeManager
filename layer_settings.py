@@ -52,7 +52,7 @@ def getSettingsFromSaveStr(saveStr):
         pass # this will use default values
     return result
 
-def getSettingsFromAddLayersUI(ui,layerIndexToId):
+def getSettingsFromAddVectorLayersUI(ui,layerIndexToId):
     result = LayerSettings()
     result.layerName = ui.comboBoxLayers.currentText()
     result.startTimeAttribute = ui.comboBoxStart.currentText()
@@ -68,6 +68,16 @@ def getSettingsFromAddLayersUI(ui,layerIndexToId):
     result.geometriesCount = not ui.exportEmptyCheckbox.checkState() == Qt.Checked
     return result
 
+def getSettingsFromAddRasterLayersUI(ui,layerIndexToId):
+    result = LayerSettings()
+    result.layerName = ui.comboBoxLayers.currentText()
+    result.startTimeAttribute = ui.textStart.text()
+    result.endTimeAttribute = ui.textEnd.text()
+    result.isEnabled = True
+    result.layerId =  layerIndexToId[ui.comboBoxLayers.currentIndex()]
+    result.timeFormat = DEFAULT_FORMAT
+    result.offset = ui.spinBoxOffset.value()
+    return result
 
 def addSettingsToRow(settings, out_table):
     s = settings

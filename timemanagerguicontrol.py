@@ -21,7 +21,7 @@ import qgis_utils as qgs
 from ui import label_options
 import layer_settings as ls
 from vectorlayerdialog import VectorLayerDialog, AddLayerDialog
-#from rasterlayerdialog import RasterLayerDialog
+from rasterlayerdialog import RasterLayerDialog
 
 # The QTSlider only supports integers as the min and max, therefore the maximum maximum value
 # is whatever can be stored in an int. Making it a signed int to be sure.
@@ -32,7 +32,8 @@ MAX_TIME_LENGTH_SECONDS_SLIDER = 2**31-1
 MIN_QDATE = QDate(100, 1, 1)
 
 DOCK_WIDGET_FILE = "dockwidget2.ui"
-ADD_LAYER_WIDGET_FILE ="addLayer.ui"
+ADD_VECTOR_LAYER_WIDGET_FILE ="addLayer.ui"
+ADD_RASTER_LAYER_WIDGET_FILE ="addRasterLayer.ui"
 
 
 class TimestampLabelConfig(object):
@@ -217,9 +218,11 @@ class TimeManagerGuiControl(QObject):
 
         # create raster and vector dialogs
         #self.rasterDialog = RasterLayerDialog()
-        self.vectorDialog = VectorLayerDialog(os.path.join(self.path,ADD_LAYER_WIDGET_FILE), self.optionsDialog.tableWidget)
+        self.vectorDialog = VectorLayerDialog(os.path.join(self.path,ADD_VECTOR_LAYER_WIDGET_FILE), self.optionsDialog.tableWidget)
+        self.rasterDialog = RasterLayerDialog(os.path.join(self.path,ADD_RASTER_LAYER_WIDGET_FILE), self.optionsDialog.tableWidget)
         # establish connections
-        self.optionsDialog.pushButtonAdd.clicked.connect(self.vectorDialog.show)
+        self.optionsDialog.pushButtonAddVector.clicked.connect(self.vectorDialog.show)
+        self.optionsDialog.pushButtonAddRaster.clicked.connect(self.rasterDialog.show)
         self.optionsDialog.pushButtonRemove.clicked.connect(self.removeLayer)
         self.optionsDialog.buttonBox.accepted.connect(self.saveOptions)
         self.optionsDialog.buttonBox.accepted.connect(self.setOptionsDialogToNone)

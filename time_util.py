@@ -18,6 +18,9 @@ DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
 SAVE_STRING_FORMAT =  DEFAULT_FORMAT # Used to be: "%Y-%m-%d %H:%M:%S.%f", but this format is not portable in Windows because of the %f directive
 UTC = "UTC"
 
+# TODO: Clean up UTC semantics
+# TODO: Clean up API -> methods not used by clients should have an underscore
+
 class UnsupportedFormatException(Exception):
     pass
 
@@ -56,6 +59,7 @@ YMD_SUPPORTED_FORMATS = [
 "%Y.%m.%d %H:%M:%S",
 "%Y.%m.%d %H:%M",
 "%Y.%m.%d",
+"%Y%m%d",
 ]
 
 DMY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%Y","%d"), YMD_SUPPORTED_FORMATS)
