@@ -2,8 +2,8 @@ __author__ = 'carolinux'
 
 
 from PyQt4 import QtCore
+from time_util import DateTypes
 import time_util
-from time_util import OGR_DATETIME_FORMAT, OGR_DATE_FORMAT
 STRINGCAST_FORMAT='cast("{}" as character) {} \'{}\' AND cast("{}" as character) >= \'{}\' '
 INT_FORMAT="{} {} {} AND {} >= {} "
 STRING_FORMAT="\"{}\" {} '{}' AND \"{}\" >= '{}' "
@@ -11,44 +11,6 @@ STRING_FORMAT="\"{}\" {} '{}' AND \"{}\" >= '{}' "
 class QueryIdioms:
     OGR="OGR"
     SQL="SQL"
-
-
-class DateTypes:
-    IntegerTimestamps="IntegerTimestamps"
-    DatesAsStrings="DatesAsStrings"
-    DatesAsQDates="DatesAsQDates"
-    DatesAsQDateTimes="DatesAsQDateTimes"
-    nonQDateTypes = [IntegerTimestamps,DatesAsStrings]
-    QDateTypes = [DatesAsQDates, DatesAsQDateTimes]
-
-    @classmethod
-    def determine_type(cls, val):
-        try:
-            float(val)
-            return cls.IntegerTimestamps
-        except:
-            pass
-        try:
-            int(val)
-            return cls.IntegerTimestamps
-        except:
-            if type(val) is QtCore.QDate:
-                return cls.DatesAsQDates
-            if type(val) is QtCore.QDateTime:
-                return cls.DatesAsQDateTimes
-            return cls.DatesAsStrings
-
-    @classmethod
-    def get_type_format(cls, typ):
-        if typ in cls.nonQDateTypes:
-            raise Exception
-        else:
-            if typ==cls.DatesAsQDates:
-                return OGR_DATE_FORMAT
-            if typ==cls.DatesAsQDateTimes:
-                return OGR_DATETIME_FORMAT
-        raise Exception
-
 
 class QueryBuildingException(Exception):
     pass

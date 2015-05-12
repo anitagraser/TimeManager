@@ -9,7 +9,7 @@ Created on Thu Mar 22 18:33:13 2012
 from datetime import datetime, timedelta
 from qgis.core import *
 from timelayer import *
-from time_util import SUPPORTED_FORMATS, DEFAULT_FORMAT, strToDatetimeWithFormatHint, getFormatOfDatetimeValue
+from time_util import get_format_of_timeval, str_to_datetime
 import conf
 from logging import info
 
@@ -21,7 +21,7 @@ class TimeRasterLayer(TimeLayer):
         self.iface = iface
         self.fromTimeAttribute = settings.startTimeAttribute
         self.toTimeAttribute = settings.endTimeAttribute
-        self.timeFormat = getFormatOfDatetimeValue(settings.startTimeAttribute,
+        self.timeFormat = get_format_of_timeval(settings.startTimeAttribute,
                                                    hint=settings.timeFormat)
         self.offset = int(settings.offset)
         
@@ -49,14 +49,8 @@ class TimeRasterLayer(TimeLayer):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
         startStr = self.fromTimeAttribute
         endStr = self.toTimeAttribute
-        try:
-            startTime = strToDatetimeWithFormatHint(startStr, self.getTimeFormat())
-        except ValueError:
-            raise NotATimeAttributeError(str(self.fromTimeAttribute)+': The attribute specified for use as start time contains invalid data:\n\n'+startStr+'\n\nis not one of the supported formats:\n'+str(self.supportedFormats))
-        try:
-            endTime = strToDatetimeWithFormatHint(endStr, self.getTimeFormat())
-        except ValueError:
-            raise NotATimeAttributeError(str(self.toTimeAttribute)+': The attribute specified for use as end time contains invalid data:\n'+endStr)
+        startTime = str_to_datetime(startStr, self.getTimeFormat())
+        endTime = str_to_datetime(endStr, self.getTimeFormat())
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
@@ -70,7 +64,7 @@ class TimeRasterLayer(TimeLayer):
 
         startTime = timePosition + timedelta(seconds=self.offset)
         endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
-        if strToDatetimeWithFormatHint(self.fromTimeAttribute, self.getTimeFormat()) < endTime and strToDatetimeWithFormatHint(self.toTimeAttribute, self.getTimeFormat()) >= startTime:
+        if str_to_datetime(self.fromTimeAttribute, self.getTimeFormat()) < endTime and str_to_datetime(self.toTimeAttribute, self.getTimeFormat()) >= startTime:
             # if the timestamp is within the extent --> show the raster
             self.layer.renderer().setOpacity(1) # no transparency  
         else: # hide the raster

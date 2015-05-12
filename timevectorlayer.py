@@ -10,8 +10,8 @@ from PyQt4 import QtCore
 from PyQt4.QtGui import QMessageBox
 from timelayer import *
 from time_util import DEFAULT_FORMAT, timeval_to_datetime, \
-    getFormatOfDatetimeValue, datetime_to_str, QDateTime_to_datetime, str_to_datetime
-from query_builder import QueryIdioms, DateTypes
+    get_format_of_timeval, datetime_to_str, QDateTime_to_datetime, str_to_datetime, DateTypes
+from query_builder import QueryIdioms
 import query_builder
 from datetime import timedelta
 from conf import SAVE_DELIMITER
@@ -30,13 +30,6 @@ def isNull(val):
     return val is None or val=="NULL" or str(val)=="NULL" # yes it's possible the string "NULL" is returned (!)
 
 class TimeVectorLayer(TimeLayer):
-
-    def _infer_time_format(self,val, hint):
-        if self.type in DateTypes.nonQDateTypes:
-            tf = getFormatOfDatetimeValue(val, hint=hint)
-        else:
-            tf = DateTypes.get_type_format(self.type)
-        return tf
 
     def getOriginalSubsetString(self):
         return self.originalSubsetString
@@ -58,9 +51,9 @@ class TimeVectorLayer(TimeLayer):
         self.geometriesCount = settings.geometriesCount
         self.type = DateTypes.determine_type(self.getRawMinValue())
         type2 = DateTypes.determine_type(self.getRawMaxValue())
-        self.timeFormat = self._infer_time_format(self.getRawMinValue(),hint=str(
+        self.timeFormat = get_format_of_timeval(self.getRawMinValue(),hint=str(
             settings.timeFormat))
-        tf2 = self._infer_time_format(self.getRawMaxValue(),hint=str(settings.timeFormat))
+        tf2 = get_format_of_timeval(self.getRawMaxValue(),hint=str(settings.timeFormat))
 
         if self.type!=type2 or self.timeFormat!=tf2:
             raise InvalidTimeLayerError("Invalid time layer: To and From attributes must have "
@@ -160,15 +153,8 @@ class TimeVectorLayer(TimeLayer):
         """Get layer's temporal extent in datetime format
          using the fields and the format defined in the layer"""
         start_str, end_str = self.getMinMaxValues()
-        try:
-            startTime = str_to_datetime(start_str,  self.getTimeFormat())
-        except ValueError:
-            raise NotATimeAttributeError('The attribute specified for use as start time contains invalid data:\n\n'+
-                    start_str+'\n\nis not one of the supported formats')
-        try:
-            endTime = str_to_datetime(end_str,  self.getTimeFormat())
-        except ValueError:
-            raise NotATimeAttributeError('The attribute specified for use as end time contains invalid data:\n'+end_str)
+        startTime = str_to_datetime(start_str,  self.getTimeFormat())
+        endTime = str_to_datetime(end_str,  self.getTimeFormat())
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)

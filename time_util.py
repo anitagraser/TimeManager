@@ -1,10 +1,10 @@
 import time
 import re # for hacking strftime
+import abc
 
 from datetime import datetime, timedelta
 from PyQt4.QtCore import QDateTime
 import PyQt4.QtCore as QtCore
-
 
 """ A module to have time related functionality """
 
@@ -16,15 +16,50 @@ OGR_DATETIME_FORMAT="%Y-%m-%dT%H:%M:%S"
 #TODO: There is also an OGR format with milliseconds
 DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
 SAVE_STRING_FORMAT =  DEFAULT_FORMAT # Used to be: "%Y-%m-%d %H:%M:%S.%f", but this format is not portable in Windows because of the %f directive
-UTC = "UTC"
+UTC = "SECONDS FROM EPOCH"
+UTC_FLOAT = "SECONDS FROM EPOCH (float)"
 
-# TODO: Clean up UTC semantics
-# TODO: Clean up API -> methods not used by clients should have an underscore
 
 class UnsupportedFormatException(Exception):
     pass
 
-def cast_to_int_or_float(val):
+class DateTypes:
+    IntegerTimestamps="IntegerTimestamps"
+    DatesAsStrings="DatesAsStrings"
+    DatesAsQDates="DatesAsQDates"
+    DatesAsQDateTimes="DatesAsQDateTimes"
+    nonQDateTypes = [IntegerTimestamps,DatesAsStrings]
+    QDateTypes = [DatesAsQDates, DatesAsQDateTimes]
+
+    @classmethod
+    def determine_type(cls, val):
+        try:
+            float(val)
+            return cls.IntegerTimestamps
+        except:
+            pass
+        try:
+            int(val)
+            return cls.IntegerTimestamps
+        except:
+            if type(val) is QtCore.QDate:
+                return cls.DatesAsQDates
+            if type(val) is QtCore.QDateTime:
+                return cls.DatesAsQDateTimes
+            return cls.DatesAsStrings
+
+    @classmethod
+    def get_type_format(cls, typ):
+        if typ in cls.nonQDateTypes:
+            raise Exception
+        else:
+            if typ==cls.DatesAsQDates:
+                return OGR_DATE_FORMAT
+            if typ==cls.DatesAsQDateTimes:
+                return OGR_DATETIME_FORMAT
+        raise Exception
+
+def _cast_to_int_or_float(val):
     if int(val)==float(val):
         return int(val)
     else:
@@ -68,7 +103,6 @@ MDY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%m","%d"), DMY_SUPPORTED_FO
 
 SUPPORTED_FORMATS = list(set(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS +
                              DMY_SUPPORTED_FORMATS))
-
 
 def timeval_to_epoch(val, fmt=DEFAULT_FORMAT):
     """Converts any string, number, datetime or Qdate or QDatetime to epoch"""
@@ -114,7 +148,7 @@ def epoch_to_str(seconds_from_epoch, fmt):
 def datetime_to_epoch(dt):
     """ convert a datetime to seconds after (or possibly before) 1970-1-1 """
     res = ((dt - datetime(1970,1,1)).total_seconds())
-    return cast_to_int_or_float(res)
+    return _cast_to_int_or_float(res)
 
 def datetime_to_str(dt, fmt=DEFAULT_FORMAT):
     """ strftime has a bug for years<1900, so fixing it as well as we can """
@@ -123,7 +157,7 @@ def datetime_to_str(dt, fmt=DEFAULT_FORMAT):
     if dt.year>=1900:
         return datetime.strftime(dt, fmt)
     else:
-        return fixed_strftime(dt, fmt)
+        return _fixed_strftime(dt, fmt)
 
 # Based on code submitted to comp.lang.python by Andrew Dalke and subsequently used on the django project
 # https://github.com/django/django/
@@ -143,7 +177,7 @@ def _findall(text, substr):
         i=j+1
     return sites
 
-def fixed_strftime(dt, fmt):
+def _fixed_strftime(dt, fmt):
 
     illegal_formatting = _illegal_formatting.search(fmt)
     if illegal_formatting:
@@ -171,7 +205,11 @@ def fixed_strftime(dt, fmt):
         s = s[:site] + syear + s[site+4:]
     return s
 
-def getFormatOfDatetimeValue(datetimeValue, hint=DEFAULT_FORMAT):
+def get_format_of_timeval(datetimeValue, hint=DEFAULT_FORMAT):
+    
+    typ = DateTypes.determine_type(datetimeValue)
+    if typ in DateTypes.QDateTypes:
+        return DateTypes.get_type_format(typ)
     datetimeValue = str(datetimeValue)
     # is it an integer representing seconds?
     try:
@@ -180,9 +218,10 @@ def getFormatOfDatetimeValue(datetimeValue, hint=DEFAULT_FORMAT):
     except:
         pass
 
+    # is it a float representing seconds and milliseconds after the floating point?
     try:
         seconds = float(datetimeValue)
-        return UTC
+        return UTC_FLOAT
     except:
         pass
 
@@ -197,40 +236,17 @@ def getFormatOfDatetimeValue(datetimeValue, hint=DEFAULT_FORMAT):
     raise UnsupportedFormatException("Could not find a suitable time format for value {}, choices {}".format(
         datetimeValue, formatsToTry))
 
-def str_to_datetime(datestr, fmt):
-    return strToDatetimeWithFormatHint(datestr, fmt)
-
-
-def strToDatetime(datetimeString):
-    """convert a date/time string into a Python datetime object"""
-    return strToDatetimeWithFormatHint(datetimeString, hint=getFormatOfDatetimeValue(datetimeString))
-
-
-def strToDatetimeWithFormatHint(datetimeString, hint=DEFAULT_FORMAT):
+def str_to_datetime(datetimeString, hint=DEFAULT_FORMAT):
     """convert a date/time string into a Python datetime object"""
     datetimeString = str(datetimeString)
-    # is it an integer representing seconds?
-    try:
-        seconds = int(datetimeString)
-        return datetime.utcfromtimestamp(seconds)
-    except:
-        pass
-
-    try:
-        seconds = float(datetimeString)
-        return datetime.utcfromtimestamp(seconds)
-    except:
-        pass
-
-    # is it a string in a known format?
     try:
        # Try the hinted format, if not, try all known formats.
-       return datetime.strptime(datetimeString, hint)
-    except:
-        for format in SUPPORTED_FORMATS:
-            try:
-                return datetime.strptime(datetimeString, format)
-            except:
-                pass
-    # If all fail, re-raise the exception
-    raise
+       fmt = get_format_of_timeval(datetimeString, hint)
+       if fmt == UTC :
+           return epoch_to_datetime(int(datetimeString))
+       if fmt == UTC_FLOAT:
+           return epoch_to_datetime(float(datetimeString))
+       return datetime.strptime(datetimeString, fmt)
+    except Exception,e:
+        raise UnsupportedFormatException("Could not find a suitable time format for value {}, choices {}"\
+                .format(datetimeString, SUPPORTED_FORMATS))

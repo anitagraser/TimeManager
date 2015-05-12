@@ -97,7 +97,7 @@ def addUnmanagedLayerToTm(gui, column,interpolate=False, name=None):
     options = gui.getOptionsDialog()
     assert(options is not None)
     sleep(0.2)
-    options.pushButtonAdd.clicked.emit(1)
+    options.pushButtonAddVector.clicked.emit(1)
     if name is not None:
         # dont add the first layer, but the one specified by the name
         assert(name in get_all_items(gui.vectorDialog.getDialog().comboBoxLayers))

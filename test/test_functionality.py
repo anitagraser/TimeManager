@@ -236,7 +236,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
 
         self.registerTweetsTimeLayer(fromAttr, toAttr)
         # The currentTimePosition should now be the first date in the shapefile
-        start_time = time_util.strToDatetime(self.timeLayer.getMinMaxValues()[0])
+        start_time = time_util.str_to_datetime(self.timeLayer.getMinMaxValues()[0])
         assert( start_time == self.tlm.getCurrentTimePosition())
         self.tlm.setTimeFrameType("hours")
         self.tlm.stepForward()
@@ -258,7 +258,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.tlm.setTimeFrameType("seconds")
         self.ctrl.exportEmpty = lambda: False
         assert(self.ctrl.exportEmpty() == False)
-        end_time = time_util.strToDatetime(self.timeLayer.getMinMaxValues()[1])
+        end_time = time_util.str_to_datetime(self.timeLayer.getMinMaxValues()[1])
         start_time = end_time - timedelta(seconds=100)
         self.tlm.setCurrentTimePosition(start_time)
         layer_duration_in_seconds = (end_time-start_time).total_seconds()
@@ -271,8 +271,8 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.registerTweetsTimeLayer()
         tmpdir = tempfile.mkdtemp()
         self.tlm.setTimeFrameType("hours")
-        start_time = time_util.strToDatetime(self.timeLayer.getMinMaxValues()[0])
-        end_time = time_util.strToDatetime(self.timeLayer.getMinMaxValues()[1])
+        start_time = time_util.str_to_datetime(self.timeLayer.getMinMaxValues()[0])
+        end_time = time_util.str_to_datetime(self.timeLayer.getMinMaxValues()[1])
         layer_duration_in_hours = (end_time-start_time).total_seconds() / 3600.0
         self.ctrl.exportVideoAtPath(tmpdir)
         screenshots_generated =  glob.glob(os.path.join(tmpdir, FRAME_FILENAME_PREFIX+"*"))
