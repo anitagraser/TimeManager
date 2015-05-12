@@ -46,6 +46,10 @@ def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, qu
 
     comparison ="<" if to_attr==from_attr else "<="
 
+    if date_type==DateTypes.DatesAsStringsArchaelogical:
+        # FIXME for v1.7
+        return ""
+
     if date_type==DateTypes.IntegerTimestamps:
         start_epoch = time_util.datetime_to_epoch(start_dt)
         end_epoch = time_util.datetime_to_epoch(end_dt)

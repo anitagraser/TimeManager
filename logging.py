@@ -13,3 +13,11 @@ def warn(msg):
 def error(msg):
     QgsMessageLog.logMessage(str(msg), conf.LOG_TAG, QgsMessageLog.CRITICAL)
 
+def log_exceptions(func):
+    def log_after(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception,e:
+            error("Exception in function {}:{}".format(str(func),str(e)))
+            return
+    return log_after

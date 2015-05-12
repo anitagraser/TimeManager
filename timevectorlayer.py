@@ -130,7 +130,7 @@ class TimeVectorLayer(TimeLayer):
                     for val in vals:
                         try:
                             res.append(timeval_to_datetime(val,fmt))
-                        except:
+                        except Exception,e:
                             pass
                     return res
                 unique_vals = vals_to_dt(unique_vals, fmt)

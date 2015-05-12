@@ -8,8 +8,9 @@ from timevectorlayer import *
 from timelayermanager import *
 from timemanagerprojecthandler import TimeManagerProjectHandler
 from time_util import *
+import time_util
 from conf import *
-from logging import info, warn, error
+from logging import info, warn, error, log_exceptions
 
 import math
 import traceback
@@ -50,8 +51,6 @@ class TimeManagerControl(QObject):
 
     def unload(self):
         """unload the plugin"""
-        # FIXME disabling the time manager plugin sometimes crashes QGIS
-        # Maybe C related memory issues with slots
         self.getTimeLayerManager().deactivateTimeManagement()
         self.iface.unregisterMainWindowAction(self.actionShowSettings)
         self.guiControl.unload()
@@ -135,7 +134,7 @@ class TimeManagerControl(QObject):
     def setPropagateGuiChanges(self, val):
         self.propagateGuiChanges = val
 
-
+    @log_exceptions
     def refreshGuiTimeExtents(self,timeExtents):
         """update time extents showing in labels and represented by horizontalTimeSlider
         :param timeExtents: a tuple of start and end datetimes
@@ -184,7 +183,7 @@ class TimeManagerControl(QObject):
             self.setPropagateGuiChanges(True)
             return
 
-        self.guiControl.dock.dateTimeEditCurrentTime.setDateTime(currentTimePosition)
+        time_util.updateUi(self.guiControl.dock.dateTimeEditCurrentTime, currentTimePosition)
         timeval = datetime_to_epoch(currentTimePosition)
         timeExtents = self.getTimeLayerManager().getProjectTimeExtents()
         try:
@@ -390,6 +389,7 @@ class TimeManagerControl(QObject):
     def updateTimePositionFromTextBox(self,qdate):
         if not self.propagateGuiChanges:
             return
+        #FIXME v 1.7 what if it's a FOO BC instead of qdate?
         self.getTimeLayerManager().setCurrentTimePosition(QDateTime_to_datetime(qdate))
 
     def restoreTimeFrameType(self, text):

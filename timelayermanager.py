@@ -10,15 +10,16 @@ from qgis.core import *
 
 from timelayer import NotATimeAttributeError
 from time_util import *
+import time_util
 import conf
-from logging import info
+from logging import info, log_exceptions
 import qgis_utils as qgs
 
 class TimeLayerManager(QObject):
     """Manages all layers that can be queried temporally and provides navigation in time"""
 
     # the signal for when the current time position is changed
-    timeRestrictionsRefreshed = pyqtSignal(datetime)
+    timeRestrictionsRefreshed = pyqtSignal(object)
     # the signal when the start and end time are changed
     projectTimeExtentsChanged = pyqtSignal(object)
     # the signal for when we dont have any layers left managed by TimeManager
@@ -126,6 +127,8 @@ class TimeLayerManager(QObject):
         elif self.timeFrameType == 'microseconds':
             return timedelta(microseconds=self.timeFrameSize)
 
+
+    @log_exceptions
     def refreshTimeRestrictions(self):
         """Refresh the subset strings of all enabled layers"""
         if not self.hasLayers():
@@ -141,12 +144,13 @@ class TimeLayerManager(QObject):
 
         self.timeRestrictionsRefreshed.emit(self.getCurrentTimePosition())
                 
+    @log_exceptions
     def registerTimeLayer( self, timeLayer ):
             """Register a new layer for management and update the project's temporal extent"""
-            info("Registering time layer {} at {}".format(timeLayer.getLayerId(), datetime.now()))
             self.getTimeLayerList().append( timeLayer )
             if self.getCurrentTimePosition() is None:
                 self.setCurrentTimePosition(timeLayer.getTimeExtents()[0])
+                info("Set the time position to {}".format(self.getCurrentTimePosition()))
             self.updateProjectTimeExtents()
             self.refreshTimeRestrictions()
 
@@ -166,8 +170,10 @@ class TimeLayerManager(QObject):
             self.updateProjectTimeExtents()
         self.refreshTimeRestrictions()
 
+    @log_exceptions
     def updateProjectTimeExtents(self):
         """Loop through all timeLayers and make sure that the projectTimeExtents cover all layers"""
+        info("updating pt extents")
         for i,timeLayer in enumerate(self.getTimeLayerList()):
             try:
                 extents = timeLayer.getTimeExtents()
@@ -205,10 +211,11 @@ class TimeLayerManager(QObject):
         self.timeFrameSize = frameSize
         self.refreshTimeRestrictions()
 
+    @log_exceptions
     def setCurrentTimePosition( self, timePosition ):
         """Sets the currently selected point in time (a datetime), which is at the beginning of
         the time-frame."""
-        if timePosition is not None and type(timePosition)!=datetime:
+        if timePosition is not None and not time_util.is_date_object(timePosition):
             raise Exception("Expected datetime got {} of type {} instead".format(timePosition,
                                                                                  type(timePosition)))
         self.currentTimePosition = timePosition

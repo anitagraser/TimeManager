@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 from PyQt4.QtCore import QDateTime
 import PyQt4.QtCore as QtCore
 
+import flexidate_util
+
 """ A module to have time related functionality """
 
 __author__="Karolina Alexiou"
@@ -26,9 +28,10 @@ class UnsupportedFormatException(Exception):
 class DateTypes:
     IntegerTimestamps="IntegerTimestamps"
     DatesAsStrings="DatesAsStrings"
+    DatesAsStringsArchaelogical="DatesAsStringsArchaelogical"
     DatesAsQDates="DatesAsQDates"
     DatesAsQDateTimes="DatesAsQDateTimes"
-    nonQDateTypes = [IntegerTimestamps,DatesAsStrings]
+    nonQDateTypes = [IntegerTimestamps,DatesAsStrings, DatesAsStringsArchaelogical]
     QDateTypes = [DatesAsQDates, DatesAsQDateTimes]
 
     @classmethod
@@ -42,6 +45,8 @@ class DateTypes:
             int(val)
             return cls.IntegerTimestamps
         except:
+            if flexidate_util.is_archaelogical(val):
+                return cls.DatesAsStringsArchaelogical
             if type(val) is QtCore.QDate:
                 return cls.DatesAsQDates
             if type(val) is QtCore.QDateTime:
@@ -104,8 +109,22 @@ MDY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%m","%d"), DMY_SUPPORTED_FO
 SUPPORTED_FORMATS = list(set(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS +
                              DMY_SUPPORTED_FORMATS))
 
+def is_date_object(val):
+    return isinstance(val, datetime) or isinstance(val, flexidate_util.BCDate)
+
+
+def updateUi(ui, val):
+    if flexidate_util.is_archaelogical(val):
+        # FIXME 1.7 need to do something to the ui
+        return
+    else:
+        ui.setDateTime(val)
+
+
 def timeval_to_epoch(val, fmt=DEFAULT_FORMAT):
     """Converts any string, number, datetime or Qdate or QDatetime to epoch"""
+    if flexidate_util.is_archaelogical(val):
+        return flexidate_util.timeval_to_epoch(val)
     try:
         return int(val)
     except:
@@ -119,6 +138,8 @@ def timeval_to_epoch(val, fmt=DEFAULT_FORMAT):
             return datetime_to_epoch(val)
 
 def timeval_to_datetime(val, fmt):
+    if flexidate_util.is_archaelogical(val):
+        return flexidate_util.timeval_to_flexidate(val)
     epoch = timeval_to_epoch(val, fmt)
     return epoch_to_datetime(epoch)
 
@@ -140,20 +161,27 @@ def epoch_to_datetime(seconds_from_epoch):
     # http://stackoverflow.com/questions/22082103/on-windows-how-to-convert-a-timestamps-before-1970-into-something-manageable
     # return datetime.utcfromtimestamp(seconds_from_epoch)
     # but this should:
-    return datetime(1970, 1, 1) + timedelta(seconds=seconds_from_epoch)
+    if flexidate_util.is_archaelogical(seconds_from_epoch):
+        return flexidate_util.epoch_to_flexidate(seconds_from_epoch)
+    else:
+        return datetime(1970, 1, 1) + timedelta(seconds=seconds_from_epoch)
 
 def epoch_to_str(seconds_from_epoch, fmt):
     return datetime_to_str(epoch_to_datetime(seconds_from_epoch), fmt)
 
 def datetime_to_epoch(dt):
     """ convert a datetime to seconds after (or possibly before) 1970-1-1 """
+    if flexidate_util.is_archaelogical(dt):
+        return flexidate_util.flexidate_to_epoch(dt)
     res = ((dt - datetime(1970,1,1)).total_seconds())
     return _cast_to_int_or_float(res)
 
 def datetime_to_str(dt, fmt=DEFAULT_FORMAT):
     """ strftime has a bug for years<1900, so fixing it as well as we can """
+    if flexidate_util.is_archaelogical(dt):
+        return flexidate_util.flexidate_to_str(dt)
     if "%" not in fmt:
-        raise Exception("{} does not look like a time format".format(DEFAULT_FORMAT))
+        raise Exception("{} does not look like a time format for val {} of type {}".format(fmt,dt, type(dt)))
     if dt.year>=1900:
         return datetime.strftime(dt, fmt)
     else:
@@ -208,6 +236,8 @@ def _fixed_strftime(dt, fmt):
 def get_format_of_timeval(datetimeValue, hint=DEFAULT_FORMAT):
     
     typ = DateTypes.determine_type(datetimeValue)
+    if typ == DateTypes.DatesAsStringsArchaelogical:
+        return flexidate_util.BC_FORMAT
     if typ in DateTypes.QDateTypes:
         return DateTypes.get_type_format(typ)
     datetimeValue = str(datetimeValue)
@@ -217,7 +247,6 @@ def get_format_of_timeval(datetimeValue, hint=DEFAULT_FORMAT):
         return UTC
     except:
         pass
-
     # is it a float representing seconds and milliseconds after the floating point?
     try:
         seconds = float(datetimeValue)
@@ -233,12 +262,14 @@ def get_format_of_timeval(datetimeValue, hint=DEFAULT_FORMAT):
         except:
             pass
     # If all fail, raise an exception
-    raise UnsupportedFormatException("Could not find a suitable time format for value {}, choices {}".format(
-        datetimeValue, formatsToTry))
+    raise UnsupportedFormatException("Could not find a suitable time format for value {}, choices {}, type {}".format(
+        datetimeValue, formatsToTry, typ))
 
 def str_to_datetime(datetimeString, hint=DEFAULT_FORMAT):
     """convert a date/time string into a Python datetime object"""
     datetimeString = str(datetimeString)
+    if flexidate_util.is_archaelogical(datetimeString):
+        return flexidate_util.str_to_flexidate(datetimeString)
     try:
        # Try the hinted format, if not, try all known formats.
        fmt = get_format_of_timeval(datetimeString, hint)
