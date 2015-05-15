@@ -24,7 +24,7 @@ NORMAL_MODE = "Normal Mode"
 ARCHAELOGY_MODE = "Archaelogy Mode"
 DINOSAURS_MODE = "Paleontology Mode"
 
-_mode = NORMAL_MODE
+_mode = NORMAL_MODE #NORMAL_MODE
 
 def setCurrentMode(new_mode):
     global _mode

@@ -2,7 +2,6 @@ __author__ = 'carolinux'
 
 
 import TimeManager.time_util as time_util
-import TimeManager.flexidate_util as flexidate_util
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 

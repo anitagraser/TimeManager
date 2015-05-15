@@ -40,16 +40,45 @@ def create_ymd_substring(ioy,iom,iod,ioh,col, quote_type):
     string_components = filter(lambda x: x is not None,[ystr,mstr,dstr,reststr])
     return ",".join(string_components)
 
+def likeBC(attr):
+    return  '"{}" LIKE  \'%BC\''.format(attr)
+
+def likeAD(attr):
+    return  '"{}" LIKE  \'%AD\''.format(attr)
+
+AND=" AND "
+OR=" OR "
+
+def NOT(q):
+    return "NOT ({})".format(q)
+
+def lessThan(val, col, equals=False):
+    comparison = '<' if not equals else '<='
+    return " '{}' {} \"{}\" ".format(val,comparison,col)
+
+def greaterThan(val, col, equals=False):
+    comparison = '>' if not equals else '>='
+    return " '{}' {} \"{}\" ".format(val,comparison,col)
+
+def paren(q):
+    return "( "+q+" )"
+
 def build_query_archaelogical(start_str, end_str, from_attr, to_attr, comparison, query_idiom):
     if "BC" in start_str and "BC" in end_str:
-        return '"{}" LIKE  \'%BC\' AND "{}" LIKE \'%BC\' AND '.format(from_attr, to_attr)+STRING_FORMAT.format(from_attr,comparison,end_str,to_attr,start_str)
-
+        # for BC need to invert the order of comparisons 
+        return likeBC(from_attr) + AND + likeBC(to_attr) + AND + greaterThan(val = start_str, col = to_attr, equals = True) + AND\
+                + lessThan(val = end_str, col=from_attr, equals=('=' in comparison))
+    
     if "AD" in start_str and "AD" in end_str:
-        return '"{}" LIKE  \'%AD\' AND "{}" LIKE \'%AD\' AND '.format(from_attr, to_attr)\
-               +STRING_FORMAT.format(from_attr,comparison,end_str,to_attr,start_str)
+        return likeAD(from_attr) + AND + likeAD(to_attr) + AND + lessThan(val = start_str, col = to_attr, equals = True) + AND\
+                + greaterThan(val = end_str, col=from_attr, equals=('=' in comparison))
     # can only be from_attr = BC and to_attr = AD
-    return "(\"{}\" NOT LIKE '%AD' OR (\"{}\" LIKE '%AD' AND \"{}\" {} '{}'))".format(from_attr,from_attr,from_attr,comparison,to_attr,end_str)\
-     +" AND "+"(\"{}\" NOT LIKE '%BC' OR (\"{}\" LIKE '%BC' AND \"{}\" > '{}'))".format(to_attr,to_attr,to_attr,comparison,from_attr,start_str)
+    return paren(NOT(likeAD(from_attr)) + OR + paren(likeAD(from_attr) + AND\
+                + greaterThan(val = end_str, col=from_attr, equals=('=' in comparison))))\
+                + AND\
+                + paren(NOT(likeBC(to_attr)) + OR + paren(likeBC(to_attr) + AND\
+                + greaterThan(val = start_str, col = to_attr, equals=True)))
+
 
 def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, query_idiom):
     """Build subset query"""

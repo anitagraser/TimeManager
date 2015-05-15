@@ -61,6 +61,7 @@ class TimeLayerManager(QObject):
     def getFrameCount(self):
         """returns the number of frames that can be generated using the current settings.
         It's actually an approximate number that errs on the high side."""
+        #FIXME v1.7 support bc dates as well
         if len(self.getManagedLayers()) == 0 or not self.isEnabled():
             return 0
 
@@ -173,7 +174,6 @@ class TimeLayerManager(QObject):
     @log_exceptions
     def updateProjectTimeExtents(self):
         """Loop through all timeLayers and make sure that the projectTimeExtents cover all layers"""
-        info("updating pt extents")
         for i,timeLayer in enumerate(self.getTimeLayerList()):
             try:
                 extents = timeLayer.getTimeExtents()
@@ -225,7 +225,6 @@ class TimeLayerManager(QObject):
     @log_exceptions
     def stepForward(self):
         """Shifts query forward in time by one time frame"""
-        info("step forward?:")
         if self.getCurrentTimePosition() != None and self.isEnabled():
             self.setCurrentTimePosition(self.getCurrentTimePosition() + self.timeFrame())
 

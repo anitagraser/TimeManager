@@ -174,7 +174,6 @@ class TimeVectorLayer(TimeLayer):
         if not self.isEnabled():
             self.deleteTimeRestriction()
             return
-
         startTime = self.getStartTime(timePosition, timeFrame)
         endTime = self.getEndTime(timePosition, timeFrame)
 
@@ -199,6 +198,7 @@ class TimeVectorLayer(TimeLayer):
                 # try the other one
                 # not sure if trying several idioms could make the screen flash
                 continue
+            info("Subsetstring:"+subsetString)
             return
 
         raise SubstringException("Could not update subset string for layer {}. Tried: {}".format(self.layer.name(), tried))
