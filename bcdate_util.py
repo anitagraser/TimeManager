@@ -1,8 +1,9 @@
-
+import re
 from datetime import datetime, timedelta
 from PyQt4.QtCore import QDateTime
 import PyQt4.QtCore as QtCore
 
+from logging import warn
 
 """ A module to support dates of BC/AD form"""
 
@@ -18,6 +19,9 @@ class BCDate(CustomDate):
         self.y = y
         self.m = m
         self.d = d
+
+    def isBC(self):
+        return self.y<0
 
     def __cmp__(self, other):
         if not isinstance(other, self.__class__):
@@ -36,19 +40,28 @@ class BCDate(CustomDate):
         return False
 
     def __str__(self):
-        return flexidate_to_str(self)
+        return bcdate_to_str(self)
+
+    def __repr__(self):
+        return self.__str__()
 
     def as_datetime(self):
         return datetime(self.y,self.m,self.d)
 
     @classmethod
     def from_str(cls, bc):
-        y = int(bc[:4])
-        #TODO v.17 use regex! not like this.. and informative error message
-        bc = bc[-2:]
-        if bc =="BC":
-            y = -y
-        return BCDate(y)
+        try:
+            m = re.match("(\d*)\s(AD|BC)",bc)
+            y = int(m.group(1))
+            bc = m.group(2)
+            if bc =="BC":
+                y = -y
+            if bc not in ("BC","AD") or y==0:
+                raise Exception
+            return BCDate(y)
+        except:
+            raise Exception("{} is an invalid archaelogical date, should be 'number AD' or 'number BC'\
+                    and year 0 doesn't exist".format(bc))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -56,14 +69,41 @@ class BCDate(CustomDate):
         else:
             return False
 
+    def _get_years_from_timedelta(self,td):
+        try:
+
+            return td.years
+        except Exception,e:
+            #FIXME v.1.7 what about offset?
+            msg = "BC dates can only be used with year intervals, found {}".format(td)
+            warn(msg)
+            return 0
+
+
+    def __isub__(self,td):
+        return self._iadd__(-td)
+
+    def __sub__(self,td):
+        return self.__add__(-td)
+
     def __iadd__(self, td):
-        #TODO: actually override, year 0 considerations
-        self.y = self.y+1
+        to_add = self._get_years_from_timedelta(td)
+        self.y = self._get_new_year_value(self.y, to_add)
         return self
 
+    def _get_new_year_value(self, old_y, to_add):
+        """Adjust for absence of year zero"""
+        new_y = old_y + to_add
+        if ( new_y == 0 or new_y * old_y <0 ) and new_y<old_y: 
+            # if we went from AD to BC substract one for non-existant year 0
+            new_y-=1
+        elif ( new_y ==0  or new_y * old_y <0) and new_y>old_y:
+            # if we went from BC to AD add one for non-existant year 0
+            new_y+=1
+        return new_y
+
     def __add__(self, td):
-        #TODO: actually override, year 0 considerations
-        return BCDate(self.y+1)
+        return BCDate(self._get_new_year_value(self.y, self._get_years_from_timedelta(td)))
 
     def __hash__(self):
         return (self.y<<10)  + (self.m<<4) + self.d
@@ -71,38 +111,31 @@ class BCDate(CustomDate):
 BC_FORMAT="Y with BC/AD"
 SECONDS_IN_YEAR = 60 * 60 *24 *365
 
-def is_archaelogical(val):
-    if isinstance(val,str) or isinstance(val,unicode):
-        return "BC" in val or "AD" in val
-    if isinstance(val, BCDate):
-        return True
-    if isinstance(val, int):
-        return int<YEAR_ONE_EPOCH
-
 def _year(fdate):
     return int(fdate.y)
 
 def timeval_to_epoch(val):
     if isinstance(val,str) or isinstance(val,unicode):
-        return flexidate_to_epoch(str_to_flexidate(val))
+        return bcdate_to_epoch(str_to_bcdate(val))
     if isinstance(val, BCDate):
-        return flexidate_to_epoch(val)
+        return bcdate_to_epoch(val)
 
-def timeval_to_flexidate(val):
+def timeval_to_bcdate(val):
     epoch = timeval_to_epoch(val)
-    return epoch_to_flexidate(epoch)
+    return epoch_to_bcdate(epoch)
 
-def epoch_to_flexidate(seconds_from_epoch):
+def epoch_to_bcdate(seconds_from_epoch):
     """Convert seconds since 1970-1-1 (UNIX epoch) to a FlexiDate object"""
-    if seconds_from_epoch > YEAR_ONE_EPOCH :
+    if seconds_from_epoch >= YEAR_ONE_EPOCH :
         dt = datetime(1970, 1, 1) + timedelta(seconds=seconds_from_epoch)
         return BCDate(dt.year, dt.month, dt.day)
     else:
         seconds_bc = abs(seconds_from_epoch - YEAR_ONE_EPOCH)
         years_bc = seconds_bc/SECONDS_IN_YEAR
+        years_bc+=1 # for year 0
         return BCDate.from_str(str(years_bc).zfill(4)+" BC")
 
-def flexidate_to_epoch(fd):
+def bcdate_to_epoch(fd):
     """ convert a FlexiDate to seconds after (or possibly before) 1970-1-1 """
     if _year(fd)>0:
         res = (fd.as_datetime() - datetime(1970,1,1)).total_seconds()
@@ -110,21 +143,21 @@ def flexidate_to_epoch(fd):
         part1 =  (datetime(1,1,1) - datetime(1970,1,1)).total_seconds()
         # coarsely get the epoch time for time BC, people didn't have a normal
         # calendar back then anyway
-        part2 = - abs(_year(fd)) * SECONDS_IN_YEAR 
+        part2 = - (abs(_year(fd)) -1) * SECONDS_IN_YEAR # -1 because year 0 doesn't exist
         res = part1 + part2
     return int(res)
 
 
-YEAR_ONE_EPOCH = flexidate_to_epoch(BCDate(1))
+YEAR_ONE_EPOCH = bcdate_to_epoch(BCDate(1))
 
-def flexidate_to_str(dt):
+def bcdate_to_str(dt):
     year = _year(dt)
     if year>=0:
         return str(dt.y).zfill(4)+" AD"
     else:
-        return str(dt.y).zfill(4) +" BC"
+        return str(-dt.y).zfill(4) +" BC"
 
-def str_to_flexidate(datetimeString):
+def str_to_bcdate(datetimeString):
     """convert a date/time string into a FlexiDate object"""
     return BCDate.from_str(datetimeString)
 

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from PyQt4.QtCore import QDateTime
 import PyQt4.QtCore as QtCore
 
-import flexidate_util
+import bcdate_util
 
 """ A module to have time related functionality """
 
@@ -20,7 +20,21 @@ DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
 SAVE_STRING_FORMAT =  DEFAULT_FORMAT # Used to be: "%Y-%m-%d %H:%M:%S.%f", but this format is not portable in Windows because of the %f directive
 UTC = "SECONDS FROM EPOCH"
 UTC_FLOAT = "SECONDS FROM EPOCH (float)"
+NORMAL_MODE = "Normal Mode"
+ARCHAELOGY_MODE = "Archaelogy Mode"
+DINOSAURS_MODE = "Paleontology Mode"
 
+_mode = NORMAL_MODE
+
+def setCurrentMode(new_mode):
+    global _mode
+    _mode = new_mode
+
+def getCurrentMode():
+    return _mode
+
+def is_archaelogical():
+    return _mode == ARCHAELOGY_MODE
 
 class UnsupportedFormatException(Exception):
     pass
@@ -36,6 +50,8 @@ class DateTypes:
 
     @classmethod
     def determine_type(cls, val):
+        if is_archaelogical():
+            return cls.DatesAsStringsArchaelogical
         try:
             float(val)
             return cls.IntegerTimestamps
@@ -45,8 +61,6 @@ class DateTypes:
             int(val)
             return cls.IntegerTimestamps
         except:
-            if flexidate_util.is_archaelogical(val):
-                return cls.DatesAsStringsArchaelogical
             if type(val) is QtCore.QDate:
                 return cls.DatesAsQDates
             if type(val) is QtCore.QDateTime:
@@ -110,11 +124,11 @@ SUPPORTED_FORMATS = list(set(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS +
                              DMY_SUPPORTED_FORMATS))
 
 def is_date_object(val):
-    return isinstance(val, datetime) or isinstance(val, flexidate_util.BCDate)
+    return isinstance(val, datetime) or isinstance(val, bcdate_util.BCDate)
 
 
 def updateUi(ui, val):
-    if flexidate_util.is_archaelogical(val):
+    if is_archaelogical():
         # FIXME 1.7 need to do something to the ui
         return
     else:
@@ -123,8 +137,8 @@ def updateUi(ui, val):
 
 def timeval_to_epoch(val, fmt=DEFAULT_FORMAT):
     """Converts any string, number, datetime or Qdate or QDatetime to epoch"""
-    if flexidate_util.is_archaelogical(val):
-        return flexidate_util.timeval_to_epoch(val)
+    if is_archaelogical():
+        return bcdate_util.timeval_to_epoch(val)
     try:
         return int(val)
     except:
@@ -137,13 +151,14 @@ def timeval_to_epoch(val, fmt=DEFAULT_FORMAT):
                 val= str_to_datetime(val,fmt)
             return datetime_to_epoch(val)
 
-def timeval_to_datetime(val, fmt):
-    if flexidate_util.is_archaelogical(val):
-        return flexidate_util.timeval_to_flexidate(val)
+def timeval_to_datetime(val, fmt=DEFAULT_FORMAT):
+    if is_archaelogical():
+        return bcdate_util.timeval_to_bcdate(val)
     epoch = timeval_to_epoch(val, fmt)
     return epoch_to_datetime(epoch)
 
 def QDateTime_to_datetime(date):
+    #TODO v1.7 what about BCDates
     try:
         return date.toPyDateTime()
     except:
@@ -161,8 +176,8 @@ def epoch_to_datetime(seconds_from_epoch):
     # http://stackoverflow.com/questions/22082103/on-windows-how-to-convert-a-timestamps-before-1970-into-something-manageable
     # return datetime.utcfromtimestamp(seconds_from_epoch)
     # but this should:
-    if flexidate_util.is_archaelogical(seconds_from_epoch):
-        return flexidate_util.epoch_to_flexidate(seconds_from_epoch)
+    if is_archaelogical():
+        return bcdate_util.epoch_to_bcdate(seconds_from_epoch)
     else:
         return datetime(1970, 1, 1) + timedelta(seconds=seconds_from_epoch)
 
@@ -171,15 +186,15 @@ def epoch_to_str(seconds_from_epoch, fmt):
 
 def datetime_to_epoch(dt):
     """ convert a datetime to seconds after (or possibly before) 1970-1-1 """
-    if flexidate_util.is_archaelogical(dt):
-        return flexidate_util.flexidate_to_epoch(dt)
+    if is_archaelogical():
+        return bcdate_util.bcdate_to_epoch(dt)
     res = ((dt - datetime(1970,1,1)).total_seconds())
     return _cast_to_int_or_float(res)
 
 def datetime_to_str(dt, fmt=DEFAULT_FORMAT):
     """ strftime has a bug for years<1900, so fixing it as well as we can """
-    if flexidate_util.is_archaelogical(dt):
-        return flexidate_util.flexidate_to_str(dt)
+    if is_archaelogical():
+        return bcdate_util.bcdate_to_str(dt)
     if "%" not in fmt:
         raise Exception("{} does not look like a time format for val {} of type {}".format(fmt,dt, type(dt)))
     if dt.year>=1900:
@@ -237,7 +252,7 @@ def get_format_of_timeval(datetimeValue, hint=DEFAULT_FORMAT):
     
     typ = DateTypes.determine_type(datetimeValue)
     if typ == DateTypes.DatesAsStringsArchaelogical:
-        return flexidate_util.BC_FORMAT
+        return bcdate_util.BC_FORMAT
     if typ in DateTypes.QDateTypes:
         return DateTypes.get_type_format(typ)
     datetimeValue = str(datetimeValue)
@@ -262,14 +277,14 @@ def get_format_of_timeval(datetimeValue, hint=DEFAULT_FORMAT):
         except:
             pass
     # If all fail, raise an exception
-    raise UnsupportedFormatException("Could not find a suitable time format for value {}, choices {}, type {}".format(
-        datetimeValue, formatsToTry, typ))
+    raise UnsupportedFormatException("Could not find a suitable time format for value {} type {}".format(
+        datetimeValue, typ))
 
 def str_to_datetime(datetimeString, hint=DEFAULT_FORMAT):
     """convert a date/time string into a Python datetime object"""
     datetimeString = str(datetimeString)
-    if flexidate_util.is_archaelogical(datetimeString):
-        return flexidate_util.str_to_flexidate(datetimeString)
+    if is_archaelogical():
+        return bcdate_util.str_to_bcdate(datetimeString)
     try:
        # Try the hinted format, if not, try all known formats.
        fmt = get_format_of_timeval(datetimeString, hint)
@@ -279,5 +294,5 @@ def str_to_datetime(datetimeString, hint=DEFAULT_FORMAT):
            return epoch_to_datetime(float(datetimeString))
        return datetime.strptime(datetimeString, fmt)
     except Exception,e:
-        raise UnsupportedFormatException("Could not find a suitable time format for value {}, choices {}"\
-                .format(datetimeString, SUPPORTED_FORMATS))
+        raise UnsupportedFormatException("Could not find a suitable time format for value {} "\
+                .format(datetimeString))

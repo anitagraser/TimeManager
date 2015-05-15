@@ -18,7 +18,7 @@ class QueryBuildingException(Exception):
 def can_compare_lexicographically(date_format):
     """Can only compare lexicographically when the order of appearance in the string
     is year, month, date"""
-    # fortunately, date formats cannot have the same %x twice
+    # fortunately, valid date formats cannot have the same %x twice
     ioy=date_format.find("%Y")
     iom=date_format.find("%m")
     iod=date_format.find("%d")
@@ -40,15 +40,21 @@ def create_ymd_substring(ioy,iom,iod,ioh,col, quote_type):
     string_components = filter(lambda x: x is not None,[ystr,mstr,dstr,reststr])
     return ",".join(string_components)
 
+def build_query_archaelogical(start_str, end_str, from_attr, to_attr, comparison, query_idiom):
+    if "BC" in start_str and "BC" in end_str:
+        return '"{}" LIKE  \'%BC\' AND "{}" LIKE \'%BC\' AND '.format(from_attr, to_attr)+STRING_FORMAT.format(from_attr,comparison,end_str,to_attr,start_str)
+
+    if "AD" in start_str and "AD" in end_str:
+        return '"{}" LIKE  \'%AD\' AND "{}" LIKE \'%AD\' AND '.format(from_attr, to_attr)\
+               +STRING_FORMAT.format(from_attr,comparison,end_str,to_attr,start_str)
+    # can only be from_attr = BC and to_attr = AD
+    return "(\"{}\" NOT LIKE '%AD' OR (\"{}\" LIKE '%AD' AND \"{}\" {} '{}'))".format(from_attr,from_attr,from_attr,comparison,to_attr,end_str)\
+     +" AND "+"(\"{}\" NOT LIKE '%BC' OR (\"{}\" LIKE '%BC' AND \"{}\" > '{}'))".format(to_attr,to_attr,to_attr,comparison,from_attr,start_str)
 
 def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, query_idiom):
     """Build subset query"""
 
     comparison ="<" if to_attr==from_attr else "<="
-
-    if date_type==DateTypes.DatesAsStringsArchaelogical:
-        # FIXME for v1.7
-        return ""
 
     if date_type==DateTypes.IntegerTimestamps:
         start_epoch = time_util.datetime_to_epoch(start_dt)
@@ -58,6 +64,10 @@ def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, qu
 
     start_str = time_util.datetime_to_str(start_dt,date_format)
     end_str = time_util.datetime_to_str(end_dt,date_format)
+
+    if date_type==DateTypes.DatesAsStringsArchaelogical:
+        return build_query_archaelogical(start_str, end_str, from_attr, to_attr, comparison, query_idiom)
+
     if can_compare_lexicographically(date_format):
         if query_idiom == QueryIdioms.OGR:
             return STRINGCAST_FORMAT.format(from_attr,comparison,end_str,to_attr,start_str)

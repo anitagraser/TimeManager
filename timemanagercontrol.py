@@ -256,6 +256,8 @@ class TimeManagerControl(QObject):
         expectedNumberOfFrames = self.timeLayerManager.getFrameCount()
         if expectedNumberOfFrames == 0: # will be zero if no layer is time managed
             self.animationActivated = False
+            if len(self.getTimeLayerManager().getTimeLayerList())>0:
+                error("Have layers, but animation not possible")
         self.exportNameDigits = len(str(expectedNumberOfFrames))
         self.startAnimation() # if animation is activated, it will start
 

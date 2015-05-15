@@ -5,7 +5,7 @@ We welcome contribution from the community. Please review the guidelines below.
 ## Reporting Bugs
 
 Please include a step by step account of how the error appeared, a sample file, your operating system, the QGIS version and the plugin version.
-If you want to file a request for supporting a new time format, you are advised to also share a sample file.
+If you want to file a request for supporting a new time format, you are advised to also share a sample file. After version 1.6.0 Time Manager logs some helpful messages in a special tab. Go to View/Panels/Log Messages and look at the Time Manager tab. Please attach the output there in your bug report as well.
 
 ## Contributing translation files
 
@@ -38,6 +38,6 @@ You need to have the following python packages installed:
 * coverage
 * psycopg2
 
-The test environment is not very easy to set up because of some issues with the availability and compatibility of different packages, so, for that reason, we have a continuous integration system set up, so pull requests that break the tests will be detected automatically by tests that run on a virtual machine.
+The test environment is not very easy to set up because of some issues with the availability and compatibility of different packages, so, for that reason, we have a continuous integration system set up, so pull requests that break the tests will be detected automatically by tests that run on a virtual machine provided by Travis CI.
 
 

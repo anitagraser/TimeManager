@@ -222,11 +222,14 @@ class TimeLayerManager(QObject):
         if self.isEnabled():
             self.refreshTimeRestrictions()
 
+    @log_exceptions
     def stepForward(self):
         """Shifts query forward in time by one time frame"""
+        info("step forward?:")
         if self.getCurrentTimePosition() != None and self.isEnabled():
             self.setCurrentTimePosition(self.getCurrentTimePosition() + self.timeFrame())
 
+    @log_exceptions
     def stepBackward(self):
         """Shifts query back in time by one time frame"""
         if self.getCurrentTimePosition() != None and self.isEnabled():

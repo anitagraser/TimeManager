@@ -16,7 +16,7 @@ import query_builder
 from datetime import timedelta
 from conf import SAVE_DELIMITER
 import layer_settings as ls
-from logging import info
+from logging import info, warn
 
 POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
 DELIMITED_TEXT_TYPE='Delimited text file'
@@ -129,8 +129,11 @@ class TimeVectorLayer(TimeLayer):
                     res = []
                     for val in vals:
                         try:
-                            res.append(timeval_to_datetime(val,fmt))
+                            dt = timeval_to_datetime(val,fmt)
+                            res.append(dt)
+                            #info("{} converted to {}".format(val, dt))
                         except Exception,e:
+                            warn("Unparseable value {} in layer {} ignored. Cause {}".format(val, self.layer.name(),e))
                             pass
                     return res
                 unique_vals = vals_to_dt(unique_vals, fmt)
