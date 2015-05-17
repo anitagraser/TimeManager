@@ -303,6 +303,11 @@ class TimeLayerManager(QObject):
             total_features+=layer.featureCount()
         return total_features>0
 
-    def getActiveRasters(self):
-        return filter(lambda x: qgs.isRaster(x.layer) and x.isEnabled(), self.getTimeLayerList())
+    def getActive(self, func=lambda x:True):
+        return filter(lambda x: func(x) and x.isEnabled(), self.getTimeLayerList())
 
+    def getActiveRasters(self):
+        return self.getActive(func = lambda x: qgs.isRaster(x.layer))
+
+    def getActiveVectors(self):
+        return self.getActive(func = lambda x: not qgs.isRaster(x.layer))

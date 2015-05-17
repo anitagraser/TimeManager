@@ -36,6 +36,9 @@ class Interpolator:
 
     @abc.abstractmethod
     def interpolate(self, Tvalue, Tvalues, Gvalues):
+        """How to find the interpolated geometry value for a
+        time value, given the neighboring time values
+        and associated geometry values"""
         pass
 
     @abc.abstractmethod

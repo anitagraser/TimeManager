@@ -89,6 +89,7 @@ class TimeManagerControl(QObject):
         self.guiControl.showOptions.connect(self.showOptionsDialog)
         self.guiControl.exportVideo.connect(self.exportVideo)
         self.guiControl.toggleTime.connect(self.toggleTimeManagement)
+        self.guiControl.toggleArchaelogy.connect(self.toggleArchaelogy)
         self.guiControl.back.connect(self.stepBackward)
         self.guiControl.forward.connect(self.stepForward)
         self.guiControl.play.connect(self.toggleAnimation)
@@ -195,6 +196,7 @@ class TimeManagerControl(QObject):
                 - self.guiControl.dock.horizontalTimeSlider.minimum()))
             self.guiControl.dock.horizontalTimeSlider.setValue(sliderVal)
             self.guiControl.repaintRasters()
+            #self.guiControl.repaintVectors()
             self.guiControl.refreshMapCanvas()
         except:
             pass
@@ -340,6 +342,19 @@ class TimeManagerControl(QObject):
         """toggle time management on/off"""
         self.stopAnimation()
         self.timeLayerManager.toggleTimeManagement()
+
+    def toggleArchaelogy(self):
+        if time_util.is_archaelogical():
+            time_util.setCurrentMode(time_util.NORMAL_MODE)
+            self.guiControl.setQDateElementEnabled(True)
+            self.guiControl.setWindowTitle("Time Manager")
+        else:
+            time_util.setCurrentMode(time_util.ARCHAELOGY_MODE)
+            self.guiControl.setQDateElementEnabled(False)
+            self.guiControl.setWindowTitle("Time Manager Archaelogy Mode")
+            ctx = self.guiControl.dock.objectName()
+            self.guiControl.setTimeFrameType(QCoreApplication.translate(ctx,'years'))
+            #TODO v1.7 perhaps show an info message?
 
     def stepBackward(self):
         """move one step backward in time"""

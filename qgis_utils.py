@@ -1,5 +1,5 @@
 from PyQt4.QtGui import QColor
-from qgis._core import QgsMapLayerRegistry
+from qgis._core import QgsMapLayerRegistry, QgsFields
 from qgis.core import QgsRasterLayer
 from logging import warn
 
@@ -10,6 +10,7 @@ def getLayerAttributes(layerId):
     try:
         layer=QgsMapLayerRegistry.instance().mapLayers()[layerId]
         fieldmap = layer.pendingFields() 
+        #TODO v1.7 figure out what to do for fields with fieldmap.fieldOrigin(idx) = QgsFields.OriginEdit/OriginExpression
         return fieldmap
     except:
         # OpenLayers, Raster layers don't work with this

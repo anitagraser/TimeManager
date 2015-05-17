@@ -53,6 +53,7 @@ class TimeManagerGuiControl(QObject):
     showOptions = pyqtSignal()
     exportVideo = pyqtSignal()
     toggleTime = pyqtSignal()
+    toggleArchaelogy = pyqtSignal()
     back = pyqtSignal()
     forward = pyqtSignal()
     play = pyqtSignal()
@@ -78,6 +79,7 @@ class TimeManagerGuiControl(QObject):
         self.dock.pushButtonOptions.clicked.connect(self.optionsClicked) 
         self.dock.pushButtonExportVideo.clicked.connect(self.exportVideoClicked)
         self.dock.pushButtonToggleTime.clicked.connect(self.toggleTimeClicked)
+        self.dock.pushButtonArchaeology.clicked.connect(self.archaelogyClicked)
         self.dock.pushButtonBack.clicked.connect(self.backClicked)
         self.dock.pushButtonForward.clicked.connect(self.forwardClicked)
         self.dock.pushButtonPlay.clicked.connect(self.playClicked)   
@@ -116,6 +118,9 @@ class TimeManagerGuiControl(QObject):
     def getOptionsDialog(self):
         return self.optionsDialog
 
+    def setQDateElementEnabled(self, enabled):
+        self.dock.dateTimeEditCurrentTime.setEnabled(enabled)
+
     def showLabelOptions(self):
         # TODO maybe more clearly
         self.dialog = QtGui.QDialog()
@@ -150,6 +155,9 @@ class TimeManagerGuiControl(QObject):
     def toggleTimeClicked(self):
         self.toggleTime.emit()
         
+    def archaelogyClicked(self):
+        self.toggleArchaelogy.emit()
+
     def backClicked(self):
         self.back.emit()
         
@@ -184,6 +192,9 @@ class TimeManagerGuiControl(QObject):
         """unload the plugin"""
         self.iface.removeDockWidget(self.dock)
         self.iface.removePluginMenu("TimeManager", self.action)
+
+    def setWindowTitle(self, title):
+        self.dock.setWindowTitle(title)
 
     def showOptionsDialog(self,layerList,animationFrameLength,playBackwards=False,
                           loopAnimation=False):
@@ -307,6 +318,7 @@ class TimeManagerGuiControl(QObject):
         dt = self.model.getCurrentTimePosition()
         if dt is None:
             # this is only a fallback because QDateTime loses microsecond precision
+            # FIXME v.1.7 what about when the element is disabled?
             dt = QDateTime_to_datetime(self.dock.dateTimeEditCurrentTime.getDateTime())
 
         labelString = datetime_to_str(dt, self.labelOptions.fmt)
@@ -339,3 +351,6 @@ class TimeManagerGuiControl(QObject):
     def repaintRasters(self):
         rasters = self.model.getActiveRasters()
         map(lambda x: x.layer.triggerRepaint(), rasters)
+
+    def repaintVectors(self):
+        map(lambda x: x.layer.triggerRepaint(), self.model.getActiveVectors())

@@ -124,7 +124,8 @@ class TestForLayersWithOnePointPerSecond(TestWithQGISLauncher):
         iface=Mock()
         timeLayer = timevectorlayer.TimeVectorLayer(settings, iface)
         self.tlm.registerTimeLayer(timeLayer)
-
+        self.assertEquals(len(self.tlm.getActiveVectors()),1)
+        self.assertEquals(len(self.tlm.getActiveRasters()),0)
         self.assertEquals(timeLayer.getDateType(), typ)
         self.assertEquals(timeLayer.getTimeFormat(), tf)
         expected_datetime = time_util.epoch_to_datetime(self.get_start_time())
@@ -141,7 +142,6 @@ class TestForLayersWithOnePointPerSecond(TestWithQGISLauncher):
 
 
 class testTimeManagerWithoutGui(TestWithQGISLauncher):
-
 
     def registerTweetsTimeLayer(self, fromAttr="T", toAttr="T"):
         self.layer = QgsVectorLayer(os.path.join(testcfg.TEST_DATA_DIR, 'tweets.shp'), 'tweets', 'ogr')
