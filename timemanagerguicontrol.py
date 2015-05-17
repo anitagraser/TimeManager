@@ -300,6 +300,10 @@ class TimeManagerGuiControl(QObject):
         """set pushButtonToggleTime active/inactive"""
         self.dock.pushButtonToggleTime.setChecked(isActive)
     
+    def setArchaelogyPressed(self, isActive):
+        """set pushButtonArchaelogy active/inactive"""
+        self.dock.pushButtonArchaeology.setChecked(isActive)
+
     def addActionShowSettings(self, action):
         """add action to pushButttonOptions"""
         self.dock.pushButtonOptions.addAction(action)

@@ -345,13 +345,22 @@ class TimeManagerControl(QObject):
 
     def toggleArchaelogy(self):
         if time_util.is_archaelogical():
+            self.setArchaelogy(False)
+        else:
+            self.setArchaelogy(True)
+
+    def setArchaelogy(self, enabled):
+        if enabled == 0 :
             time_util.setCurrentMode(time_util.NORMAL_MODE)
             self.guiControl.setQDateElementEnabled(True)
             self.guiControl.setWindowTitle("Time Manager")
+            self.guiControl.setArchaelogyPressed(False)
+
         else:
             time_util.setCurrentMode(time_util.ARCHAELOGY_MODE)
             self.guiControl.setQDateElementEnabled(False)
             self.guiControl.setWindowTitle("Time Manager Archaelogy Mode")
+            self.guiControl.setArchaelogyPressed(True)
             ctx = self.guiControl.dock.objectName()
             self.guiControl.setTimeFrameType(QCoreApplication.translate(ctx,'years'))
             #TODO v1.7 perhaps show an info message?
@@ -434,7 +443,8 @@ class TimeManagerControl(QObject):
                                                    DEFAULT_FORMAT),
                      'timeFrameType': self.getTimeLayerManager().getTimeFrameType(),
                      'timeFrameSize': self.getTimeLayerManager().getTimeFrameSize(),
-                     'active': self.getTimeLayerManager().isEnabled()}
+                     'active': self.getTimeLayerManager().isEnabled(),
+                     'mode': int(time_util.is_archaelogical())}
 
             TimeManagerProjectHandler.writeSettings(settings)
 
@@ -446,7 +456,8 @@ class TimeManagerControl(QObject):
              'currentMapTimePosition': str, # can't store datetime in XML
              'timeFrameType': str,
              'timeFrameSize': int,
-             'active': int }
+             'active': int,
+             'mode': int}
         
     def readSettings(self):
         """load and restore settings from project file"""
@@ -464,7 +475,8 @@ class TimeManagerControl(QObject):
                  'timeLayerList': (self.restoreTimeLayers,None),
                  'timeFrameType': (self.restoreTimeFrameType,DEFAULT_FRAME_UNIT),
                  'timeFrameSize': (self.guiControl.setTimeFrameSize,DEFAULT_FRAME_SIZE),
-                 'active': (self.setActive,0)
+                 'active': (self.setActive,0),
+                 'mode': (self.setArchaelogy, 0)
         }
 
         for setting_name in self.METASETTINGS.keys():
