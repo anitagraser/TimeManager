@@ -65,25 +65,8 @@ class TimeLayerManager(QObject):
         if len(self.getManagedLayers()) == 0 or not self.isEnabled():
             return 0
 
-        try:
-            td1 = self.getProjectTimeExtents()[1]-self.getProjectTimeExtents()[0]
-        except: # hope this fixes #17 which I still cannot reproduce
-            return 0
-            
-        td2 = self.timeFrame()
-        if type(td2) == relativedelta:
-            # convert back to timedelta
-            # approximately
-            td2 = timedelta(weeks=4*td2.months, days=365*td2.years)
-        # this is how you can devide two timedeltas (not supported by default):
-        us1 = td1.total_seconds()
-        us2 = td2.total_seconds()
-        
-        if us2 == 0:
-            raise Exception("Cannot have zero length timeFrame") # this should never happen
-            # it's forbidden at UI level
-        
-        return int(us1 *1.0 / us2)
+        extents = self.getProjectTimeExtents()
+        return time_util.get_frame_count(extents[0], extents[1], self.timeFrame())
 
     def hasLayers(self):
         """returns true if the manager has at least one layer registered"""

@@ -14,8 +14,12 @@ __email__="karolina.alexiou@teralytics.ch"
 class CustomDate(object):
     pass
 
+def getGlobalDigitSetting():
+    return 4
+
 class BCDate(CustomDate):
     def __init__(self, y,m=1,d=1):
+        self.digits = getGlobalDigitSetting()
         self.y = y
         self.m = m
         self.d = d
@@ -40,7 +44,11 @@ class BCDate(CustomDate):
         return False
 
     def __str__(self):
-        return bcdate_to_str(self)
+        year = self.y
+        if year>=0:
+            return str(year).zfill(self.digits)+" AD"
+        else:
+            return str(-year).zfill(self.digits) +" BC"
 
     def __repr__(self):
         return self.__str__()
@@ -52,16 +60,20 @@ class BCDate(CustomDate):
     def from_str(cls, bc):
         try:
             m = re.match("(\d*)\s(AD|BC)",bc)
-            y = int(m.group(1))
+            year_str = m.group(1)
+            if len(year_str)!= getGlobalDigitSetting():
+                raise Exception("{} is an invalid date. Need a date string with exactly {} digits, for example {}"\
+                        .format(bc, getGlobalDigitSetting() , "20".zfill(self.digits)+" BC")) 
+            y = int(year_str)
             bc = m.group(2)
             if bc =="BC":
                 y = -y
             if bc not in ("BC","AD") or y==0:
                 raise Exception
             return BCDate(y)
-        except:
+        except Exception,e:
             raise Exception("{} is an invalid archaelogical date, should be 'number AD' or 'number BC'\
-                    and year 0 doesn't exist".format(bc))
+                    and year 0 doesn't exist. Exact cause: {}".format(bc,e))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -87,7 +99,10 @@ class BCDate(CustomDate):
         return self.__add__(-td)
 
     def __iadd__(self, td):
-        to_add = self._get_years_from_timedelta(td)
+        if isinstance(td, BCDate):
+            to_add = td.y
+        else: # some sort of timedelta/relativedelta
+            to_add = self._get_years_from_timedelta(td)
         self.y = self._get_new_year_value(self.y, to_add)
         return self
 
@@ -133,7 +148,7 @@ def epoch_to_bcdate(seconds_from_epoch):
         seconds_bc = abs(seconds_from_epoch - YEAR_ONE_EPOCH)
         years_bc = seconds_bc/SECONDS_IN_YEAR
         years_bc+=1 # for year 0
-        return BCDate.from_str(str(years_bc).zfill(4)+" BC")
+        return BCDate.from_str(str(years_bc).zfill(getGlobalDigitSetting())+" BC")
 
 def bcdate_to_epoch(fd):
     """ convert a FlexiDate to seconds after (or possibly before) 1970-1-1 """
@@ -149,13 +164,6 @@ def bcdate_to_epoch(fd):
 
 
 YEAR_ONE_EPOCH = bcdate_to_epoch(BCDate(1))
-
-def bcdate_to_str(dt):
-    year = _year(dt)
-    if year>=0:
-        return str(dt.y).zfill(4)+" AD"
-    else:
-        return str(-dt.y).zfill(4) +" BC"
 
 def str_to_bcdate(datetimeString):
     """convert a date/time string into a FlexiDate object"""

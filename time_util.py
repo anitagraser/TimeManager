@@ -3,6 +3,7 @@ import re # for hacking strftime
 import abc
 
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from PyQt4.QtCore import QDateTime
 import PyQt4.QtCore as QtCore
 
@@ -194,7 +195,7 @@ def datetime_to_epoch(dt):
 def datetime_to_str(dt, fmt=DEFAULT_FORMAT):
     """ strftime has a bug for years<1900, so fixing it as well as we can """
     if is_archaelogical():
-        return bcdate_util.bcdate_to_str(dt)
+        return str(dt)
     if "%" not in fmt:
         raise Exception("{} does not look like a time format for val {} of type {}".format(fmt,dt, type(dt)))
     if dt.year>=1900:
@@ -296,3 +297,30 @@ def str_to_datetime(datetimeString, hint=DEFAULT_FORMAT):
     except Exception,e:
         raise UnsupportedFormatException("Could not find a suitable time format for value {} "\
                 .format(datetimeString))
+
+def get_frame_count(start, end, td):
+    if not is_archaelogical():
+        try:
+            td1 = end - start 
+        except: # hope this fixes #17 which I still cannot reproduce
+            return 0
+            
+        td2 = td
+        if type(td2) == relativedelta:
+            # convert back to timedelta
+            # approximately
+            td2 = timedelta(weeks=4*td2.months, days=365*td2.years)
+        # this is how you can devide two timedeltas (not supported by default):
+        us1 = td1.total_seconds()
+        us2 = td2.total_seconds()
+        
+        if us2 == 0:
+            raise Exception("Cannot have zero length timeFrame") # this should never happen
+            # it's forbidden at UI level
+        
+        return int(us1 *1.0 / us2)
+    else:
+        years = (end-start).y
+        return int(years/td.years)
+
+
