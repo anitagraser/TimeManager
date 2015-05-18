@@ -159,7 +159,6 @@ def timeval_to_datetime(val, fmt=DEFAULT_FORMAT):
     return epoch_to_datetime(epoch)
 
 def QDateTime_to_datetime(date):
-    #TODO v1.7 what about BCDates
     try:
         return date.toPyDateTime()
     except:

@@ -16,6 +16,7 @@ from timevectorlayer import *
 from timerasterlayer import *
 from time_util import QDateTime_to_datetime, \
     datetime_to_str, DEFAULT_FORMAT
+from bcdate_util import BCDate
 import conf
 import qgis_utils as qgs
 from ui import label_options
@@ -104,6 +105,9 @@ class TimeManagerGuiControl(QObject):
         self.exportEmpty = conf.DEFAULT_EXPORT_EMPTY
         self.labelOptions = TimestampLabelConfig()
 
+        # placeholders for widgets that are added dynamically
+        self.bcdateSpinBox = None
+
         # add to plugins toolbar
         try:
             self.action = QAction("Toggle visibility", self.iface.mainWindow())
@@ -117,9 +121,6 @@ class TimeManagerGuiControl(QObject):
 
     def getOptionsDialog(self):
         return self.optionsDialog
-
-    def setQDateElementEnabled(self, enabled):
-        self.dock.dateTimeEditCurrentTime.setEnabled(enabled)
 
     def showLabelOptions(self):
         # TODO maybe more clearly
@@ -145,6 +146,46 @@ class TimeManagerGuiControl(QObject):
         self.labelOptions.color = self.labelOptionsDialog.text_color.color().name()
         self.labelOptions.placement = self.labelOptionsDialog.placement.currentText()
         self.labelOptions.fmt = self.labelOptionsDialog.time_format.text()
+
+    def enableArchaelogyTextBox(self):
+        self.dock.dateTimeEditCurrentTime.dateTimeChanged.connect(self.currentTimeChangedDateText)
+        if self.bcdateSpinBox is None:
+            self.bcdateSpinBox = self.createBCWidget(self.dock)
+            self.bcdateSpinBox.textEdited.connect(self.currentBCYearChanged)
+        self.replaceWidget(self.dock.horizontalLayout, self.dock.dateTimeEditCurrentTime, self.bcdateSpinBox, 5)
+
+    def currentBCYearChanged(self, val):
+        # FIXME v1.7 handle this, disallow zeroes etc
+        info("archaelogical spinbox value changed to {}".format(val))
+        try:
+            bcdate = BCDate.from_str(val, strict_zeros=False)
+            info("valid date! whee")
+        except:
+            # mark red?
+            warn("Invalid bc date") # how to delay?
+            return
+
+    def disableArchaelogyTextBox(self):
+        self.replaceWidget(self.dock.horizontalLayout,self.bcdateSpinBox,self.dock.dateTimeEditCurrentTime, 5)
+
+    def createBCWidget(self, mainWidget):
+        newWidget = QtGui.QLineEdit(mainWidget) # QtGui.QSpinBox(mainWidget) 
+        #newWidget.setMinimum(-1000000)
+        #newWidget.setValue(-1)
+        newWidget.setText("0001 BC")
+        return newWidget
+
+    def replaceWidget(self, layout, oldWidget, newWidget, idx):
+        """Replaces oldWidget with newWidget at layout at index idx
+        The way it is done, the widget is not destroyed
+        and the connections to it remain"""
+
+        layout.removeWidget(oldWidget)
+        oldWidget.close() # I wonder if this has any memory leaks? </philosoraptor>
+        layout.insertWidget(idx, newWidget)
+        newWidget.show()
+        layout.update()
+
 
     def optionsClicked(self):
         self.showOptions.emit()
@@ -177,6 +218,7 @@ class TimeManagerGuiControl(QObject):
         self.signalSliderTimeChanged.emit(pct)
         
     def currentTimeChangedDateText(self,qdate):
+        info("changed time via text")
         self.signalCurrentTimeUpdated.emit(qdate)
         
     def currentTimeFrameTypeChanged(self,frameType):
@@ -314,16 +356,20 @@ class TimeManagerGuiControl(QObject):
             self.dock.pushButtonPlay.toggle()
 
 
+    def getTimeValueFromUI(self):
+        # this is only a fallback because QDateTime loses microsecond precision
+        # FIXME v.1.7 what about when the element is disabled?
+        dt = QDateTime_to_datetime(self.dock.dateTimeEditCurrentTime.getDateTime())
+        return dt
+
     def renderLabel(self, painter):
-        """render the current timestamp on the map canvas"""        
-        if not self.showLabel:
+        """render the current timestamp on the map canvas"""
+        if not self.showLabel or not self.model.hasLayers():
             return
 
         dt = self.model.getCurrentTimePosition()
         if dt is None:
-            # this is only a fallback because QDateTime loses microsecond precision
-            # FIXME v.1.7 what about when the element is disabled?
-            dt = QDateTime_to_datetime(self.dock.dateTimeEditCurrentTime.getDateTime())
+            dt = self.getTimeValueFromUI() 
 
         labelString = datetime_to_str(dt, self.labelOptions.fmt)
 

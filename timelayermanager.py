@@ -61,7 +61,6 @@ class TimeLayerManager(QObject):
     def getFrameCount(self):
         """returns the number of frames that can be generated using the current settings.
         It's actually an approximate number that errs on the high side."""
-        #FIXME v1.7 support bc dates as well
         if len(self.getManagedLayers()) == 0 or not self.isEnabled():
             return 0
 
@@ -70,18 +69,11 @@ class TimeLayerManager(QObject):
 
     def hasLayers(self):
         """returns true if the manager has at least one layer registered"""
-        if len(self.getTimeLayerList()) > 0:
-            return True
-        else:
-            return False
+        return len(self.getTimeLayerList()) > 0
 
     def hasActiveLayers(self):
-        """returns true if the manager has at least one layer registered"""
-        if len(self.getTimeLayerList()) > 0:
-            for layer in self.getTimeLayerList():
-                if layer.isEnabled():
-                    return True
-        return False
+        """returns true if the manager has at least one active layer registered"""
+        return len(filter(lambda x:x.isEnabled(), self.getTimeLayerList())) > 0
 
     def clearTimeLayerList(self):
         """clear the timeLayerList"""

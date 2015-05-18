@@ -57,11 +57,11 @@ class BCDate(CustomDate):
         return datetime(self.y,self.m,self.d)
 
     @classmethod
-    def from_str(cls, bc):
+    def from_str(cls, bc, strict_zeros = True):
         try:
             m = re.match("(\d*)\s(AD|BC)",bc)
             year_str = m.group(1)
-            if len(year_str)!= getGlobalDigitSetting():
+            if strict_zeros and len(year_str)!= getGlobalDigitSetting():
                 raise Exception("{} is an invalid date. Need a date string with exactly {} digits, for example {}"\
                         .format(bc, getGlobalDigitSetting() , "20".zfill(self.digits)+" BC")) 
             y = int(year_str)

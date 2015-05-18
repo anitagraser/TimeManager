@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from PyQt4 import QtCore, QtGui
 
 from timemanagerguicontrol import *
 from timelayerfactory import TimeLayerFactory
@@ -184,6 +185,7 @@ class TimeManagerControl(QObject):
             self.setPropagateGuiChanges(True)
             return
 
+        # FIXME v1.7 update UI either at the qt box or the spinbox, let the gui tell us
         time_util.updateUi(self.guiControl.dock.dateTimeEditCurrentTime, currentTimePosition)
         timeval = datetime_to_epoch(currentTimePosition)
         timeExtents = self.getTimeLayerManager().getProjectTimeExtents()
@@ -352,18 +354,17 @@ class TimeManagerControl(QObject):
     def setArchaelogy(self, enabled):
         if enabled == 0 :
             time_util.setCurrentMode(time_util.NORMAL_MODE)
-            self.guiControl.setQDateElementEnabled(True)
             self.guiControl.setWindowTitle("Time Manager")
             self.guiControl.setArchaelogyPressed(False)
+            self.guiControl.disableArchaelogyTextBox()
 
         else:
             time_util.setCurrentMode(time_util.ARCHAELOGY_MODE)
-            self.guiControl.setQDateElementEnabled(False)
             self.guiControl.setWindowTitle("Time Manager Archaelogy Mode")
             self.guiControl.setArchaelogyPressed(True)
             ctx = self.guiControl.dock.objectName()
             self.guiControl.setTimeFrameType(QCoreApplication.translate(ctx,'years'))
-            #TODO v1.7 perhaps show an info message?
+            self.guiControl.enableArchaelogyTextBox()
 
     def stepBackward(self):
         """move one step backward in time"""
