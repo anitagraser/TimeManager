@@ -305,9 +305,10 @@ def get_frame_count(start, end, td):
             return 0
             
         td2 = td
-        if type(td2) == relativedelta:
+        if isinstance(td2, relativedelta):
             # convert back to timedelta
-            # approximately
+            # approximately (it makes the interval <= the actual interval but this way around it doesn't matter)
+            # for the frame count
             td2 = timedelta(weeks=4*td2.months, days=365*td2.years)
         # this is how you can devide two timedeltas (not supported by default):
         us1 = td1.total_seconds()
