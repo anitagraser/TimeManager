@@ -414,3 +414,9 @@ class TimeManagerGuiControl(QObject):
 
     def repaintVectors(self):
         map(lambda x: x.layer.triggerRepaint(), self.model.getActiveVectors())
+
+    def repaintJoined(self):
+        layerIdsToRefresh = qgs.getAllJoinedLayers(set(map(lambda x:x.layer.id(),self.model.getActiveVectors())))
+        info("to refresh {}".format(layerIdsToRefresh))
+        layersToRefresh = map(lambda x: qgs.getLayerFromId(x), layerIdsToRefresh)
+        map(lambda x: x.triggerRepaint(), layersToRefresh)

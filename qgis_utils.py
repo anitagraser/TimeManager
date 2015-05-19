@@ -1,10 +1,27 @@
 from PyQt4.QtGui import QColor
 from qgis._core import QgsMapLayerRegistry, QgsFields
 from qgis.core import QgsRasterLayer
-from logging import warn
+from logging import warn, debug_on_exceptions
 
 __author__ = 'carolinux'
 
+
+def getAllJoinIdsOfLayer(layer):
+    return set(map(lambda x: x.joinLayerId, layer.vectorJoins()))
+
+def getAllJoinedLayers(layerIds):
+    """get the ids of the layers that are joined on the given layerIds"""
+    allJoined = set()
+    allLayers = QgsMapLayerRegistry.instance().mapLayers()
+    for (id, layer) in allLayers.iteritems():
+        if id in layerIds: # let's see what the given layers are joined on
+            allJoined|= getAllJoinIdsOfLayer(layer) 
+        else: # let's see if the other layers join with the given layers
+            joinsOfCurrentLayer = getAllJoinIdsOfLayer(layer)
+            if len(joinsOfCurrentLayer & layerIds)>0:
+                allJoined.add(id)
+        
+    return allJoined
 
 def getLayerAttributes(layerId):
     try:
