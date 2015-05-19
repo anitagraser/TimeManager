@@ -24,6 +24,9 @@ class BCDate(CustomDate):
         self.m = m
         self.d = d
 
+    def setDigits(self, d):
+        self.d = d
+
     def isBC(self):
         return self.y<0
 

@@ -10,6 +10,7 @@ from timelayermanager import *
 from timemanagerprojecthandler import TimeManagerProjectHandler
 from time_util import *
 import time_util
+import bcdate_util
 from conf import *
 from logging import info, warn, error, log_exceptions
 
@@ -185,8 +186,7 @@ class TimeManagerControl(QObject):
             self.setPropagateGuiChanges(True)
             return
 
-        # FIXME v1.7 update UI either at the qt box or the spinbox, let the gui tell us
-        time_util.updateUi(self.guiControl.dock.dateTimeEditCurrentTime, currentTimePosition)
+        time_util.updateUi(self.guiControl.getTimeWidget(), currentTimePosition)
         timeval = datetime_to_epoch(currentTimePosition)
         timeExtents = self.getTimeLayerManager().getProjectTimeExtents()
         try:
@@ -413,11 +413,15 @@ class TimeManagerControl(QObject):
 
         self.getTimeLayerManager().setCurrentTimePosition(epoch_to_datetime(realEpochTime))
 
-    def updateTimePositionFromTextBox(self,qdate):
+    def updateTimePositionFromTextBox(self,date):
         if not self.propagateGuiChanges:
             return
-        #FIXME v 1.7 what if it's a FOO BC instead of qdate?
-        self.getTimeLayerManager().setCurrentTimePosition(QDateTime_to_datetime(qdate))
+        if time_util.is_archaelogical():
+            bcdate = bcdate_util.BCDate.from_str(date, strict_zeros=False)
+            bcdate.setDigits(bcdate_util.getGlobalDigitSetting())
+            self.getTimeLayerManager().setCurrentTimePosition(bcdate)
+        else:
+            self.getTimeLayerManager().setCurrentTimePosition(QDateTime_to_datetime(date))
 
     def restoreTimeFrameType(self, text):
         try:

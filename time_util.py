@@ -130,7 +130,7 @@ def is_date_object(val):
 
 def updateUi(ui, val):
     if is_archaelogical():
-        # FIXME 1.7 need to do something to the ui
+        ui.setText(str(val))
         return
     else:
         ui.setDateTime(val)

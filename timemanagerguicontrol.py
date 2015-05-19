@@ -13,9 +13,9 @@ from PyQt4 import uic
 from PyQt4 import QtGui as QtGui
 
 from timevectorlayer import *
-from timerasterlayer import *
 from time_util import QDateTime_to_datetime, \
     datetime_to_str, DEFAULT_FORMAT
+import time_util
 from bcdate_util import BCDate
 import conf
 import qgis_utils as qgs
@@ -151,14 +151,22 @@ class TimeManagerGuiControl(QObject):
         self.dock.dateTimeEditCurrentTime.dateTimeChanged.connect(self.currentTimeChangedDateText)
         if self.bcdateSpinBox is None:
             self.bcdateSpinBox = self.createBCWidget(self.dock)
-            self.bcdateSpinBox.textEdited.connect(self.currentBCYearChanged)
+            self.bcdateSpinBox.editingFinished.connect(self.currentBCYearChanged)
         self.replaceWidget(self.dock.horizontalLayout, self.dock.dateTimeEditCurrentTime, self.bcdateSpinBox, 5)
 
-    def currentBCYearChanged(self, val):
-        # FIXME v1.7 handle this, disallow zeroes etc
+    def getTimeWidget(self):
+        if time_util.is_archaelogical():
+            return self.bcdateSpinBox
+        else:
+            return self.dock.dateTimeEditCurrentTime
+
+    def currentBCYearChanged(self):
+        # FIXME v1.7 how to delay a bit?
+        val = self.bcdateSpinBox.text()
         info("archaelogical spinbox value changed to {}".format(val))
         try:
             bcdate = BCDate.from_str(val, strict_zeros=False)
+            self.signalCurrentTimeUpdated.emit(val)
             info("valid date! whee")
         except:
             # mark red?
@@ -166,6 +174,8 @@ class TimeManagerGuiControl(QObject):
             return
 
     def disableArchaelogyTextBox(self):
+        if self.bcdateSpinBox is None:
+            return
         self.replaceWidget(self.dock.horizontalLayout,self.bcdateSpinBox,self.dock.dateTimeEditCurrentTime, 5)
 
     def createBCWidget(self, mainWidget):
