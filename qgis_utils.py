@@ -7,6 +7,9 @@ __author__ = 'carolinux'
 
 
 def getAllJoinIdsOfLayer(layer):
+    if not hasattr(layer, 'vectorJoins'):
+        # open layers don't have this
+        return set()
     return set(map(lambda x: x.joinLayerId, layer.vectorJoins()))
 
 def getAllJoinedLayers(layerIds):
@@ -14,6 +17,8 @@ def getAllJoinedLayers(layerIds):
     allJoined = set()
     allLayers = QgsMapLayerRegistry.instance().mapLayers()
     for (id, layer) in allLayers.iteritems():
+        if isRaster(layer):
+            continue
         if id in layerIds: # let's see what the given layers are joined on
             allJoined|= getAllJoinIdsOfLayer(layer) 
         else: # let's see if the other layers join with the given layers

@@ -13,6 +13,15 @@ __email__="karolina.alexiou@teralytics.ch"
 
 class TestTimeUtil(unittest.TestCase):
 
+    # TODO v1.7 test just year
+
+    def test_ambiguous_format_resolution(self):
+        val="20140306"
+        dt = time_util.str_to_datetime(val, "%Y%m%d")
+        assert(dt == datetime(2014,3,6))
+        dt = time_util.str_to_datetime(val, time_util.UTC)
+        assert(dt == datetime.utcfromtimestamp(int(val)))
+
     def test_datetime_to_str_before_1900_works(self):
         dtstr="01/12/0100"
         fmt="%d/%m/%Y"
