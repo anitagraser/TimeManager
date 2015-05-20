@@ -54,7 +54,7 @@ class TimeManagerGuiControl(QObject):
     showOptions = pyqtSignal()
     exportVideo = pyqtSignal()
     toggleTime = pyqtSignal()
-    toggleArchaelogy = pyqtSignal()
+    toggleArchaeology = pyqtSignal()
     back = pyqtSignal()
     forward = pyqtSignal()
     play = pyqtSignal()
@@ -80,7 +80,7 @@ class TimeManagerGuiControl(QObject):
         self.dock.pushButtonOptions.clicked.connect(self.optionsClicked) 
         self.dock.pushButtonExportVideo.clicked.connect(self.exportVideoClicked)
         self.dock.pushButtonToggleTime.clicked.connect(self.toggleTimeClicked)
-        self.dock.pushButtonArchaeology.clicked.connect(self.archaelogyClicked)
+        self.dock.pushButtonArchaeology.clicked.connect(self.archaeologyClicked)
         self.dock.pushButtonBack.clicked.connect(self.backClicked)
         self.dock.pushButtonForward.clicked.connect(self.forwardClicked)
         self.dock.pushButtonPlay.clicked.connect(self.playClicked)   
@@ -147,7 +147,7 @@ class TimeManagerGuiControl(QObject):
         self.labelOptions.placement = self.labelOptionsDialog.placement.currentText()
         self.labelOptions.fmt = self.labelOptionsDialog.time_format.text()
 
-    def enableArchaelogyTextBox(self):
+    def enableArchaeologyTextBox(self):
         self.dock.dateTimeEditCurrentTime.dateTimeChanged.connect(self.currentTimeChangedDateText)
         if self.bcdateSpinBox is None:
             self.bcdateSpinBox = self.createBCWidget(self.dock)
@@ -173,7 +173,7 @@ class TimeManagerGuiControl(QObject):
             warn("Invalid bc date") # how to delay?
             return
 
-    def disableArchaelogyTextBox(self):
+    def disableArchaeologyTextBox(self):
         if self.bcdateSpinBox is None:
             return
         self.replaceWidget(self.dock.horizontalLayout,self.bcdateSpinBox,self.dock.dateTimeEditCurrentTime, 5)
@@ -206,8 +206,8 @@ class TimeManagerGuiControl(QObject):
     def toggleTimeClicked(self):
         self.toggleTime.emit()
         
-    def archaelogyClicked(self):
-        self.toggleArchaelogy.emit()
+    def archaeologyClicked(self):
+        self.toggleArchaeology.emit()
 
     def backClicked(self):
         self.back.emit()
@@ -352,8 +352,8 @@ class TimeManagerGuiControl(QObject):
         """set pushButtonToggleTime active/inactive"""
         self.dock.pushButtonToggleTime.setChecked(isActive)
     
-    def setArchaelogyPressed(self, isActive):
-        """set pushButtonArchaelogy active/inactive"""
+    def setArchaeologyPressed(self, isActive):
+        """set pushButtonArchaeology active/inactive"""
         self.dock.pushButtonArchaeology.setChecked(isActive)
 
     def addActionShowSettings(self, action):

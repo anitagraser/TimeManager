@@ -86,7 +86,6 @@ class BCDate(CustomDate):
 
     def _get_years_from_timedelta(self,td):
         try:
-
             return td.years
         except Exception,e:
             #FIXME v.1.7 what about offset?
@@ -94,12 +93,12 @@ class BCDate(CustomDate):
             warn(msg)
             return 0
 
-    def __imul__(self, m):
-        self.y = m * self.y
-        return self
-
-    def __mul__(self, m):
-        return BCDate(self.y*m)
+    @classmethod
+    def dist(cls, bc1, bc2):
+        if (bc1.y * bc2.y >0):
+            return bc1.y - bc2.y
+        else:
+            return bc1.y -bc2.y - 1
 
     def __isub__(self,td):
         return self._iadd__(td * -1)

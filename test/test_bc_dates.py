@@ -24,12 +24,13 @@ class TestBCDates(unittest.TestCase):
     def tearDownClass(cls):
         time_util.setCurrentMode(time_util.NORMAL_MODE)
 
-    def test_bc_substraction(self):
-        a = bcdate_util.BCDate(10)
-        b = bcdate_util.BCDate(-10)
-        #import ipdb; ipdb.set_trace()
-        #FIXME v1.7 19
-        assert((a-b).y == 20)
+    def test_bc_distance(self):
+        end = bcdate_util.BCDate(10)
+        start = bcdate_util.BCDate(-10)
+        assert(bcdate_util.BCDate.dist(end,start) == 19)
+        end = bcdate_util.BCDate(-10)
+        start = bcdate_util.BCDate(-30)
+        assert(bcdate_util.BCDate.dist(end,start) == 20)
 
     def test_is_mode_set(self):
         assert(time_util.is_archaelogical())

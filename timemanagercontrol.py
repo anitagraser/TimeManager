@@ -91,7 +91,7 @@ class TimeManagerControl(QObject):
         self.guiControl.showOptions.connect(self.showOptionsDialog)
         self.guiControl.exportVideo.connect(self.exportVideo)
         self.guiControl.toggleTime.connect(self.toggleTimeManagement)
-        self.guiControl.toggleArchaelogy.connect(self.toggleArchaelogy)
+        self.guiControl.toggleArchaeology.connect(self.toggleArchaeology)
         self.guiControl.back.connect(self.stepBackward)
         self.guiControl.forward.connect(self.stepForward)
         self.guiControl.play.connect(self.toggleAnimation)
@@ -347,26 +347,26 @@ class TimeManagerControl(QObject):
         self.stopAnimation()
         self.timeLayerManager.toggleTimeManagement()
 
-    def toggleArchaelogy(self):
+    def toggleArchaeology(self):
         if time_util.is_archaelogical():
-            self.setArchaelogy(False)
+            self.setArchaeology(False)
         else:
-            self.setArchaelogy(True)
+            self.setArchaeology(True)
 
-    def setArchaelogy(self, enabled):
+    def setArchaeology(self, enabled):
         if enabled == 0 :
             time_util.setCurrentMode(time_util.NORMAL_MODE)
             self.guiControl.setWindowTitle("Time Manager")
-            self.guiControl.setArchaelogyPressed(False)
-            self.guiControl.disableArchaelogyTextBox()
+            self.guiControl.setArchaeologyPressed(False)
+            self.guiControl.disableArchaeologyTextBox()
 
         else:
             time_util.setCurrentMode(time_util.ARCHAELOGY_MODE)
-            self.guiControl.setWindowTitle("Time Manager Archaelogy Mode")
-            self.guiControl.setArchaelogyPressed(True)
+            self.guiControl.setWindowTitle("Time Manager Archaeology Mode")
+            self.guiControl.setArchaeologyPressed(True)
             ctx = self.guiControl.dock.objectName()
             self.guiControl.setTimeFrameType(QCoreApplication.translate(ctx,'years'))
-            self.guiControl.enableArchaelogyTextBox()
+            self.guiControl.enableArchaeologyTextBox()
 
     def stepBackward(self):
         """move one step backward in time"""
@@ -483,7 +483,7 @@ class TimeManagerControl(QObject):
                  'timeFrameType': (self.restoreTimeFrameType,DEFAULT_FRAME_UNIT),
                  'timeFrameSize': (self.guiControl.setTimeFrameSize,DEFAULT_FRAME_SIZE),
                  'active': (self.setActive,0),
-                 'mode': (self.setArchaelogy, 0)
+                 'mode': (self.setArchaeology, 0)
         }
 
         for setting_name in self.METASETTINGS.keys():

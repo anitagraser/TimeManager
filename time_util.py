@@ -23,7 +23,7 @@ PENDING = "WILL BE INFERRED"
 UTC = "SECONDS FROM EPOCH"
 UTC_FLOAT = "SECONDS FROM EPOCH (float)"
 NORMAL_MODE = "Normal Mode"
-ARCHAELOGY_MODE = "Archaelogy Mode"
+ARCHAELOGY_MODE = "Archaeology Mode"
 DINOSAURS_MODE = "Paleontology Mode"
 
 _mode = NORMAL_MODE
@@ -321,7 +321,7 @@ def get_frame_count(start, end, td):
         
         return int(us1 *1.0 / us2)
     else:
-        years = (end-start).y
+        years = BCDate.dist(end,start)
         return int(years/td.years)
 
 

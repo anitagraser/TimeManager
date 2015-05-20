@@ -138,6 +138,8 @@ class TimeVectorLayer(TimeLayer):
                             pass
                     return res
                 unique_vals = vals_to_dt(unique_vals, fmt)
+                if len(unique_vals)==0:
+                    raise Exception("Could not parse any dates while trying to get time extents")
                 minValue= datetime_to_str(min(unique_vals),fmt)
                 if fromTimeAttributeIndex == toTimeAttributeIndex:
                     maxValue = datetime_to_str(max(unique_vals),fmt)

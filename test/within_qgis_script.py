@@ -11,10 +11,12 @@ try:
     from timemanager.test import testcfg as testcfg
     import timemanager.conf as conf
     from timemanager import layer_settings as ls
+    from timemanager import bcdate_util as bcdate_util
 except:
     from TimeManager.test import testcfg as testcfg #Mac0S needs the capitalized name
     import TimeManager.conf as conf
     from TimeManager import layer_settings as ls
+    from TimeManager import bcdate_util as bcdate_util
 
 __author__ = 'carolinux'
 
@@ -23,6 +25,8 @@ __author__ = 'carolinux'
 
 ## Available actions with very readable names to facilitate scenario creation ##
 
+def tm_dir():
+    return os.path.join(QgsApplication.qgisSettingsDirPath(),"python","plugins","timemanager")
 def new_project():
     iface.newProject()
 
@@ -45,16 +49,22 @@ def get_index_of(combobox, text):
     return all.index(text)
 
 def getTweetsLayer():
-    tm_dir = os.path.join(QgsApplication.qgisSettingsDirPath(),"python","plugins","timemanager")
-    testfile_dir = os.path.join(tm_dir,testcfg.TEST_DATA_DIR)
+    testfile_dir = os.path.join(tm_dir(),testcfg.TEST_DATA_DIR)
     tweets = QgsVectorLayer(os.path.join(testfile_dir, 'tweets.shp'), 'tweets', 'ogr')
     return tweets
 
 def getTimeSpansLayer():
-    tm_dir = os.path.join(QgsApplication.qgisSettingsDirPath(),"python","plugins","timemanager")
-    testfile_dir = os.path.join(tm_dir,testcfg.TEST_DATA_DIR)
+    testfile_dir = os.path.join(tm_dir(),testcfg.TEST_DATA_DIR)
     timespans = QgsVectorLayer(os.path.join(testfile_dir, 'timespans.shp'), 'timespans', 'ogr')
     return timespans
+
+def getArchaelogicalLayer():
+    testfile_dir = os.path.join(tm_dir(),testcfg.TEST_DATA_DIR)
+    fn = os.path.join(testfile_dir,"archaelogical.txt")
+    uri = "{}?type=csv&xField={}&yField={}&spatialIndex=no&subsetIndex=no&watchFile=no" \
+              "".format(fn, "lon", "lat")
+    layer =  QgsVectorLayer(uri, "ancient_points", 'delimitedtext')
+    return layer
 
 
 def load_layer_to_qgis(layer):
@@ -212,4 +222,18 @@ save_project_to_file(tmp_file)
 new_project()
 load_project(tmp_file)
 assert(len(get_all_layer_names())==3)
+
+print "Start scenario 4 (archaelogy)"
+new_project()
+ctrl.toggleArchaeology()
+load_layer_to_qgis(getArchaelogicalLayer())
+addUnmanagedLayerToTm(gui, "year")
+map(lambda x: goForward(gui), range(19))
+assert(iface.activeLayer().featureCount()==2)
+goForward(gui)
+assert(tlm.getCurrentTimePosition() == bcdate_util.BCDate(1))
+goBackward(gui)
+assert(tlm.getCurrentTimePosition() == bcdate_util.BCDate(-1))
+#sleep(5)
+#ctrl.toggleArchaeology()
 
