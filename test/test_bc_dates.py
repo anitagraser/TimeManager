@@ -24,6 +24,13 @@ class TestBCDates(unittest.TestCase):
     def tearDownClass(cls):
         time_util.setCurrentMode(time_util.NORMAL_MODE)
 
+    def test_bc_substraction(self):
+        a = bcdate_util.BCDate(10)
+        b = bcdate_util.BCDate(-10)
+        #import ipdb; ipdb.set_trace()
+        #FIXME v1.7 19
+        assert((a-b).y == 20)
+
     def test_is_mode_set(self):
         assert(time_util.is_archaelogical())
 
@@ -35,13 +42,13 @@ class TestBCDates(unittest.TestCase):
 
     def test_ad(self):
         val ="0001 AD"
-        dt = time_util.timeval_to_datetime(val)
+        dt = time_util.timeval_to_datetime(val, None)
         assert(dt == bcdate_util.BCDate(1))
 
     def test_bc_date_conversions_str(self):
         for datestr in self.bc_dates:
             dt = time_util.str_to_datetime(datestr)
-            datestr2 = time_util.datetime_to_str(dt)
+            datestr2 = time_util.datetime_to_str(dt, None)
             assert(datestr==datestr2)
 
     def test_bc_date_conversions_epoch(self):

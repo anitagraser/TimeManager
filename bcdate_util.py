@@ -94,12 +94,18 @@ class BCDate(CustomDate):
             warn(msg)
             return 0
 
+    def __imul__(self, m):
+        self.y = m * self.y
+        return self
+
+    def __mul__(self, m):
+        return BCDate(self.y*m)
 
     def __isub__(self,td):
-        return self._iadd__(-td)
+        return self._iadd__(td * -1)
 
     def __sub__(self,td):
-        return self.__add__(-td)
+        return self.__add__(td * -1)
 
     def __iadd__(self, td):
         if isinstance(td, BCDate):
@@ -121,7 +127,11 @@ class BCDate(CustomDate):
         return new_y
 
     def __add__(self, td):
-        return BCDate(self._get_new_year_value(self.y, self._get_years_from_timedelta(td)))
+        if isinstance(td, BCDate):
+            to_add = td.y
+        else: # some sort of timedelta/relativedelta
+            to_add = self._get_years_from_timedelta(td)
+        return BCDate(self._get_new_year_value(self.y, to_add ))
 
     def __hash__(self):
         return (self.y<<10)  + (self.m<<4) + self.d

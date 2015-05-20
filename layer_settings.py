@@ -5,7 +5,7 @@ layer, the addLayerOptions gui, the widget table and the save string"""
 from qgis.core import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from time_util import DEFAULT_FORMAT
+from time_util import PENDING
 import conf
 import time_util
 
@@ -24,7 +24,7 @@ class LayerSettings:
         self.startTimeAttribute = ''
         self.endTimeAttribute = ''
         self.isEnabled = True
-        self.timeFormat = time_util.DEFAULT_FORMAT
+        self.timeFormat = time_util.PENDING
         self.offset = 0
         self.interpolationEnabled = False
         self.interpolationMode = conf.NO_INTERPOLATION 
@@ -59,7 +59,7 @@ def getSettingsFromAddVectorLayersUI(ui,layerIndexToId):
     result.endTimeAttribute = ui.comboBoxEnd.currentText()
     result.isEnabled = True
     result.layerId =  layerIndexToId[ui.comboBoxLayers.currentIndex()]
-    result.timeFormat = DEFAULT_FORMAT
+    result.timeFormat = time_util.PENDING #FIXME v.1.7
     result.offset = ui.spinBoxOffset.value()
     result.interpolationMode = ui.comboBoxInterpolation.currentText()
     result.interpolationEnabled = conf.INTERPOLATION_MODES[result.interpolationMode]
@@ -75,7 +75,7 @@ def getSettingsFromAddRasterLayersUI(ui,layerIndexToId):
     result.endTimeAttribute = ui.textEnd.text()
     result.isEnabled = True
     result.layerId =  layerIndexToId[ui.comboBoxLayers.currentIndex()]
-    result.timeFormat = DEFAULT_FORMAT
+    result.timeFormat = time_util.PENDING #FIXME v.1.7
     result.offset = ui.spinBoxOffset.value()
     return result
 

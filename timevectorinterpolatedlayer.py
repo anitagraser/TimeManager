@@ -2,7 +2,7 @@ __author__ = 'carolinux'
 
 from timelayer import *
 from timevectorlayer import TimeVectorLayer
-from time_util import DEFAULT_FORMAT, datetime_to_epoch, timeval_to_epoch, epoch_to_str
+from time_util import datetime_to_epoch, timeval_to_epoch, epoch_to_str
 from conf import DEFAULT_ID
 from interpolation import interpolator_factory as ifactory
 import qgis_utils as qgs

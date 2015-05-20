@@ -238,7 +238,7 @@ class TimeLayerManager(QObject):
 
         saveString = conf.SAVE_DELIMITER.join([datetime_to_str(self.getProjectTimeExtents()[0],tdfmt),
             datetime_to_str(self.getProjectTimeExtents()[1], tdfmt),
-            datetime_to_str(self.getCurrentTimePosition())])
+            datetime_to_str(self.getCurrentTimePosition(), tdfmt)])
         for timeLayer in self.getTimeLayerList():
             saveListLayers.append(timeLayer.getSaveString())
         

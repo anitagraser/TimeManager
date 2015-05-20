@@ -9,8 +9,9 @@ from PyQt4 import QtCore
 
 from PyQt4.QtGui import QMessageBox
 from timelayer import *
-from time_util import DEFAULT_FORMAT, timeval_to_datetime, \
-    get_format_of_timeval, datetime_to_str, QDateTime_to_datetime, str_to_datetime, DateTypes
+from time_util import timeval_to_datetime, \
+    datetime_to_str, QDateTime_to_datetime, str_to_datetime, DateTypes
+import time_util
 from query_builder import QueryIdioms
 import query_builder
 from datetime import timedelta
@@ -51,9 +52,8 @@ class TimeVectorLayer(TimeLayer):
         self.geometriesCount = settings.geometriesCount
         self.type = DateTypes.determine_type(self.getRawMinValue())
         type2 = DateTypes.determine_type(self.getRawMaxValue())
-        self.timeFormat = get_format_of_timeval(self.getRawMinValue(),hint=str(
-            settings.timeFormat))
-        tf2 = get_format_of_timeval(self.getRawMaxValue(),hint=str(settings.timeFormat))
+        self.timeFormat = self.determine_format(self.getRawMinValue(), settings.timeFormat)
+        tf2 = self.determine_format(self.getRawMaxValue(), settings.timeFormat)
 
         if self.type!=type2 or self.timeFormat!=tf2:
             raise InvalidTimeLayerError("Invalid time layer: To and From attributes must have "

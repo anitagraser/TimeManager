@@ -19,6 +19,7 @@ OGR_DATETIME_FORMAT="%Y-%m-%dT%H:%M:%S"
 #TODO: There is also an OGR format with milliseconds
 DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
 SAVE_STRING_FORMAT =  DEFAULT_FORMAT # Used to be: "%Y-%m-%d %H:%M:%S.%f", but this format is not portable in Windows because of the %f directive
+PENDING = "WILL BE INFERRED"
 UTC = "SECONDS FROM EPOCH"
 UTC_FLOAT = "SECONDS FROM EPOCH (float)"
 NORMAL_MODE = "Normal Mode"
@@ -136,7 +137,7 @@ def updateUi(ui, val):
         ui.setDateTime(val)
 
 
-def timeval_to_epoch(val, fmt=DEFAULT_FORMAT):
+def timeval_to_epoch(val, fmt):
     """Converts any string, number, datetime or Qdate or QDatetime to epoch"""
     if is_archaelogical():
         return bcdate_util.timeval_to_epoch(val)
@@ -152,7 +153,7 @@ def timeval_to_epoch(val, fmt=DEFAULT_FORMAT):
                 val= str_to_datetime(val,fmt)
             return datetime_to_epoch(val)
 
-def timeval_to_datetime(val, fmt=DEFAULT_FORMAT):
+def timeval_to_datetime(val, fmt):
     if is_archaelogical():
         return bcdate_util.timeval_to_bcdate(val)
     epoch = timeval_to_epoch(val, fmt)
@@ -191,7 +192,7 @@ def datetime_to_epoch(dt):
     res = ((dt - datetime(1970,1,1)).total_seconds())
     return _cast_to_int_or_float(res)
 
-def datetime_to_str(dt, fmt=DEFAULT_FORMAT):
+def datetime_to_str(dt, fmt):
     """ strftime has a bug for years<1900, so fixing it as well as we can """
     if is_archaelogical():
         return str(dt)
@@ -248,7 +249,7 @@ def _fixed_strftime(dt, fmt):
         s = s[:site] + syear + s[site+4:]
     return s
 
-def get_format_of_timeval(datetimeValue, hint=DEFAULT_FORMAT):
+def get_format_of_timeval(datetimeValue):
     
     typ = DateTypes.determine_type(datetimeValue)
     if typ == DateTypes.DatesAsStringsArchaelogical:
@@ -269,33 +270,33 @@ def get_format_of_timeval(datetimeValue, hint=DEFAULT_FORMAT):
     except:
         pass
 
-    formatsToTry = [hint] + SUPPORTED_FORMATS
-    for format in formatsToTry:
+    for format in SUPPORTED_FORMATS:
         try:
             datetime.strptime(datetimeValue, format)
             return format
         except:
             pass
     # If all fail, raise an exception
-    raise UnsupportedFormatException("Could not find a suitable time format for value {} type {}".format(
-        datetimeValue, typ))
+    raise UnsupportedFormatException("Could not find a suitable time format for value {} type {}. Tried {}".format(
+        datetimeValue, typ, SUPPORTED_FORMATS))
 
-def str_to_datetime(datetimeString, hint=DEFAULT_FORMAT):
+def str_to_datetime(datetimeString, fmt=PENDING):
+
     """convert a date/time string into a Python datetime object"""
     datetimeString = str(datetimeString)
     if is_archaelogical():
         return bcdate_util.str_to_bcdate(datetimeString)
     try:
-       # Try the hinted format, if not, try all known formats.
-       fmt = get_format_of_timeval(datetimeString, hint)
+       if fmt == PENDING:
+            fmt = get_format_of_timeval(datetimeString)
        if fmt == UTC :
            return epoch_to_datetime(int(datetimeString))
        if fmt == UTC_FLOAT:
            return epoch_to_datetime(float(datetimeString))
        return datetime.strptime(datetimeString, fmt)
     except Exception,e:
-        raise UnsupportedFormatException("Could not find a suitable time format for value {} "\
-                .format(datetimeString))
+        raise UnsupportedFormatException("Could not find a suitable time format for value {}. Cause {}"\
+                .format(datetimeString, e ))
 
 def get_frame_count(start, end, td):
     if not is_archaelogical():

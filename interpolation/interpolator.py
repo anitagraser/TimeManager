@@ -139,8 +139,8 @@ class MemoryLoadInterpolator(Interpolator):
     def load(self, timeLayer, *args, **kwargs):
         features = timeLayer.layer.getFeatures(QgsFeatureRequest() )
         for feat in features:
-            from_time = time_util.timeval_to_epoch(feat[timeLayer.fromTimeAttributeIndex])
-            to_time = time_util.timeval_to_epoch(feat[timeLayer.fromTimeAttributeIndex])
+            from_time = time_util.timeval_to_epoch(feat[timeLayer.fromTimeAttributeIndex],time_util.PENDING)
+            to_time = time_util.timeval_to_epoch(feat[timeLayer.fromTimeAttributeIndex], time_util.PENDING)
             geom = self.getGeometryFromFeature(feat) 
             if geom is None:
                 continue

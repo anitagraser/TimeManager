@@ -21,8 +21,7 @@ class TimeRasterLayer(TimeLayer):
         self.iface = iface
         self.fromTimeAttribute = settings.startTimeAttribute
         self.toTimeAttribute = settings.endTimeAttribute
-        self.timeFormat = get_format_of_timeval(settings.startTimeAttribute,
-                                                   hint=settings.timeFormat)
+        self.timeFormat = self.determine_format(settings.startTimeAttribute, settings.timeFormat)
         self.offset = int(settings.offset)
         
         try:

@@ -3,6 +3,7 @@
 
 import conf
 import abc
+import time_util
 
 class TimeLayer:
     """Manages the properties of a managed (managable) layer."""
@@ -15,6 +16,12 @@ class TimeLayer:
 
     def getOriginalSubsetString(self):
         return ''
+
+    def determine_format(self, val, fmtGiven):
+        if fmtGiven is not time_util.PENDING:
+            return fmtGiven
+        else:
+            return time_util.get_format_of_timeval(val)
 
     @abc.abstractmethod
     def hasSubsetStr(self):

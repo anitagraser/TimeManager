@@ -125,7 +125,7 @@ class TestSpatialite(TestWithQGISLauncher):
         else:
             self.assertEquals(timeLayer.getDateType(), timevectorlayer.DateTypes.DatesAsStrings)
             self.assertEquals(timeLayer.getTimeFormat(),time_util.DEFAULT_FORMAT)
-        start_time = time_util.str_to_datetime(timeLayer.getMinMaxValues()[0], time_util.DEFAULT_FORMAT)
+        start_time = time_util.str_to_datetime(timeLayer.getMinMaxValues()[0], time_util.PENDING)
         self.assertEquals(time_util.epoch_to_datetime(STARTTIME), start_time)
 
         self.tlm.setTimeFrameType("minutes")
