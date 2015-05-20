@@ -18,10 +18,11 @@ class TimeLayer:
         return ''
 
     def determine_format(self, val, fmtGiven):
-        if fmtGiven is not time_util.PENDING:
+        if fmtGiven != time_util.PENDING:
             return fmtGiven
         else:
-            return time_util.get_format_of_timeval(val)
+            res = time_util.get_format_of_timeval(val)
+            return res
 
     @abc.abstractmethod
     def hasSubsetStr(self):

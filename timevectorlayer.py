@@ -60,6 +60,7 @@ class TimeVectorLayer(TimeLayer):
                                         "exact same format")
 
         self.offset = int(settings.offset)
+        assert(self.timeFormat != time_util.PENDING)
         try:
             self.getTimeExtents()
         except Exception, e:
