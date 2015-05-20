@@ -321,7 +321,7 @@ def get_frame_count(start, end, td):
         
         return int(us1 *1.0 / us2)
     else:
-        years = BCDate.dist(end,start)
+        years = bcdate_util.BCDate.dist(end,start)
         return int(years/td.years)
 
 

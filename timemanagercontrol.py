@@ -367,6 +367,8 @@ class TimeManagerControl(QObject):
             ctx = self.guiControl.dock.objectName()
             self.guiControl.setTimeFrameType(QCoreApplication.translate(ctx,'years'))
             self.guiControl.enableArchaeologyTextBox()
+            self.showMessage("Archaelogy mode enabled. Expecting data of the form YYYY BC or YYYY AD."+\
+                    " Disable to work with regular datetimes from year 1 onwards")
 
     def stepBackward(self):
         """move one step backward in time"""
