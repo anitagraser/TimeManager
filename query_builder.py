@@ -60,24 +60,38 @@ def greaterThan(val, col, equals=False):
     comparison = '>' if not equals else '>='
     return " '{}' {} \"{}\" ".format(val,comparison,col)
 
+def isAfter(col,val, equals=False, bc=False):
+    if not bc:
+        return lessThan(val,col,equals)
+    else:
+        return greaterThan(val,col,equals)
+
+def isBefore(col,val, equals=False, bc=False):
+    return isAfter(col,val,equals, not bc)
+
 def paren(q):
     return "( "+q+" )"
 
-def build_query_archaelogical(start_str, end_str, from_attr, to_attr, comparison, query_idiom):
+# start_attr <- from_attr, end_attr <- to_attr
+def build_query_archaelogical(start_str, end_str, start_attr, end_attr, comparison, query_idiom):
     if "BC" in start_str and "BC" in end_str:
         # for BC need to invert the order of comparisons 
-        return likeBC(from_attr) + AND + likeBC(to_attr) + AND + greaterThan(val = start_str, col = to_attr, equals = True) + AND\
-                + lessThan(val = end_str, col=from_attr, equals=('=' in comparison))
+        return   paren(paren(likeBC(end_attr)+AND+isAfter( col=end_attr, val=start_str, equals =True, bc=True))+OR+likeAD(end_attr))\
+                + AND\
+                + paren(likeBC(start_attr)+AND+isBefore(col=start_attr, val = end_str, equals=('=' in comparison), bc= True))
     
     if "AD" in start_str and "AD" in end_str:
-        return likeAD(from_attr) + AND + likeAD(to_attr) + AND + lessThan(val = start_str, col = to_attr, equals = True) + AND\
-                + greaterThan(val = end_str, col=from_attr, equals=('=' in comparison))
-    # can only be from_attr = BC and to_attr = AD
-    return paren(NOT(likeAD(from_attr)) + OR + paren(likeAD(from_attr) + AND\
-                + greaterThan(val = end_str, col=from_attr, equals=('=' in comparison))))\
+        return   paren(likeAD(end_attr)+AND+isAfter( col=end_attr, val=start_str, equals =True, bc=False))\
                 + AND\
-                + paren(NOT(likeBC(to_attr)) + OR + paren(likeBC(to_attr) + AND\
-                + greaterThan(val = start_str, col = to_attr, equals=True)))
+                + paren(likeBC(start_attr)+OR+paren(isBefore(col=start_attr, val = end_str, equals=('=' in comparison), bc=False)\
+                +AND+likeAD(start_attr)))
+
+    # can only be start_attr = BC and end_attr = AD
+    return paren(NOT(likeAD(start_attr)) + OR + paren(likeAD(start_attr) + AND\
+                + greaterThan(val = end_str, col=start_attr, equals=('=' in comparison))))\
+                + AND\
+                + paren(NOT(likeBC(end_attr)) + OR + paren(likeBC(end_attr) + AND\
+                + greaterThan(val = start_str, col = end_attr, equals=True)))
 
 
 def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, query_idiom):

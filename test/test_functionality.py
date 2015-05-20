@@ -5,6 +5,8 @@ sip.setapi('QString', 2) # strange things happen without this. Must import befor
 # export QT_API=pyqt
 from qgis.core import *
 from qgis.gui import *
+import sys
+sys.path.insert(0,'../..')
 import os
 from mock import Mock
 from datetime import datetime, timedelta
@@ -15,8 +17,10 @@ import TimeManager.timevectorlayer as timevectorlayer
 from TimeManager.timelayermanager import TimeLayerManager
 import testcfg
 import TimeManager.time_util as time_util
+import TimeManager.bcdate_util as bcdate_util
 import TimeManager.os_util as os_util
 import TimeManager.layer_settings as ls
+
 
 from abc import ABCMeta, abstractmethod
 import tempfile
@@ -72,7 +76,6 @@ class TestWithQGISLauncher(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-
         os.environ["QGIS_DEBUG"] = str(-1)
 
         QtCore.QCoreApplication.setOrganizationName('QGIS')
@@ -80,7 +83,7 @@ class TestWithQGISLauncher(unittest.TestCase):
 
         prefix = os_util.get_possible_prefix_path() if PREFIX_PATH is None else PREFIX_PATH
         QgsApplication.setPrefixPath(prefix, True)
-
+        print "init qgis"
         QgsApplication.initQgis()
 
         if len(QgsProviderRegistry.instance().providerList()) == 0:
@@ -311,15 +314,46 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.tlm.removeTimeLayer(self.tlm.getTimeLayerList()[0].getLayerId())
         self.assertAlmostEqual(self.tlm.getProjectTimeExtents(), (None,None))
 
+    def getArchaelogicalLayer(self):
+        testfile_dir = testcfg.TEST_DATA_DIR
+        fn = os.path.join(testfile_dir,"archaelogical2.txt")
+        uri = "{}?type=csv&xField={}&yField={}&spatialIndex=no&subsetIndex=no&watchFile=no" \
+                  "".format(fn, "lon", "lat")
+        layer =  QgsVectorLayer(uri, "ancient_points", 'delimitedtext')
+        return layer
 
-# Ideas for more tests:
-# Test save string, settings, restoring, disabling timemanager
-#TODO (low prio): Test what happens with impossible events ie:
-#test what happens when trying to setCurrentTimePosition to sth wrong
-#test layers with nulls
-
-
-if __name__=="__main__":
-    unittest.main()
+    def test_archaeological_range_queries(self):
+        try:
+            layer = self.getArchaelogicalLayer()
+            self.ctrl.setArchaeology(1)
+            assert(time_util.is_archaelogical())
+            settings = ls.LayerSettings()
+            settings.layer = layer
+            settings.startTimeAttribute = "year"
+            settings.endTimeAttribute = "endyear"
+            iface=Mock()
+            timeLayer = timevectorlayer.TimeVectorLayer(settings, iface)
+            self.tlm.registerTimeLayer(timeLayer)
+            self.assertEquals(len(self.tlm.getActiveVectors()),1)
+            self.assertEquals(timeLayer.getDateType(), time_util.DateTypes.DatesAsStringsArchaelogical)
+            self.assertEquals(timeLayer.getTimeFormat(), bcdate_util.BC_FORMAT)
+            self.tlm.setTimeFrameType("years")
+            self.tlm.setCurrentTimePosition(bcdate_util.BCDate(-352))
+            self.assertEquals(layer.featureCount(),2)
+            self.tlm.setCurrentTimePosition(bcdate_util.BCDate(180))
+            self.assertEquals(layer.featureCount(),0)
+            self.tlm.setCurrentTimePosition(bcdate_util.BCDate(1))
+            self.assertEquals(layer.featureCount(),2)
+            self.tlm.setCurrentTimePosition(bcdate_util.BCDate(333))
+            self.assertEquals(layer.featureCount(),1)
+            #expected_datetime = time_util.epoch_to_datetime(self.get_start_time())
+            #self.assertEquals(self.tlm.getCurrentTimePosition(),expected_datetime)
+            #self.assertEquals(layer.featureCount(),1)
+            #self.tlm.stepForward()
+            #self.tlm.setTimeFrameSize(2)
+            self.ctrl.setArchaeology(0)
+        except Exception, e:
+            self.ctrl.setArchaeology(0)
+            raise e
 
 

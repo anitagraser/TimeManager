@@ -365,7 +365,10 @@ class TimeManagerControl(QObject):
             self.guiControl.setWindowTitle("Time Manager Archaeology Mode")
             self.guiControl.setArchaeologyPressed(True)
             ctx = self.guiControl.dock.objectName()
-            self.guiControl.setTimeFrameType(QCoreApplication.translate(ctx,'years'))
+            try:
+                self.guiControl.setTimeFrameType(QCoreApplication.translate(ctx,'years'))
+            except:
+                error("should only happen during testing")
             self.guiControl.enableArchaeologyTextBox()
             self.showMessage("Archaelogy mode enabled. Expecting data of the form YYYY BC or YYYY AD."+\
                     " Disable to work with regular datetimes from year 1 onwards")
