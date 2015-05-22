@@ -11,6 +11,7 @@ from timemanagerprojecthandler import TimeManagerProjectHandler
 from time_util import *
 import time_util
 import bcdate_util
+from bcdate_util import BCDate
 from conf import *
 from logging import info, warn, error, log_exceptions
 
@@ -361,6 +362,8 @@ class TimeManagerControl(QObject):
 
         else:
             time_util.setCurrentMode(time_util.ARCHAELOGY_MODE)
+            if not isinstance(self.getTimeLayerManager().getCurrentTimePosition(),BCDate):
+                self.getTimeLayerManager().setCurrentTimePosition(BCDate(-1))
             self.guiControl.setWindowTitle("Time Manager Archaeology Mode")
             self.guiControl.setArchaeologyPressed(True)
             ctx = self.guiControl.dock.objectName()
