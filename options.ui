@@ -19,7 +19,7 @@
      <item row="3" column="1">
       <widget class="QPushButton" name="pushButtonRemove">
        <property name="text">
-        <string>Remove Layer</string>
+        <string>Remove layer</string>
        </property>
       </widget>
      </item>
@@ -39,7 +39,7 @@
      <item row="1" column="1">
       <widget class="QPushButton" name="pushButtonAddVector">
        <property name="text">
-        <string>Add Layer</string>
+        <string>Add layer</string>
        </property>
       </widget>
      </item>
@@ -56,57 +56,57 @@
        </property>
        <column>
         <property name="text">
-         <string>layer name</string>
+         <string>Layer name</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>start</string>
+         <string>Start</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>end (optional)</string>
+         <string>End (optional)</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>enabled</string>
+         <string>Enabled</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>index</string>
+         <string>Index</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>time format</string>
+         <string>Time format</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>offset</string>
+         <string>Offset</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>interpolation</string>
+         <string>Interpolation</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>id</string>
+         <string>ID</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>interp. mode</string>
+         <string>Interp. mode</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>ignore for detect empty</string>
+         <string>Ignore for detect empty</string>
         </property>
        </column>
       </widget>
@@ -169,7 +169,7 @@
        <item row="1" column="0" colspan="3">
         <widget class="QCheckBox" name="checkBoxBackwards">
          <property name="text">
-          <string>play animation backwards </string>
+          <string>Play animation backwards </string>
          </property>
         </widget>
        </item>
@@ -189,21 +189,21 @@
        <item row="3" column="0" colspan="3">
         <widget class="QCheckBox" name="checkBoxLabel">
          <property name="text">
-          <string>display frame start time on map</string>
+          <string>Display frame start time on map</string>
          </property>
         </widget>
        </item>
        <item row="1" column="3">
         <widget class="QCheckBox" name="checkBoxLoop">
          <property name="text">
-          <string>looping animation</string>
+          <string>Looping animation</string>
          </property>
         </widget>
        </item>
        <item row="3" column="3">
         <widget class="QPushButton" name="show_label_options_button">
          <property name="text">
-          <string>Time display Options</string>
+          <string>Time display options</string>
          </property>
         </widget>
        </item>
@@ -219,7 +219,7 @@
      <item row="2" column="1">
       <widget class="QPushButton" name="pushButtonAddRaster">
        <property name="text">
-        <string>Add Raster</string>
+        <string>Add raster</string>
        </property>
       </widget>
      </item>

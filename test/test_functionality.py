@@ -363,8 +363,10 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
             #self.assertEquals(layer.featureCount(),1)
             #self.tlm.stepForward()
             #self.tlm.setTimeFrameSize(2)
+            self.tlm.clearTimeLayerList()
             self.ctrl.setArchaeology(0)
         except Exception, e:
+            self.tlm.clearTimeLayerList()
             self.ctrl.setArchaeology(0)
             raise e
 
