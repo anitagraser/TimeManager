@@ -178,7 +178,6 @@ class TimeManagerControl(QObject):
     def refreshGuiWithCurrentTime(self,currentTimePosition,sender=None):
         """update the gui when time has changed by refreshing/repainting the layers
         and changing the time showing in dateTimeEditCurrentTime and horizontalTimeSlider"""
-
         # setting the gui elements should not fire the event for
         # timeChanged, since they were changed to be in sync with the rest of the system on
         # purpose, no need to sync the system again
@@ -420,6 +419,7 @@ class TimeManagerControl(QObject):
 
         self.getTimeLayerManager().setCurrentTimePosition(epoch_to_datetime(realEpochTime))
 
+    @log_exceptions
     def updateTimePositionFromTextBox(self,date):
         if not self.propagateGuiChanges:
             return

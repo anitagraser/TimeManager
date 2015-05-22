@@ -40,11 +40,17 @@ def create_ymd_substring(ioy,iom,iod,ioh,col, quote_type):
     string_components = filter(lambda x: x is not None,[ystr,mstr,dstr,reststr])
     return ",".join(string_components)
 
-def likeBC(attr):
-    return  '"{}" LIKE  \'%BC\''.format(attr)
+def likeBC(attr, cast=False):
+    if not cast:
+        return  '"{}" LIKE  \'%BC\''.format(attr)
+    else:
+        return  ' cast("{}" as character) LIKE  \'%BC\''.format(attr)
 
-def likeAD(attr):
-    return  '"{}" LIKE  \'%AD\''.format(attr)
+def likeAD(attr, cast =False):
+    if not cast:
+        return  '"{}" LIKE  \'%AD\''.format(attr)
+    else:
+        return  ' cast("{}" as character) LIKE  \'%AD\''.format(attr)
 
 AND=" AND "
 OR=" OR "
@@ -52,46 +58,53 @@ OR=" OR "
 def NOT(q):
     return "NOT ({})".format(q)
 
-def lessThan(val, col, equals=False):
+def lessThan(val, col, equals=False,cast=False):
     comparison = '<' if not equals else '<='
-    return " '{}' {} \"{}\" ".format(val,comparison,col)
-
-def greaterThan(val, col, equals=False):
-    comparison = '>' if not equals else '>='
-    return " '{}' {} \"{}\" ".format(val,comparison,col)
-
-def isAfter(col,val, equals=False, bc=False):
-    if not bc:
-        return lessThan(val,col,equals)
+    if not cast:
+        return " '{}' {} \"{}\" ".format(val,comparison,col)
     else:
-        return greaterThan(val,col,equals)
+        return " '{}' {} cast(\"{}\" as character) ".format(val,comparison,col)
 
-def isBefore(col,val, equals=False, bc=False):
-    return isAfter(col,val,equals, not bc)
+def greaterThan(val, col, equals=False,cast=False):
+    comparison = '>' if not equals else '>='
+    if not cast:
+        return " '{}' {} \"{}\" ".format(val,comparison,col)
+    else:
+        return " '{}' {} cast(\"{}\" as character) ".format(val,comparison,col)
+
+def isAfter(col,val, equals=False, bc=False,cast=False):
+    if not bc:
+        return lessThan(val,col,equals,cast=False)
+    else:
+        return greaterThan(val,col,equals,cast)
+
+def isBefore(col,val, equals=False, bc=False,cast=False):
+    return isAfter(col,val,equals, not bc,cast)
 
 def paren(q):
     return "( "+q+" )"
 
 # start_attr <- from_attr, end_attr <- to_attr
 def build_query_archaelogical(start_str, end_str, start_attr, end_attr, comparison, query_idiom):
+    cast = query_idiom==QueryIdioms.OGR # if it's OGR need to cast as string
     if "BC" in start_str and "BC" in end_str:
         # for BC need to invert the order of comparisons 
-        return   paren(paren(likeBC(end_attr)+AND+isAfter( col=end_attr, val=start_str, equals =True, bc=True))+OR+likeAD(end_attr))\
+        return   paren(paren(likeBC(end_attr,cast=cast)+AND+isAfter( col=end_attr, val=start_str, equals =True, bc=True,cast=cast))+OR+likeAD(end_attr,cast=cast))\
                 + AND\
-                + paren(likeBC(start_attr)+AND+isBefore(col=start_attr, val = end_str, equals=('=' in comparison), bc= True))
+                + paren(likeBC(start_attr,cast=cast)+AND+isBefore(col=start_attr, val = end_str, equals=('=' in comparison), bc= True,cast=cast))
     
     if "AD" in start_str and "AD" in end_str:
-        return   paren(likeAD(end_attr)+AND+isAfter( col=end_attr, val=start_str, equals =True, bc=False))\
+        return   paren(likeAD(end_attr,cast=cast)+AND+isAfter( col=end_attr, val=start_str, equals =True, bc=False,cast=cast))\
                 + AND\
-                + paren(likeBC(start_attr)+OR+paren(isBefore(col=start_attr, val = end_str, equals=('=' in comparison), bc=False)\
-                +AND+likeAD(start_attr)))
+                + paren(likeBC(start_attr,cast=cast)+OR+paren(isBefore(col=start_attr, val = end_str, equals=('=' in comparison), bc=False,cast=cast)\
+                +AND+likeAD(start_attr,cast=cast)))
 
     # can only be start_attr = BC and end_attr = AD
-    return paren(NOT(likeAD(start_attr)) + OR + paren(likeAD(start_attr) + AND\
-                + greaterThan(val = end_str, col=start_attr, equals=('=' in comparison))))\
+    return paren(NOT(likeAD(start_attr,cast=cast)) + OR + paren(likeAD(start_attr,cast=cast) + AND\
+                + greaterThan(val = end_str, col=start_attr, equals=('=' in comparison),cast=cast)))\
                 + AND\
-                + paren(NOT(likeBC(end_attr)) + OR + paren(likeBC(end_attr) + AND\
-                + greaterThan(val = start_str, col = end_attr, equals=True)))
+                + paren(NOT(likeBC(end_attr,cast=cast)) + OR + paren(likeBC(end_attr,cast=cast) + AND\
+                + greaterThan(val = start_str, col = end_attr, equals=True,cast=cast)))
 
 
 def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, query_idiom):
