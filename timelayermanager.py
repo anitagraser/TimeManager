@@ -286,3 +286,6 @@ class TimeLayerManager(QObject):
 
     def getActiveVectors(self):
         return self.getActive(func = lambda x: not qgs.isRaster(x.layer))
+    
+    def layers(self):
+        return self.getTimeLayerList()

@@ -355,12 +355,22 @@ class TimeManagerControl(QObject):
 
     def setArchaeology(self, enabled):
         if enabled == 0 :
+            if filter(lambda x:time_util.is_archaeological_layer(x), self.getTimeLayerManager().layers()):
+                QMessageBox.information(self.iface.mainWindow(),'Error', "Already have archaeological layers in the project."+\
+                "Please delete them to switch to normal mode")
+                self.guiControl.setArchaeologyPressed(True)
+                return
             time_util.setCurrentMode(time_util.NORMAL_MODE)
             self.guiControl.setWindowTitle("Time Manager")
             self.guiControl.setArchaeologyPressed(False)
             self.guiControl.disableArchaeologyTextBox()
 
         else:
+            if filter(lambda x: not time_util.is_archaeological_layer(x), self.getTimeLayerManager().layers()):
+                QMessageBox.information(self.iface.mainWindow(),'Error', "Already have non archaeological layers in the project."+\
+                "Please delete them to switch to archaeological mode")
+                self.guiControl.setArchaeologyPressed(False)
+                return
             time_util.setCurrentMode(time_util.ARCHAELOGY_MODE)
             if not isinstance(self.getTimeLayerManager().getCurrentTimePosition(),BCDate):
                 self.getTimeLayerManager().setCurrentTimePosition(BCDate(-1))

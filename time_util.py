@@ -324,4 +324,7 @@ def get_frame_count(start, end, td):
         years = bcdate_util.BCDate.dist(end,start)
         return int(years/td.years)
 
+def is_archaeological_layer(layer):
+    return layer.getTimeFormat() in [bcdate_util.BC_FORMAT]
+
 
