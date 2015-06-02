@@ -132,7 +132,7 @@ class TimeLayerManager(QObject):
 
     def removeTimeLayer(self,layerId):
         """remove the timeLayer with the given layerId"""
-        for i in range(0,len(self.getTimeLayerList())):
+        for i in range(len(self.getTimeLayerList())):
             if self.getTimeLayerList()[i].getLayerId() == layerId:
                 self.getTimeLayerList().pop(i)
                 break
@@ -287,5 +287,8 @@ class TimeLayerManager(QObject):
     def getActiveVectors(self):
         return self.getActive(func = lambda x: not qgs.isRaster(x.layer))
     
+    def getActiveDelimitedText(self):
+        return self.getActive(func = lambda x: qgs.isDelimitedText(x.layer))
+
     def layers(self):
         return self.getTimeLayerList()

@@ -83,7 +83,6 @@ class TestWithQGISLauncher(unittest.TestCase):
 
         prefix = os_util.get_possible_prefix_path() if PREFIX_PATH is None else PREFIX_PATH
         QgsApplication.setPrefixPath(prefix, True)
-        print "init qgis"
         QgsApplication.initQgis()
 
         if len(QgsProviderRegistry.instance().providerList()) == 0:

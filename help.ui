@@ -40,7 +40,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../../../qgis_plugins/timemanager/svn/trunk/resources.qrc"/>
+  <include location="./resources.qrc"/>
  </resources>
  <connections>
   <connection>

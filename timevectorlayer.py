@@ -17,7 +17,7 @@ import query_builder
 from datetime import timedelta
 from conf import SAVE_DELIMITER
 import layer_settings as ls
-from logging import info, warn
+from logging import info, warn, error
 
 POSTGRES_TYPE='PostgreSQL database with PostGIS extension'
 DELIMITED_TEXT_TYPE='Delimited text file'
@@ -41,30 +41,35 @@ class TimeVectorLayer(TimeLayer):
     def __init__(self,settings, iface=None):
         TimeLayer.__init__(self,settings.layer,settings.isEnabled)
         
-        self.layer = settings.layer
-        self.iface = iface
-        self.minValue,self.maxValue = None,None
-        self.fromTimeAttribute = settings.startTimeAttribute
-        self.toTimeAttribute = settings.endTimeAttribute
-        self.originalSubsetString = settings.subsetStr
-        self.currSubsetString  = self.originalSubsetString
-        self.setSubsetString(self.originalSubsetString)
-        self.geometriesCount = settings.geometriesCount
-        self.type = DateTypes.determine_type(self.getRawMinValue())
-        type2 = DateTypes.determine_type(self.getRawMaxValue())
-        self.timeFormat = self.determine_format(self.getRawMinValue(), settings.timeFormat)
-        tf2 = self.determine_format(self.getRawMaxValue(), settings.timeFormat)
+        try:
+            self.layer = settings.layer
+            self.iface = iface
+            self.minValue,self.maxValue = None,None
+            self.fromTimeAttribute = settings.startTimeAttribute
+            self.toTimeAttribute = settings.endTimeAttribute
+            self.originalSubsetString = settings.subsetStr
+            self.currSubsetString  = self.originalSubsetString
+            self.setSubsetString(self.originalSubsetString)
+            self.geometriesCount = settings.geometriesCount
+            self.type = DateTypes.determine_type(self.getRawMinValue())
+            if self.type not in DateTypes.QDateTypes:# call these to throw a nice exception early if no format can be found
+                time_util.str_to_datetime(self.getRawMinValue(), settings.timeFormat)
+                time_util.str_to_datetime(self.getRawMaxValue(), settings.timeFormat)
 
-        if self.type!=type2 or self.timeFormat!=tf2:
-            raise InvalidTimeLayerError("Invalid time layer: To and From attributes must have "
+            type2 = DateTypes.determine_type(self.getRawMaxValue())
+            self.timeFormat = self.determine_format(self.getRawMinValue(), settings.timeFormat)
+            tf2 = self.determine_format(self.getRawMaxValue(), settings.timeFormat)
+
+            if self.type!=type2 or self.timeFormat!=tf2:
+                raise InvalidTimeLayerError("Invalid time layer: To and From attributes must have "
                                         "exact same format")
 
-        self.offset = int(settings.offset)
-        assert(self.timeFormat != time_util.PENDING)
-        try:
+            self.offset = int(settings.offset)
+            assert(self.timeFormat != time_util.PENDING)
             info("Layer extents"+str(self.getTimeExtents()))
         except Exception, e:
-            raise InvalidTimeLayerError(traceback.format_exc(e))
+            error(traceback.format_exc(e))
+            raise InvalidTimeLayerError(e)
 
     def hasSubsetStr(self):
         return True

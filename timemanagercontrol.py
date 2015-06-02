@@ -372,8 +372,6 @@ class TimeManagerControl(QObject):
                 self.guiControl.setArchaeologyPressed(False)
                 return
             time_util.setCurrentMode(time_util.ARCHAELOGY_MODE)
-            if not isinstance(self.getTimeLayerManager().getCurrentTimePosition(),BCDate):
-                self.getTimeLayerManager().setCurrentTimePosition(BCDate(-1))
             self.guiControl.setWindowTitle("Time Manager Archaeology Mode")
             self.guiControl.setArchaeologyPressed(True)
             ctx = self.guiControl.dock.objectName()
@@ -603,8 +601,8 @@ class TimeManagerControl(QObject):
             except:
                 pass
             error_msg = "An error occured while trying to add layer "\
-                    +layer_name+" to TimeManager."+traceback.format_exc(e)
-            error(error_msg)
+                    +layer_name+" to TimeManager. Cause: "+str(e)
+            error(error_msg+traceback.format_exc(e))
             self.showMessage(error_msg)
             return None
         return timeLayer

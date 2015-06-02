@@ -9,6 +9,7 @@ import unittest
 from test_functionality import TestForLayersWithOnePointPerSecond
 import TimeManager.time_util as time_util
 import TimeManager.timevectorlayer as timevectorlayer
+import TimeManager.timelayer as timelayer
 from nose.tools import raises
 
 import psycopg2
@@ -124,7 +125,7 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
     #TODO: Issue  https://github.com/anitagraser/TimeManager/issues/33
     # Timezones not supported yet
     def test_date_with_timezone(self):
-        with self.assertRaises(time_util.UnsupportedFormatException):
+        with self.assertRaises(timelayer.InvalidTimeLayerError):
             self._test_layer(self.layer, DATE_TZ_COL,timevectorlayer.DateTypes.DatesAsStrings,
                              None)
 

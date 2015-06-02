@@ -6,6 +6,7 @@ Created on Fri Oct 29 10:13:39 2010
 """
 import os
 from string import replace
+import time
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -225,6 +226,8 @@ class TimeManagerGuiControl(QObject):
         except:
             # slider is not properly initialized yet
             return
+        if self.model.getActiveDelimitedText() and qgs.getVersion()<2.9:
+            time.sleep(0.1) # hack to fix issue in qgis core with delimited text
         self.signalSliderTimeChanged.emit(pct)
         
     def currentTimeChangedDateText(self,qdate):

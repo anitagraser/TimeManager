@@ -35,6 +35,13 @@ class TestBCDates(unittest.TestCase):
     def test_is_mode_set(self):
         assert(time_util.is_archaelogical())
 
+    def test_str_to_bcdate_wrong_digits(self):
+        self.assertEqual(4, bcdate_util.getGlobalDigitSetting())
+        dateStrs = ["00005 BC","123 AD"]
+        for dateStr in dateStrs:
+            with self.assertRaises(time_util.UnsupportedFormatException):
+                dt = time_util.str_to_datetime(dateStr)
+
     def test_bc_date_additions(self):
         for datestr in self.bc_dates:
             dt = time_util.str_to_datetime(datestr)

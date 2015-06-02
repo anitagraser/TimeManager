@@ -253,6 +253,7 @@ def get_format_of_timeval(datetimeValue):
     
     typ = DateTypes.determine_type(datetimeValue)
     if typ == DateTypes.DatesAsStringsArchaelogical:
+
         return bcdate_util.BC_FORMAT
     if typ in DateTypes.QDateTypes:
         return DateTypes.get_type_format(typ)
@@ -277,16 +278,25 @@ def get_format_of_timeval(datetimeValue):
         except:
             pass
     # If all fail, raise an exception
-    raise UnsupportedFormatException("Could not find a suitable time format for value {} type {}. Tried {}".format(
-        datetimeValue, typ, SUPPORTED_FORMATS))
+    raise UnsupportedFormatException("Could not find a suitable time format for value {}".format(datetimeValue))
+
+def createNiceMessage(dateStr, specified_fmt, is_arch, e):
+    if is_arch:
+        return "Data with value {} is not a valid archaelogical format. Cause: {}".format(dateStr,e)
+    if specified_fmt == PENDING:
+        return "Could not match value {} with any of the supported formats. Tried {}".format(dateStr, SUPPORTED_FORMATS)
+    else:
+        return "You specified that the format of {} is {}, but this did not succeed. Please check again".format(dateStr,specified_fmt)
+
 
 def str_to_datetime(datetimeString, fmt=PENDING):
 
     """convert a date/time string into a Python datetime object"""
     datetimeString = str(datetimeString)
-    if is_archaelogical():
-        return bcdate_util.str_to_bcdate(datetimeString)
+    specified_fmt = fmt
     try:
+       if is_archaelogical():
+            return bcdate_util.str_to_bcdate(datetimeString)
        if fmt == PENDING:
             fmt = get_format_of_timeval(datetimeString)
        if fmt == UTC :
@@ -295,8 +305,7 @@ def str_to_datetime(datetimeString, fmt=PENDING):
            return epoch_to_datetime(float(datetimeString))
        return datetime.strptime(datetimeString, fmt)
     except Exception,e:
-        raise UnsupportedFormatException("Could not find a suitable time format for value {}. Cause {}"\
-                .format(datetimeString, e ))
+        raise UnsupportedFormatException(createNiceMessage(datetimeString, specified_fmt, is_archaelogical(),e))
 
 def get_frame_count(start, end, td):
     if not is_archaelogical():

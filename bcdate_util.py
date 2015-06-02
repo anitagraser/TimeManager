@@ -17,6 +17,9 @@ class CustomDate(object):
 def getGlobalDigitSetting():
     return 4
 
+class ZeroFormatException(Exception):
+    pass
+
 class BCDate(CustomDate):
     def __init__(self, y,m=1,d=1):
         self.digits = getGlobalDigitSetting()
@@ -65,8 +68,8 @@ class BCDate(CustomDate):
             m = re.match("(\d*)\s(AD|BC)",bc)
             year_str = m.group(1)
             if strict_zeros and len(year_str)!= getGlobalDigitSetting():
-                raise Exception("{} is an invalid date. Need a date string with exactly {} digits, for example {}"\
-                        .format(bc, getGlobalDigitSetting() , "20".zfill(self.digits)+" BC")) 
+                raise ZeroFormatException("{} is an invalid date. Need a date string with exactly {} digits, for example {}"\
+                        .format(bc, getGlobalDigitSetting() , "22".zfill(getGlobalDigitSetting())+" BC")) 
             y = int(year_str)
             bc = m.group(2)
             if bc =="BC":
@@ -74,6 +77,8 @@ class BCDate(CustomDate):
             if bc not in ("BC","AD") or y==0:
                 raise Exception
             return BCDate(y)
+        except ZeroFormatException, z:
+            raise z
         except Exception,e:
             raise Exception("{} is an invalid archaelogical date, should be 'number AD' or 'number BC'\
                     and year 0 doesn't exist. Exact cause: {}".format(bc,e))

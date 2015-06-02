@@ -2,15 +2,22 @@ from PyQt4.QtGui import QColor
 from qgis._core import QgsMapLayerRegistry, QgsFields
 from qgis.core import QgsRasterLayer
 from logging import warn, debug_on_exceptions
-
+from qgis.utils import QGis
 __author__ = 'carolinux'
 
+"""File that has most helper functions that interface with the QGIS API"""
 
 def getAllJoinIdsOfLayer(layer):
     if not hasattr(layer, 'vectorJoins'):
         # open layers don't have this
         return set()
     return set(map(lambda x: x.joinLayerId, layer.vectorJoins()))
+
+def isDelimitedText(layer):
+    return layer.dataProvider().storageType() == "Delimited text file"
+
+def getVersion():
+    return float(QGis.QGIS_VERSION[:3]) 
 
 def getAllJoinedLayers(layerIds):
     """get the ids of the layers that are joined on the given layerIds"""

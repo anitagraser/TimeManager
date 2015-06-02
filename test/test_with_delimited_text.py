@@ -4,14 +4,19 @@ sip.setapi('QString', 2) # strange things happen without this. Must import befor
 # export QT_API=pyqt
 from qgis.core import *
 
+from mock import Mock
 import unittest
 from test_functionality import TestForLayersWithOnePointPerSecond
 import TimeManager.time_util as time_util
 from TimeManager.time_util import DEFAULT_FORMAT as DFT
+from TimeManager.timemanagercontrol import FRAME_FILENAME_PREFIX
 import TimeManager.timevectorlayer as timevectorlayer
+import TimeManager.layer_settings as ls
 
 import os
 import tempfile
+import shutil
+import glob
 
 __author__ = 'carolinux'
 
@@ -57,6 +62,28 @@ class TestDelimitedText(TestForLayersWithOnePointPerSecond):
     def test_date_str(self):
         self._test_layer(self.layer,DATE_COL,timevectorlayer.DateTypes.DatesAsStrings,
                          DFT)
+        self.assertEquals(len(self.tlm.getActiveDelimitedText()), 1)
+        
+    def test_export_exports_last_frame(self):
+        settings = ls.LayerSettings()
+        settings.layer = self.layer
+        settings.startTimeAttribute = DATE_COL
+        settings.endTimeAttribute = DATE_COL
+        iface=Mock()
+        timeLayer = timevectorlayer.TimeVectorLayer(settings, iface)
+        self.tlm.registerTimeLayer(timeLayer)
+        tmpdir = tempfile.mkdtemp()
+        self.tlm.setTimeFrameType("seconds")
+        start_time = time_util.str_to_datetime(timeLayer.getMinMaxValues()[0])
+        end_time = time_util.str_to_datetime(timeLayer.getMinMaxValues()[1])
+        self.ctrl.exportVideoAtPath(tmpdir)
+        screenshots_generated =  glob.glob(os.path.join(tmpdir, FRAME_FILENAME_PREFIX+"*"))
+        #import ipdb; ipdb.set_trace()
+        last_fn = self.ctrl.generate_frame_filename(tmpdir,len(screenshots_generated)-1, end_time)
+        self.assertEquals(6, len(screenshots_generated))
+        self.assertIn(last_fn, screenshots_generated)
+        print screenshots_generated
+        shutil.rmtree(tmpdir)
 
 if __name__=="__main__":
     unittest.main()
