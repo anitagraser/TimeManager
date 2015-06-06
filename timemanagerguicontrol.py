@@ -36,6 +36,8 @@ MIN_QDATE = QDate(100, 1, 1)
 DOCK_WIDGET_FILE = "dockwidget2.ui"
 ADD_VECTOR_LAYER_WIDGET_FILE ="addLayer.ui"
 ADD_RASTER_LAYER_WIDGET_FILE ="addRasterLayer.ui"
+ARCH_WIDGET_FILE = "arch.ui"
+OPTIONS_WIDGET_FILE = "options.ui"
 
 
 class TimestampLabelConfig(object):
@@ -64,6 +66,8 @@ class TimeManagerGuiControl(QObject):
     signalTimeFrameType = pyqtSignal(str)
     signalTimeFrameSize = pyqtSignal(int)
     signalSaveOptions = pyqtSignal()
+    signalArchDigitsSpecified = pyqtSignal(int)
+    signalArchCancelled =  pyqtSignal()
     
     def __init__ (self,iface, model):
         """initialize the GUI control"""
@@ -162,16 +166,12 @@ class TimeManagerGuiControl(QObject):
             return self.dock.dateTimeEditCurrentTime
 
     def currentBCYearChanged(self):
-        # FIXME v1.7 how to delay a bit?
         val = self.bcdateSpinBox.text()
-        info("archaelogical spinbox value changed to {}".format(val))
         try:
             bcdate = BCDate.from_str(val, strict_zeros=False)
             self.signalCurrentTimeUpdated.emit(val)
-            info("valid date! whee")
         except:
-            # mark red?
-            warn("Invalid bc date") # how to delay?
+            warn("Invalid bc date: {}".format(val)) # how to mark as such?
             return
 
     def disableArchaeologyTextBox(self):
@@ -209,6 +209,18 @@ class TimeManagerGuiControl(QObject):
         
     def archaeologyClicked(self):
         self.toggleArchaeology.emit()
+
+    def showArchOptions(self):
+        self.archMenu = uic.loadUi(os.path.join(self.path,ARCH_WIDGET_FILE))
+        self.archMenu.buttonBox.accepted.connect(self.saveArchOptions)
+        self.archMenu.buttonBox.rejected.connect(self.cancelArch)
+        self.archMenu.show()
+
+    def saveArchOptions(self):
+        self.signalArchDigitsSpecified.emit(self.archMenu.numDigits.value())
+
+    def cancelArch(self):
+        self.signalArchCancelled.emit()
 
     def backClicked(self):
         self.back.emit()
@@ -262,7 +274,7 @@ class TimeManagerGuiControl(QObject):
             return
         
         # load the form
-        self.optionsDialog = uic.loadUi(os.path.join(self.path,"options.ui"))
+        self.optionsDialog = uic.loadUi(os.path.join(self.path,OPTIONS_WIDGET_FILE))
        
         # restore settings from layerList:
         for layer in layerList:

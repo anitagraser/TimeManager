@@ -225,7 +225,7 @@ assert(len(get_all_layer_names())==3)
 
 print "Start scenario 4 (archaelogy)"
 new_project()
-ctrl.toggleArchaeology()
+ctrl.setArchaeology(1)
 load_layer_to_qgis(getArchaelogicalLayer())
 addUnmanagedLayerToTm(gui, "year")
 assert(tlm.getCurrentTimePosition() == bcdate_util.BCDate(-20))

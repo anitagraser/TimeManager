@@ -35,6 +35,9 @@ def setCurrentMode(new_mode):
 def getCurrentMode():
     return _mode
 
+def setArchDigits(digits):
+    bcdate_util.setGlobalDigitSetting(digits)
+
 def is_archaelogical():
     return _mode == ARCHAELOGY_MODE
 

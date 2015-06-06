@@ -106,6 +106,10 @@ class TimeManagerControl(QObject):
         self.guiControl.signalTimeFrameSize.connect(self.setTimeFrameSize)
         self.guiControl.signalSaveOptions.connect(self.saveOptions)
 
+        self.guiControl.signalArchDigitsSpecified.connect(self.saveArchDigits)
+        self.guiControl.signalArchCancelled.connect(self.setArchaeology)
+        
+
         # create actions
         # F8 button press - show time manager settings
         if not test: # Qt doesn't play well with Mock objects
@@ -351,9 +355,13 @@ class TimeManagerControl(QObject):
         if time_util.is_archaelogical():
             self.setArchaeology(False)
         else:
-            self.setArchaeology(True)
+            self.guiControl.showArchOptions()
 
-    def setArchaeology(self, enabled):
+    def saveArchDigits(self, digits):
+        self.setArchaeology(True)
+        time_util.setArchDigits(digits)
+
+    def setArchaeology(self, enabled=0):
         if enabled == 0 :
             if filter(lambda x:time_util.is_archaeological_layer(x), self.getTimeLayerManager().layers()):
                 QMessageBox.information(self.iface.mainWindow(),'Error', "Already have archaeological layers in the project."+\

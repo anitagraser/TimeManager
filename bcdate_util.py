@@ -14,8 +14,14 @@ __email__="karolina.alexiou@teralytics.ch"
 class CustomDate(object):
     pass
 
+_DIGITS = 4 # default digits for archaeology mode
+
 def getGlobalDigitSetting():
-    return 4
+    return _DIGITS
+
+def setGlobalDigitSetting(digits):
+    global _DIGITS
+    _DIGITS = digits
 
 class ZeroFormatException(Exception):
     pass
