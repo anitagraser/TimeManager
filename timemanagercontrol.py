@@ -17,6 +17,7 @@ from logging import info, warn, error, log_exceptions
 
 import math
 import traceback
+from collections import OrderedDict
 
 
 class TimeManagerControl(QObject):
@@ -475,20 +476,23 @@ class TimeManagerControl(QObject):
                      'timeFrameType': self.getTimeLayerManager().getTimeFrameType(),
                      'timeFrameSize': self.getTimeLayerManager().getTimeFrameSize(),
                      'active': self.getTimeLayerManager().isEnabled(),
-                     'mode': int(time_util.is_archaelogical())}
+                     'mode': int(time_util.is_archaelogical()),
+                     'digits': time_util.getArchDigits()}
 
             TimeManagerProjectHandler.writeSettings(settings)
 
-    METASETTINGS= { 'animationFrameLength': int,
-             'playBackwards': int,
-             'loopAnimation': int,
-             'timeLayerManager': str,
-             'timeLayerList': list,
-             'currentMapTimePosition': str, # can't store datetime in XML
-             'timeFrameType': str,
-             'timeFrameSize': int,
-             'active': int,
-             'mode': int}
+    METASETTINGS= OrderedDict()
+    METASETTINGS['mode']=int
+    METASETTINGS['digits']=int
+    METASETTINGS['animationFrameLength']= int
+    METASETTINGS['playBackwards']= int
+    METASETTINGS['loopAnimation']= int
+    METASETTINGS['timeLayerManager']= str
+    METASETTINGS['timeLayerList']= list
+    METASETTINGS['currentMapTimePosition'] = str # can't store datetime in XML
+    METASETTINGS['timeFrameType'] = str
+    METASETTINGS['timeFrameSize'] = int
+    METASETTINGS['active']= int
         
     def readSettings(self):
         """load and restore settings from project file"""
@@ -498,6 +502,8 @@ class TimeManagerControl(QObject):
         settings = TimeManagerProjectHandler.readSettings(self.METASETTINGS)
 
         restore_functions={
+                 'mode': (self.setArchaeology, 0),
+                 'digits': (time_util.setArchDigits, conf.DEFAULT_DIGITS),
                  'currentMapTimePosition': (self.restoreTimePositionFromSettings,None),
                  'animationFrameLength': (self.setAnimationFrameLength,DEFAULT_FRAME_LENGTH),
                  'playBackwards': (self.setPlayBackwards,0),
@@ -507,7 +513,6 @@ class TimeManagerControl(QObject):
                  'timeFrameType': (self.restoreTimeFrameType,DEFAULT_FRAME_UNIT),
                  'timeFrameSize': (self.guiControl.setTimeFrameSize,DEFAULT_FRAME_SIZE),
                  'active': (self.setActive,0),
-                 'mode': (self.setArchaeology, 0)
         }
 
         for setting_name in self.METASETTINGS.keys():

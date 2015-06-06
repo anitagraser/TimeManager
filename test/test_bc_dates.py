@@ -3,6 +3,7 @@ __author__ = 'carolinux'
 
 import TimeManager.time_util as time_util
 import TimeManager.bcdate_util as bcdate_util
+import TimeManager.conf as conf
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
@@ -36,7 +37,7 @@ class TestBCDates(unittest.TestCase):
         assert(time_util.is_archaelogical())
 
     def test_str_to_bcdate_wrong_digits_when_set_to_default(self):
-        self.assertEqual(4, bcdate_util.getGlobalDigitSetting())
+        self.assertEqual(conf.DEFAULT_DIGITS, bcdate_util.getGlobalDigitSetting())
         dateStrs = ["00005 BC","123 AD"]
         for dateStr in dateStrs:
             with self.assertRaises(time_util.UnsupportedFormatException):
@@ -49,7 +50,7 @@ class TestBCDates(unittest.TestCase):
         for dateStr in dateStrs:
             with self.assertRaises(time_util.UnsupportedFormatException):
                 dt = time_util.str_to_datetime(dateStr)
-        time_util.setArchDigits(4)
+        time_util.setArchDigits(conf.DEFAULT_DIGITS)
 
     def test_bc_date_additions(self):
         for datestr in self.bc_dates:

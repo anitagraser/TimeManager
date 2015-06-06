@@ -30,3 +30,6 @@ SAVE_DELIMITER=';'
 
 LOG_TAG="TimeManager"
 
+## ARCH settings
+DEFAULT_DIGITS = 4 
+

@@ -53,7 +53,7 @@ class TimeVectorLayer(TimeLayer):
             self.geometriesCount = settings.geometriesCount
             self.type = DateTypes.determine_type(self.getRawMinValue())
             if self.type not in DateTypes.QDateTypes:# call these to throw a nice exception early if no format can be found
-                time_util.str_to_datetime(self.getRawMinValue(), settings.timeFormat)
+                #time_util.str_to_datetime(self.getRawMinValue(), settings.timeFormat)
                 time_util.str_to_datetime(self.getRawMaxValue(), settings.timeFormat)
 
             type2 = DateTypes.determine_type(self.getRawMaxValue())

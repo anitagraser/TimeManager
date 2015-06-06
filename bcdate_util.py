@@ -4,6 +4,7 @@ from PyQt4.QtCore import QDateTime
 import PyQt4.QtCore as QtCore
 
 from logging import warn
+import conf
 
 """ A module to support dates of BC/AD form"""
 
@@ -14,7 +15,7 @@ __email__="karolina.alexiou@teralytics.ch"
 class CustomDate(object):
     pass
 
-_DIGITS = 4 # default digits for archaeology mode
+_DIGITS = conf.DEFAULT_DIGITS # default digits for archaeology mode
 
 def getGlobalDigitSetting():
     return _DIGITS
