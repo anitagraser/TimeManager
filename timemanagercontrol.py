@@ -389,7 +389,7 @@ class TimeManagerControl(QObject):
             except:
                 error("should only happen during testing")
             self.guiControl.enableArchaeologyTextBox()
-            self.showMessage("Archaelogy mode enabled. Expecting data of the form YYYY BC or YYYY AD."+\
+            self.showMessage("Archaelogy mode enabled. Expecting data of the form {0} BC or {0} AD.".format("Y"*time_util.getArchDigits())+\
                     " Disable to work with regular datetimes from year 1 onwards")
 
     def stepBackward(self):
@@ -567,8 +567,8 @@ class TimeManagerControl(QObject):
                     except:
                         pass
                     error_msg = "An error occured while trying to restore layer "+layerId\
-                            +" to TimeManager."+traceback.format_exc(e)
-                    error(error_msg)
+                            +" to TimeManager.  "+str(e)
+                    error(error_msg+traceback.format_exc(e))
                     self.showMessage(error_msg)
                     continue
                

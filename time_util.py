@@ -288,7 +288,10 @@ def get_format_of_timeval(datetimeValue):
 
 def createNiceMessage(dateStr, specified_fmt, is_arch, e):
     if is_arch:
-        return "Data with value {} is not a valid archaelogical format. Cause: {}".format(dateStr,e)
+        return "Data with value {} is not a valid archaelogical format. Cause: {}".format(dateStr,e)+\
+               "If you are trying to use a regular date, please disable archaelogical mode by clicking on the button"+\
+               " next to Settings"
+
     if specified_fmt == PENDING:
         return "Could not match value {} with any of the supported formats. Tried {}".format(dateStr, SUPPORTED_FORMATS)
     else:

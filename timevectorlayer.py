@@ -38,6 +38,22 @@ class TimeVectorLayer(TimeLayer):
     def geometriesCountForExport(self):
         return self.geometriesCount
 
+    def findValidValues(self, fieldName):
+        uniques = self.getUniques(fieldName)
+        fmt = self.getTimeFormat()
+        at_least_one_valid = False
+        last_exc = None
+        for v in uniques:
+            try: 
+                str_to_datetime(v,fmt)
+                at_least_one_valid = True
+            except Exception,e:
+                last_exc = e
+                continue
+        if not at_least_one_valid:
+            raise Exception(last_ex)
+
+
     def __init__(self,settings, iface=None):
         TimeLayer.__init__(self,settings.layer,settings.isEnabled)
         
@@ -53,8 +69,8 @@ class TimeVectorLayer(TimeLayer):
             self.geometriesCount = settings.geometriesCount
             self.type = DateTypes.determine_type(self.getRawMinValue())
             if self.type not in DateTypes.QDateTypes:# call these to throw a nice exception early if no format can be found
-                #time_util.str_to_datetime(self.getRawMinValue(), settings.timeFormat)
                 time_util.str_to_datetime(self.getRawMaxValue(), settings.timeFormat)
+                time_util.str_to_datetime(self.getRawMinValue(), settings.timeFormat)
 
             type2 = DateTypes.determine_type(self.getRawMaxValue())
             self.timeFormat = self.determine_format(self.getRawMinValue(), settings.timeFormat)
@@ -116,20 +132,22 @@ class TimeVectorLayer(TimeLayer):
             maxValue =  max(filter(lambda x: not isNull(x),self.getProvider().uniqueValues(toTimeAttributeIndex)))
         return maxValue
 
+    def getUniques(self,fieldName):
+        provider = self.getProvider()
+        idx = provider.fieldNameIndex(fieldName)
+        return provider.uniqueValues(idx)
+
     def getMinMaxValues(self):
         """Returns str"""
         if self.minValue is None or self.maxValue is None: # if not already computed
-            provider = self.getProvider()
             fmt = self.getTimeFormat()
-            fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
-            toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
             if self.getDateType() == DateTypes.IntegerTimestamps:
                 self.minValue = self.getRawMinValue()
                 self.maxValue = self.getRawMaxValue()
             else:
                 # need to find min max by looking at all the unique values
                 # QGIS doesn't get sorting right
-                unique_vals = provider.uniqueValues(fromTimeAttributeIndex)
+                uniques = self.getUniques(self.fromTimeAttribute)
                 # those can be either strings or qdate(time) values
                 def vals_to_dt(vals, fmt):
                     res = []
@@ -142,14 +160,16 @@ class TimeVectorLayer(TimeLayer):
                             warn("Unparseable value {} in layer {} ignored. Cause {}".format(val, self.layer.name(),e))
                             pass
                     return res
-                unique_vals = vals_to_dt(unique_vals, fmt)
+                unique_vals = vals_to_dt(uniques, fmt)
                 if len(unique_vals)==0:
-                    raise Exception("Could not parse any dates while trying to get time extents")
+                    raise Exception("Could not parse any dates while trying to get time extents."+\
+                            "None of the values (for example {}) matches the format {}"\
+                            .format(uniques[-1],fmt))
                 minValue= datetime_to_str(min(unique_vals),fmt)
-                if fromTimeAttributeIndex == toTimeAttributeIndex:
+                if self.fromTimeAttribute == self.toTimeAttribute:
                     maxValue = datetime_to_str(max(unique_vals),fmt)
                 else:
-                    unique_vals = provider.uniqueValues(toTimeAttributeIndex)
+                    unique_vals = self.getUniques(self.toTimeAttribute)
                     unique_vals = vals_to_dt(unique_vals,fmt)
                     maxValue= datetime_to_str(max(unique_vals),fmt)
 

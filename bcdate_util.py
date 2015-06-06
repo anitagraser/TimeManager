@@ -87,8 +87,8 @@ class BCDate(CustomDate):
         except ZeroFormatException, z:
             raise z
         except Exception,e:
-            raise Exception("{} is an invalid archaelogical date, should be 'number AD' or 'number BC'\
-                    and year 0 doesn't exist. Exact cause: {}".format(bc,e))
+            raise Exception("{} is an invalid archaelogical date, should be 'number AD' or 'number BC'".format(bc)+\
+                    "and year 0 (use {} AD or BC instead) doesn't exist.".format("1".zfill(getGlobalDigitSetting())))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
