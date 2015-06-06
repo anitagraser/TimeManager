@@ -38,20 +38,20 @@ class TimeVectorLayer(TimeLayer):
     def geometriesCountForExport(self):
         return self.geometriesCount
 
-    def findValidValues(self, fieldName):
+    def findValidValues(self, fieldName, fmt):
         uniques = self.getUniques(fieldName)
-        fmt = self.getTimeFormat()
         at_least_one_valid = False
         last_exc = None
         for v in uniques:
             try: 
                 str_to_datetime(v,fmt)
                 at_least_one_valid = True
+                break
             except Exception,e:
                 last_exc = e
                 continue
         if not at_least_one_valid:
-            raise Exception(last_ex)
+            raise Exception(last_exc)
 
 
     def __init__(self,settings, iface=None):
@@ -69,8 +69,8 @@ class TimeVectorLayer(TimeLayer):
             self.geometriesCount = settings.geometriesCount
             self.type = DateTypes.determine_type(self.getRawMinValue())
             if self.type not in DateTypes.QDateTypes:# call these to throw a nice exception early if no format can be found
-                time_util.str_to_datetime(self.getRawMaxValue(), settings.timeFormat)
-                time_util.str_to_datetime(self.getRawMinValue(), settings.timeFormat)
+                self.findValidValues(self.fromTimeAttribute,settings.timeFormat)
+                self.findValidValues(self.toTimeAttribute,settings.timeFormat)
 
             type2 = DateTypes.determine_type(self.getRawMaxValue())
             self.timeFormat = self.determine_format(self.getRawMinValue(), settings.timeFormat)
@@ -115,7 +115,7 @@ class TimeVectorLayer(TimeLayer):
 
     def getRawMinValue(self):
         """returns the raw minimum value. May not be the expected minimum value semantically if we
-        have dates that are saves as strings because of lexicographic comparisons"""
+        have dates that are saved as strings because of lexicographic comparisons"""
         fromTimeAttributeIndex = self.getProvider().fieldNameIndex(self.fromTimeAttribute)
         minValue =  self.getProvider().minimumValue(fromTimeAttributeIndex)
         if isNull(minValue): # if we are unlucky and have some null data we need to sort through the values
@@ -125,7 +125,7 @@ class TimeVectorLayer(TimeLayer):
 
     def getRawMaxValue(self):
         """returns the raw maximum value. May not be the expected minimum value semantically if we
-        have dates that are saves as strings because of lexicographic comparisons"""
+        have dates that are saved as strings because of lexicographic comparisons"""
         toTimeAttributeIndex = self.getProvider().fieldNameIndex(self.toTimeAttribute)
         maxValue =  self.getProvider().maximumValue(toTimeAttributeIndex)
         if isNull(maxValue):

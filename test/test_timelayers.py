@@ -84,17 +84,18 @@ class TestLayers(unittest.TestCase):
                                                                    "1980-01-01 "
                                                                    "00:00:02"))
 
-
     def test_vector_with_int_timestamps(self):
         layer = Mock()
         layer.subsetString.return_value =""
         layer.minimumValue.return_value = 60
         layer.maximumValue.return_value = 260
+        layer.uniqueValues.return_value = [60, 260]
         settings = ls.LayerSettings()
         settings.layer = layer
         settings.startTimeAttribute =self.from_attr
         settings.endTimeAttribute =self.to_attr
         vector = TimeVectorLayer(settings, iface=Mock())
+
 
         assert(vector.getTimeFormat() == UTC)
         td=timedelta(minutes=5)
