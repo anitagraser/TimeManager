@@ -380,13 +380,6 @@ class TimeManagerGuiControl(QObject):
         if self.dock.pushButtonPlay.isChecked():
             self.dock.pushButtonPlay.toggle()
 
-
-    def getTimeValueFromUI(self):
-        # this is only a fallback because QDateTime loses microsecond precision
-        # FIXME v.1.7 what about when the element is disabled?
-        dt = QDateTime_to_datetime(self.dock.dateTimeEditCurrentTime.getDateTime())
-        return dt
-
     def renderLabel(self, painter):
         """render the current timestamp on the map canvas"""
         if not self.showLabel or not self.model.hasLayers():
@@ -394,7 +387,7 @@ class TimeManagerGuiControl(QObject):
 
         dt = self.model.getCurrentTimePosition()
         if dt is None:
-            dt = self.getTimeValueFromUI() 
+            return
 
         labelString = datetime_to_str(dt, self.labelOptions.fmt)
 

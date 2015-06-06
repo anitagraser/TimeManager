@@ -59,7 +59,7 @@ def getSettingsFromAddVectorLayersUI(ui,layerIndexToId):
     result.endTimeAttribute = ui.comboBoxEnd.currentText()
     result.isEnabled = True
     result.layerId =  layerIndexToId[ui.comboBoxLayers.currentIndex()]
-    result.timeFormat = time_util.PENDING #FIXME v.1.7
+    result.timeFormat = time_util.PENDING #TODO v.1.7, could get it from UI
     result.offset = ui.spinBoxOffset.value()
     result.interpolationMode = ui.comboBoxInterpolation.currentText()
     result.interpolationEnabled = conf.INTERPOLATION_MODES[result.interpolationMode]
@@ -75,7 +75,7 @@ def getSettingsFromAddRasterLayersUI(ui,layerIndexToId):
     result.endTimeAttribute = ui.textEnd.text()
     result.isEnabled = True
     result.layerId =  layerIndexToId[ui.comboBoxLayers.currentIndex()]
-    result.timeFormat = time_util.PENDING #FIXME v.1.7
+    result.timeFormat = time_util.PENDING #TODO v.1.7, could get it from UI
     result.offset = ui.spinBoxOffset.value()
     return result
 
