@@ -284,8 +284,7 @@ class TimeManagerControl(QObject):
             QTimer.singleShot(self.animationFrameLength,self.playAnimation)
 
     def generate_frame_filename(self, path, frame_index, currentTime):
-         return os.path.join(path,"{}{}_{}.png".format(FRAME_FILENAME_PREFIX,
-                                                       str(frame_index).zfill(self.exportNameDigits), str(currentTime).replace(" ","_").replace(":","_")))
+         return os.path.join(path,"{}{}.png".format(FRAME_FILENAME_PREFIX, str(frame_index).zfill(self.exportNameDigits)))
 
     def exportEmpty(self):
         return self.guiControl.exportEmpty

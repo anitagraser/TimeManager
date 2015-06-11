@@ -31,11 +31,11 @@ I18N_FOLDER="i18n"
 class timemanager:
     """ plugin information """
     name = "timemanager"
-    longName = "TimeManager Plugin for QGIS >= 2.0"
+    longName = "TimeManager Plugin for QGIS >= 2.3"
     description = "Working with temporal vector data"
-    version = "Version 1.6.1" 
-    qgisMinimumVersion = '2.0' 
-    author = "Anita Graser"
+    version = "Version 1.6.6" 
+    qgisMinimumVersion = '2.3' 
+    author = "Anita Graser, Karolina Alexiou"
     pluginUrl = "https://github.com/anitagraser/TimeManager"
 
     def __init__( self, iface ):

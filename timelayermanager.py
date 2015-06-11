@@ -126,7 +126,7 @@ class TimeLayerManager(QObject):
             self.getTimeLayerList().append( timeLayer )
             if self.getCurrentTimePosition() is None:
                 self.setCurrentTimePosition(timeLayer.getTimeExtents()[0])
-                info("Set the time position to {}".format(self.getCurrentTimePosition()))
+                #info("Set the time position to {}".format(self.getCurrentTimePosition()))
             self.updateProjectTimeExtents()
             self.refreshTimeRestrictions()
 

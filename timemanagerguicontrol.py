@@ -243,7 +243,7 @@ class TimeManagerGuiControl(QObject):
         self.signalSliderTimeChanged.emit(pct)
         
     def currentTimeChangedDateText(self,qdate):
-        info("changed time via text")
+        #info("changed time via text")
         self.signalCurrentTimeUpdated.emit(qdate)
         
     def currentTimeFrameTypeChanged(self,frameType):
@@ -425,6 +425,6 @@ class TimeManagerGuiControl(QObject):
 
     def repaintJoined(self):
         layerIdsToRefresh = qgs.getAllJoinedLayers(set(map(lambda x:x.layer.id(),self.model.getActiveVectors())))
-        info("to refresh {}".format(layerIdsToRefresh))
+        #info("to refresh {}".format(layerIdsToRefresh))
         layersToRefresh = map(lambda x: qgs.getLayerFromId(x), layerIdsToRefresh)
         map(lambda x: x.triggerRepaint(), layersToRefresh)

@@ -82,7 +82,7 @@ class TimeVectorLayer(TimeLayer):
 
             self.offset = int(settings.offset)
             assert(self.timeFormat != time_util.PENDING)
-            info("Layer extents"+str(self.getTimeExtents()))
+            #info("Layer extents"+str(self.getTimeExtents()))
         except Exception, e:
             error(traceback.format_exc(e))
             raise InvalidTimeLayerError(e)
@@ -226,7 +226,7 @@ class TimeVectorLayer(TimeLayer):
                 # try the other one
                 # not sure if trying several idioms could make the screen flash
                 continue
-            info("Subsetstring:"+subsetString)
+            #info("Subsetstring:"+subsetString)
             return
 
         raise SubstringException("Could not update subset string for layer {}. Tried: {}".format(self.layer.name(), tried))
