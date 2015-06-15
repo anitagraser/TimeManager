@@ -82,7 +82,8 @@ class TimeVectorLayer(TimeLayer):
 
             self.offset = int(settings.offset)
             assert(self.timeFormat != time_util.PENDING)
-            #info("Layer extents"+str(self.getTimeExtents()))
+            extents = self.getTimeExtents()
+            info("Layer extents"+str(extents))
         except Exception, e:
             error(traceback.format_exc(e))
             raise InvalidTimeLayerError(e)
