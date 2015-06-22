@@ -27,6 +27,12 @@ def setGlobalDigitSetting(digits):
 class ZeroFormatException(Exception):
     pass
 
+def get_max_dt():
+    return BCDate((10**getGlobalDigitSetting())-1)
+
+def get_min_dt():
+    return BCDate(-1*((10**getGlobalDigitSetting())-1))
+
 class BCDate(CustomDate):
     def __init__(self, y,m=1,d=1):
         self.digits = getGlobalDigitSetting()

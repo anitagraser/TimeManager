@@ -25,6 +25,9 @@ class TestBCDates(unittest.TestCase):
     def tearDownClass(cls):
         time_util.setCurrentMode(time_util.NORMAL_MODE)
 
+    def test_max_date(self):
+        self.assertEqual(bcdate_util.get_max_dt(), bcdate_util.BCDate(9999))
+
     def test_bc_distance(self):
         end = bcdate_util.BCDate(10)
         start = bcdate_util.BCDate(-10)

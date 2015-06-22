@@ -44,10 +44,9 @@ class TestQueryBuilder(unittest.TestCase):
 
             result_sql = qb.build_query(self.start_dt, self.end_dt, self.from_attr, self.to_attr,
                                     qb.DateTypes.DatesAsStrings,fmt,
-                                    qb.QueryIdioms.SQL)
+                                    qb.QueryIdioms.SQL, False)
 
             result_ogr = qb.build_query(self.start_dt, self.end_dt, self.from_attr, self.to_attr,
                                     qb.DateTypes.DatesAsStrings,fmt,
-                                    qb.QueryIdioms.OGR)
+                                    qb.QueryIdioms.OGR, False)
             self.assertEqual(result_sql,result_ogr)
-            #TODO more assertions wrt to the end format

@@ -65,7 +65,7 @@ class TimeVectorLayer(TimeLayer):
             self.iface = iface
             self.minValue,self.maxValue = None,None
             self.fromTimeAttribute = settings.startTimeAttribute
-            self.toTimeAttribute = settings.endTimeAttribute
+            self.toTimeAttribute = settings.endTimeAttribute if settings.endTimeAttribute!="" else self.fromTimeAttribute
             self.accumulate = settings.accumulate
             self.originalSubsetString = settings.subsetStr
             self.currSubsetString  = self.originalSubsetString
@@ -223,7 +223,7 @@ class TimeVectorLayer(TimeLayer):
 
             subsetString = query_builder.build_query(startTime, endTime, self.fromTimeAttribute,
                                                      self.toTimeAttribute, date_type =
-                self.getDateType(), date_format=self.getTimeFormat(), query_idiom=idiom)
+                self.getDateType(), date_format=self.getTimeFormat(), query_idiom=idiom, acc=self.accumulateFeatures())
             try:
                 self.setSubsetString(subsetString)
             except SubstringException:

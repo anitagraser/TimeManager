@@ -121,7 +121,6 @@ YMD_SUPPORTED_FORMATS = [
 "%Y.%m.%d %H:%M:%S",
 "%Y.%m.%d %H:%M",
 "%Y.%m.%d",
-"%Y%m%d",
 ]
 
 DMY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%Y","%d"), YMD_SUPPORTED_FORMATS)
@@ -142,6 +141,15 @@ def updateUi(ui, val):
     else:
         ui.setDateTime(val)
 
+def get_max_dt():
+    if is_archaelogical():
+        return bcdate_util.get_max_dt()
+    return datetime(9999,12,31,23,59,59,999999)
+
+def get_min_dt():
+    if is_archaelogical():
+        return bcdate_util.get_min_dt()
+    return datetime(1,1,1,0,0,0,0)
 
 def timeval_to_epoch(val, fmt):
     """Converts any string, number, datetime or Qdate or QDatetime to epoch"""

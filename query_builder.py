@@ -107,8 +107,12 @@ def build_query_archaelogical(start_str, end_str, start_attr, end_attr, comparis
                 + greaterThan(val = start_str, col = end_attr, equals=True,cast=cast)))
 
 
-def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, query_idiom):
+def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, query_idiom, acc):
     """Build subset query"""
+
+    if acc:
+        # features never die 
+        start_dt = time_util.get_min_dt()
 
     comparison ="<" if to_attr==from_attr else "<="
 
