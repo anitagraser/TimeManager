@@ -16,11 +16,11 @@ tuples = [(1,100, [0,0]), (1,200,[1,1]), (1,400,[2,2]),
 
 span = 10
 
-class TestLinearInterpolatorBuilder(unittest.TestCase):
+class TestLinearInterpolatorWithMemoryBuilder(unittest.TestCase):
 
 
     def setUp(self):
-        self.lin = lpi.LinearPointInterpolator()
+        self.lin = lpi.LinearPointInterpolatorWithMemory()
         for tupl in tuples:
             self.lin._addIdEpochTuple(*tupl)
         self.lin._sort()

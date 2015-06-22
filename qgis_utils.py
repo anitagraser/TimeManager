@@ -1,8 +1,10 @@
 from PyQt4.QtGui import QColor
+from PyQt4.QtCore import QVariant
 from qgis._core import QgsMapLayerRegistry, QgsFields
 from qgis.core import QgsRasterLayer
 from logging import warn, debug_on_exceptions
 from qgis.utils import QGis
+
 __author__ = 'carolinux'
 
 """File that has most helper functions that interface with the QGIS API"""
@@ -15,6 +17,12 @@ def getAllJoinIdsOfLayer(layer):
 
 def isDelimitedText(layer):
     return layer.dataProvider().storageType() == "Delimited text file"
+
+def isNumericField(layer, field):
+    fields = layer.pendingFields()
+    idx =  layer.fieldNameIndex(field)
+    typ = fields[idx].type()
+    return typ==QVariant.Int or typ==QVariant.LongLong or typ==QVariant.ULongLong or typ == QVariant.Double
 
 def getVersion():
     return float(QGis.QGIS_VERSION[:3]) 

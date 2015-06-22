@@ -1,4 +1,5 @@
 from PyQt4 import QtCore
+from PyQt4.QtCore import QSettings
 import qgis
 from qgis._core import QgsApplication, QgsVectorLayer, QgsMapLayerRegistry, QgsProject
 import os
@@ -24,6 +25,13 @@ __author__ = 'carolinux'
 
 
 ## Available actions with very readable names to facilitate scenario creation ##
+def enableUseOfGlobalCrs():  
+    s = QSettings()  
+    s.setValue( "/Projections/defaultBehaviour", "useGlobal" )  
+
+def disableUseOfGlobalCrs():  
+    s = QSettings() 
+    s.setValue( "/Projections/defaultBehaviour", "prompt") 
 
 def tm_dir():
     return os.path.join(QgsApplication.qgisSettingsDirPath(),"python","plugins","timemanager")
@@ -225,6 +233,7 @@ assert(len(get_all_layer_names())==3)
 
 print "Start scenario 4 (archaelogy)"
 new_project()
+enableUseOfGlobalCrs()
 ctrl.setArchaeology(1)
 load_layer_to_qgis(getArchaelogicalLayer())
 addUnmanagedLayerToTm(gui, "year")
@@ -235,6 +244,7 @@ goForward(gui)
 assert(tlm.getCurrentTimePosition() == bcdate_util.BCDate(1))
 goBackward(gui)
 assert(tlm.getCurrentTimePosition() == bcdate_util.BCDate(-1))
+disableUseOfGlobalCrs()
 #sleep(5)
-#ctrl.toggleArchaeology()
+ctrl.toggleArchaeology()
 

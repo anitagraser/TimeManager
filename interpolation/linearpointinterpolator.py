@@ -1,4 +1,5 @@
 from interpolator import *
+from queryinterpolator import *
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -6,7 +7,7 @@ from PyQt4.QtGui import *
 from .. import logging as logging
 from logging import info, warn, error
 
-class LinearPointInterpolator(MemoryLoadInterpolator):
+class LinearPointInterpolator(Interpolator):
 
     def getGeometryFromFeature(self,feat):
         geom = feat.geometry()
@@ -26,3 +27,10 @@ class LinearPointInterpolator(MemoryLoadInterpolator):
         interp_y = np.interp(Tvalue,Tvalues,y_pos)
         #info(str(interp_x)+" "+str(interp_y))
         return [interp_x, interp_y]
+
+
+class LinearPointInterpolatorWithMemory(MemoryLoadInterpolator, LinearPointInterpolator):
+    pass
+
+class LinearPointInterpolatorWithQuery(QueryInterpolator, LinearPointInterpolator):
+    pass

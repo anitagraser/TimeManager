@@ -57,6 +57,10 @@ class Interpolator:
         The (id,timestamp) pair must exist in the data"""
         pass
 
+    @abc.abstractmethod
+    def getGeometryFromFeature(feat):
+        pass
+
     def interpolate_left(self):
         """Whether to do interpolation for T values < min(T) (otherwise will return None)"""
         return False
@@ -122,34 +126,58 @@ class Interpolator:
                 res.append(lastt)
         return res
 
+    def getStartEpochFromFeature(self, feat, layer):
+        # TODO: is pending the correct choice?
+        return time_util.timeval_to_epoch(feat[layer.fromTimeAttributeIndex],time_util.PENDING)
+
+    def getEndEpochFromFeature(self, feat, layer):
+        # TODO: from??
+        pass 
 
 class MemoryLoadInterpolator(Interpolator):
     """Interpolator that loads all the data it needs and stores it in
     internal data structures. Will be less than ideal when dealing with 
     Big Data"""
 
-    @abc.abstractmethod
-    def getGeometryFromFeature(feat):
-        pass
-
     def __init__(self):
         self.id_time_to_geom = {}
         self.id_to_time = defaultdict(list)
+        self.max_epoch = None
+        self.min_epoch = None
 
     def load(self, timeLayer, *args, **kwargs):
         features = timeLayer.layer.getFeatures(QgsFeatureRequest() )
+        hasLimit = "limit" in kwargs
+        i = 0
         for feat in features:
-            from_time = time_util.timeval_to_epoch(feat[timeLayer.fromTimeAttributeIndex],time_util.PENDING)
-            to_time = time_util.timeval_to_epoch(feat[timeLayer.fromTimeAttributeIndex], time_util.PENDING)
+            from_time = self.getStartEpochFromFeature(feat, timeLayer) 
+            to_time = from_time 
             geom = self.getGeometryFromFeature(feat) 
             if geom is None:
                 continue
+            if i==0:
+                self.max_epoch = to_time
+                self.min_epoch = to_time
+            else:
+                self.max_epoch = max(self.max_epoch, to_time)
+                self.min_epoch = max(self.min_epoch, to_time)
             id = conf.DEFAULT_ID if not timeLayer.hasIdAttribute() else feat[timeLayer.idAttributeIndex]
             self._addIdEpochTuple(id, from_time, geom)
+            i = i+1
+            if hasLimit and i> kwargs["limit"]:
+                break
+            
         self._sort()
 
     def get_Gvalue(self, id, epoch):
         return self.id_time_to_geom[(id,epoch)]
+    
+    def ids(self):
+        return self.id_to_time.keys()
+    
+    def minmax(self):
+        """ return min and max epoch stored"""
+        return (self.min_epoch, self.max_epoxh)
 
     def _addIdEpochTuple(self, id, epoch, geom):
         self.id_time_to_geom[(id, epoch)] = geom

@@ -10,6 +10,7 @@ from test_functionality import TestForLayersWithOnePointPerSecond
 import TimeManager.time_util as time_util
 import TimeManager.timevectorlayer as timevectorlayer
 import TimeManager.timelayer as timelayer
+import TimeManager.qgis_utils as qgis_utils
 from nose.tools import raises
 
 import psycopg2
@@ -95,10 +96,12 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
         self.assertEquals(self.layer.featureCount(),5)
 
     def test_integers(self):
+        self.assertTrue(qgis_utils.isNumericField(self.layer, EPOCH_COL))
         self._test_layer(self.layer,EPOCH_COL,timevectorlayer.DateTypes.IntegerTimestamps,
                          time_util.UTC)
 
     def test_date_str(self):
+        self.assertTrue(not qgis_utils.isNumericField(self.layer, DATE_STR_COL))
         self._test_layer(self.layer,DATE_STR_COL,timevectorlayer.DateTypes.DatesAsStrings,
                          CUSTOM_FORMAT)
 
