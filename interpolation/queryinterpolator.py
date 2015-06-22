@@ -24,14 +24,14 @@ class QueryInterpolator(Interpolator):
     Hence uses very little memory, and can benefit from indexes in the data source"""
 
     def __init__(self):
-        self.layer = None
+        self.timeLayer = None
 
     def load(self, timeLayer, *args, **kwargs):
-        self.layer = timeLayer
-        self.timeColumn  = self.timelayer.getTimeAttributes()[0]
+        self.timeLayer = timeLayer
+        self.timeColumn  = self.timeLayer.getTimeAttributes()[0]
 
-    def _value_for_query(val, col):
-        if qgs.isNumericField(self.timeLayer, col):
+    def _value_for_query(self, val, col):
+        if qgs.isNumericField(self.timeLayer.layer, col):
             return val
         else:
             return QgsExpression.quotedString(val)
@@ -44,7 +44,7 @@ class QueryInterpolator(Interpolator):
             return ""
 
     def _time_query_string(self, epoch, col, symbol="="):
-        if self.timeLayer.getDateType() == IntegerTimestamps: 
+        if self.timeLayer.getDateType() == time_util.DateTypes.IntegerTimestamps: 
             return "{} {} {}".format(QgsExpression.quotedColumnRef(col), symbol,epoch)
         else:
             timeStr = time_util.epoch_to_str(epoch, self.timeLayer.getTimeFormat())
@@ -56,27 +56,38 @@ class QueryInterpolator(Interpolator):
         exp+= self._id_query_string(id)
         req.setFilterExpression(exp)
         info("Geom query Expression {}".format(exp))
-        featIt = timeLayer.layer.getFeatures(req)
+        s = self.timeLayer.subsetString()
+        self.timeLayer.setSubsetString("")
+        featIt = self.timeLayer.layer.dataProvider().getFeatures(req)
+        self.timeLayer.setSubsetString(s)
         for feat in featIt:
-            return getGeometryFromFeature(feat)
+            return self.getGeometryFromFeature(feat)
         return None
 
-    def _get_tvalue(self, symbol,func):
+    def _get_tvalue(self, id, epoch, symbol,func):
         req = QgsFeatureRequest() 
         exp = self._time_query_string(epoch, self.timeColumn, symbol)
         exp+= self._id_query_string(id)
         req.setFilterExpression(exp)
-        featIt = timeLayer.layer.getFeatures(req)
+        #from PyQt4.QtCore import pyqtRemoveInputHook
+        #pyqtRemoveInputHook()
+        #import pdb;pdb.set_trace()
+        s = self.timeLayer.subsetString()
+        self.timeLayer.setSubsetString("")
+        featIt = self.timeLayer.layer.dataProvider().getFeatures(req)
+        self.timeLayer.setSubsetString(s)
         V = None
         for feat in featIt:
             curr_epoch = self.getStartEpochFromFeature(feat, self.timeLayer)
+            if V is None:
+                V = curr_epoch
             V = func(curr_epoch, V)
         return V
 
     def get_Tvalue_before(self, id, epoch):
-        return self._get_tvalue("<",max)
+        return self._get_tvalue(id, epoch, "<", max)
 
     def get_Tvalue_after(self, id, epoch):
-        return self._get_tvalue("<",min)
+        return self._get_tvalue(id, epoch, ">", min)
 
 

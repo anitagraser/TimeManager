@@ -81,7 +81,6 @@ class Interpolator:
         """Get the interpolated G value given an id and a timestamp range"""
 
         #info("value for id{}, start{}, end{}".format(id,t1,t2))
-
         before = self.get_Tvalues_before(id, t1)
         after = self.get_Tvalues_after(id, t2)
         if len(before) == 0  or len(after) == 0 :

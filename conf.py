@@ -20,7 +20,7 @@ INTERPOLATION_MODES = {LINEAR_POINT_INTERPOLATION:True,
                        NO_INTERPOLATION:False,}
 
 INTERPOLATION_MODE_TO_CLASS = {LINEAR_POINT_INTERPOLATION:"LinearPointInterpolatorWithMemory",
-                               LINEAR_POINT_LOW_MEM:"LinerPointInterpolatorWithQuery",
+                               LINEAR_POINT_LOW_MEM:"LinearPointInterpolatorWithQuery",
                             }
 DEFAULT_ID = 0
 NO_ID_TEXT = "None - every geometry is a position of the same moving object in time"

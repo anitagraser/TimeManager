@@ -1,5 +1,5 @@
 from interpolator import *
-from linearpointinterpolator import * # add all new interpolator classes here
+from linearpointinterpolator import LinearPointInterpolatorWithQuery, LinearPointInterpolatorWithMemory # add all new interpolator classes here
 from .. import conf as conf
 
 def get_interpolator_from_text(text):

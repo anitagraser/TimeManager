@@ -16,7 +16,6 @@ from qgis.core import *
 import traceback
 
 # Ideas for extending
-#TODO: Just points types? What about lines or polygon move?
 #TODO: What about toTimeAttribute and interpolation? Right now it's ignored
 
 class TimeVectorInterpolatedLayer(TimeVectorLayer):

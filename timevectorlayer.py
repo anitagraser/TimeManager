@@ -246,6 +246,9 @@ class TimeVectorLayer(TimeLayer):
         else:
             self.currSubsetString = subsetString
 
+    def subsetString(self):
+        return self.layer.subsetString()
+
     def deleteTimeRestriction(self):
         """Restore original subset"""
         self.setSubsetString(self.originalSubsetString)
