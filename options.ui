@@ -52,7 +52,7 @@
         </size>
        </property>
        <property name="columnCount">
-        <number>11</number>
+        <number>12</number>
        </property>
        <column>
         <property name="text">
@@ -107,6 +107,11 @@
        <column>
         <property name="text">
          <string>Ignore for detect empty</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Accumulate features</string>
         </property>
        </column>
       </widget>

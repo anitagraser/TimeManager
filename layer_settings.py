@@ -31,6 +31,7 @@ class LayerSettings:
         self.idAttribute = ''
         self.subsetStr = ''
         self.geometriesCount = True
+        self.accumulate = False
 
 def getSettingsFromSaveStr(saveStr):
     l = saveStr.split(conf.SAVE_DELIMITER)
@@ -48,18 +49,28 @@ def getSettingsFromSaveStr(saveStr):
         result.interpolationEnabled = textToBool(l[8])
         result.interpolationMode = l[9]
         result.geometriesCount = l[10]
+        result.accumulate = textToBool(l[11])
     except IndexError: # for backwards compatibility
         pass # this will use default values
     return result
+
+def extractEndTimeSettings(ui, startTime):
+    """ Get the settings for endtime from the ui, according
+    to how comboBoxEnd is initialized in vectorlayerdialog"""
+    if ui.comboBoxEnd.currentIndex() == 0:
+        return startTime,False
+    if ui.comboBoxEnd.currentIndex() == 1:
+        return "",True
+    return ui.comboBoxEnd.currentText(), False
 
 def getSettingsFromAddVectorLayersUI(ui,layerIndexToId):
     result = LayerSettings()
     result.layerName = ui.comboBoxLayers.currentText()
     result.startTimeAttribute = ui.comboBoxStart.currentText()
-    result.endTimeAttribute = ui.comboBoxEnd.currentText()
+    result.endTimeAttribute, result.accumulate  = extractEndTimeSettings(ui, result.startTimeAttribute)
     result.isEnabled = True
     result.layerId =  layerIndexToId[ui.comboBoxLayers.currentIndex()]
-    result.timeFormat = time_util.PENDING #TODO v.1.7, could get it from UI
+    result.timeFormat = time_util.PENDING 
     result.offset = ui.spinBoxOffset.value()
     result.interpolationMode = ui.comboBoxInterpolation.currentText()
     result.interpolationEnabled = conf.INTERPOLATION_MODES[result.interpolationMode]
@@ -75,7 +86,7 @@ def getSettingsFromAddRasterLayersUI(ui,layerIndexToId):
     result.endTimeAttribute = ui.textEnd.text()
     result.isEnabled = True
     result.layerId =  layerIndexToId[ui.comboBoxLayers.currentIndex()]
-    result.timeFormat = time_util.PENDING #TODO v.1.7, could get it from UI
+    result.timeFormat = time_util.PENDING
     result.offset = ui.spinBoxOffset.value()
     return result
 
@@ -84,12 +95,11 @@ def addSettingsToRow(settings, out_table):
     row = out_table.rowCount()
     out_table.insertRow(row)
     s = settings
-    if s.endTimeAttribute == s.startTimeAttribute:
-        s.endTimeAttribute =""
     # insert values
     for i,value in enumerate([s.layerName, s.startTimeAttribute, s.endTimeAttribute,
                           s.isEnabled, s.layerId, s.timeFormat,
-                          str(s.offset), s.interpolationEnabled, s.idAttribute, s.interpolationMode, not s.geometriesCount]):
+                          str(s.offset), s.interpolationEnabled, s.idAttribute, s.interpolationMode,
+                          not s.geometriesCount, s.accumulate]):
         item = QTableWidgetItem()
         if type(value)!=bool:
             item.setText(value)
@@ -112,17 +122,14 @@ def getSettingsFromRow(table, rowNum):
     result.offset = int(table.item(rowNum,6).text()) # currently
 
     result.startTimeAttribute = table.item(rowNum,1).text()
-    # end time (optional)
-    if table.item(rowNum,2).text() == "":
-        result.endTimeAttribute = result.startTimeAttribute
-    else:
-        result.endTimeAttribute = table.item(rowNum,2).text()
+    result.endTimeAttribute = table.item(rowNum,2).text()
     # time format
     result.timeFormat = table.item(rowNum,5).text()
     result.interpolationEnabled =(table.item(rowNum,7).checkState() ==  Qt.Checked)
     result.idAttribute = table.item(rowNum,8).text()
     result.interpolationMode = table.item(rowNum,9).text()
     result.geometriesCount = not (table.item(rowNum,10).checkState() ==  Qt.Checked)
+    result.accumulate = (table.item(rowNum,11).checkState() ==  Qt.Checked)
     
     return result
 
@@ -146,4 +153,5 @@ def getSettingsFromLayer(layer):
     else:
         result.idAttribute = ""
     result.geometriesCount = layer.geometriesCountForExport()
+    result.accumulate = layer.accumulateFeatures()
     return result

@@ -38,6 +38,9 @@ class TimeVectorLayer(TimeLayer):
     def geometriesCountForExport(self):
         return self.geometriesCount
 
+    def accumulateFeatures(self):
+        return self.accumulate
+
     def findValidValues(self, fieldName, fmt):
         uniques = self.getUniques(fieldName)
         at_least_one_valid = False
@@ -63,6 +66,7 @@ class TimeVectorLayer(TimeLayer):
             self.minValue,self.maxValue = None,None
             self.fromTimeAttribute = settings.startTimeAttribute
             self.toTimeAttribute = settings.endTimeAttribute
+            self.accumulate = settings.accumulate
             self.originalSubsetString = settings.subsetStr
             self.currSubsetString  = self.originalSubsetString
             self.setSubsetString(self.originalSubsetString)
@@ -257,5 +261,6 @@ class TimeVectorLayer(TimeLayer):
                                    settings.startTimeAttribute, settings.endTimeAttribute,
                                    str(settings.isEnabled),settings.timeFormat,
                                    str(settings.offset), settings.idAttribute,
-                                   str(settings.interpolationEnabled), settings.interpolationMode, str(settings.geometriesCount)])
+                                   str(settings.interpolationEnabled), settings.interpolationMode,
+                                   str(settings.geometriesCount), str(settings.accumulate)])
         return res

@@ -100,7 +100,8 @@ class VectorLayerDialog(AddLayerDialog):
         self.dialog.comboBoxStart.clear()
         self.dialog.comboBoxEnd.clear()
         self.dialog.comboBoxID.clear()
-        self.dialog.comboBoxEnd.addItem('') # this box is optional, so we add an empty item
+        self.dialog.comboBoxEnd.addItem('Same as start')
+        self.dialog.comboBoxEnd.addItem('No end time - accumulate features')
         self.dialog.comboBoxID.addItem(conf.NO_ID_TEXT)
         for attr in fieldmap: 
             self.dialog.comboBoxStart.addItem(attr.name())
