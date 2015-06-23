@@ -556,8 +556,7 @@ class TimeManagerControl(QObject):
                         self.showMessage(error_msg)
                         continue
 
-                    timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(settings.layer,
-                                interpolate=settings.interpolationEnabled)(settings,iface=self.iface)
+                    timeLayer = TimeLayerFactory.get_timelayer_class_from_settings(settings)(settings,iface=self.iface)
 
                 except Exception, e:
                     layerId = "unknown"
@@ -603,9 +602,7 @@ class TimeManagerControl(QObject):
         """create a TimeLayer from options set in the table row"""
         try:
             settings = ls.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
-            timeLayer = TimeLayerFactory.get_timelayer_class_from_layer(settings.layer,
-                                                    interpolate=settings.interpolationEnabled)(
-                settings, self.iface)
+            timeLayer = TimeLayerFactory.get_timelayer_class_from_settings(settings)(settings, self.iface)
         except Exception, e:
             layer_name = "unknown"
             try:

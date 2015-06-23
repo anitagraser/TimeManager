@@ -22,6 +22,7 @@ SAVE_STRING_FORMAT =  DEFAULT_FORMAT # Used to be: "%Y-%m-%d %H:%M:%S.%f", but t
 PENDING = "WILL BE INFERRED"
 UTC = "SECONDS FROM EPOCH"
 UTC_FLOAT = "SECONDS FROM EPOCH (float)"
+NETCDF_BAND = "NetCDF Time Dimension"
 NORMAL_MODE = "Normal Mode"
 ARCHAELOGY_MODE = "Archaeology Mode"
 DINOSAURS_MODE = "Paleontology Mode"

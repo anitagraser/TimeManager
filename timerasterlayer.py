@@ -16,9 +16,7 @@ from logging import info
 class TimeRasterLayer(TimeLayer):
     def __init__(self, settings, iface=None):
         TimeLayer.__init__(self,settings.layer,settings.isEnabled)
-        
         self.layer = settings.layer
-        self.iface = iface
         self.fromTimeAttribute = settings.startTimeAttribute
         self.toTimeAttribute = settings.endTimeAttribute
         self.timeFormat = self.determine_format(settings.startTimeAttribute, settings.timeFormat)

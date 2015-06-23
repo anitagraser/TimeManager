@@ -86,7 +86,7 @@ def getSettingsFromAddRasterLayersUI(ui,layerIndexToId):
     result.endTimeAttribute = ui.textEnd.text()
     result.isEnabled = True
     result.layerId =  layerIndexToId[ui.comboBoxLayers.currentIndex()]
-    result.timeFormat = time_util.PENDING
+    result.timeFormat = time_util.PENDING if ui.isCDF.checkState() != Qt.Checked else time_util.NETCDF_BAND
     result.offset = ui.spinBoxOffset.value()
     return result
 

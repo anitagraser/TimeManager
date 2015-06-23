@@ -34,6 +34,19 @@ class RasterLayerDialog(AddLayerDialog):
 
         self.dialog.checkBoxStart.stateChanged.connect(self.refreshStart)
         self.dialog.checkBoxEnd.stateChanged.connect(self.refreshEnd)
+        self.dialog.isCDF.stateChanged.connect(self.handleCDF)
+
+    def handleCDF(self, checkState):
+        isCDF =  checkState == Qt.Checked
+        enable = not isCDF
+        self.dialog.checkBoxEnd.setEnabled(enable)
+        self.dialog.checkBoxStart.setEnabled(enable)
+        self.dialog.spinBoxStart1.setEnabled(enable)
+        self.dialog.spinBoxStart2.setEnabled(enable)
+        self.dialog.spinBoxEnd1.setEnabled(enable)
+        self.dialog.spinBoxEnd2.setEnabled(enable)
+        self.dialog.textStart.setEnabled(enable)
+        self.dialog.textEnd.setEnabled(enable)
 
     def show(self):
         idsToIgnore = set(self.get_ids_already_in_out_table())

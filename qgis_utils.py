@@ -16,7 +16,7 @@ def getAllJoinIdsOfLayer(layer):
     return set(map(lambda x: x.joinLayerId, layer.vectorJoins()))
 
 def isDelimitedText(layer):
-    return layer.dataProvider().storageType() == "Delimited text file"
+    return not isRaster(layer) and layer.dataProvider().storageType() == "Delimited text file"
 
 def isNumericField(layer, field):
     fields = layer.pendingFields()
