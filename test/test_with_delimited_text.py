@@ -8,7 +8,6 @@ from mock import Mock
 import unittest
 from test_functionality import TestForLayersWithOnePointPerSecond
 import TimeManager.time_util as time_util
-from TimeManager.time_util import DEFAULT_FORMAT as DFT
 from TimeManager.timemanagercontrol import FRAME_FILENAME_PREFIX
 import TimeManager.timevectorlayer as timevectorlayer
 import TimeManager.layer_settings as ls
@@ -20,6 +19,7 @@ import glob
 
 __author__ = 'carolinux'
 
+DFT="%Y-%m-%d %H:%M:%S+02" # test timezone format
 STARTTIME = 1422191211
 DATE_COL="timestamp"
 LON_COL="lon"

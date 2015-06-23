@@ -74,14 +74,15 @@ class TimeVectorLayer(TimeLayer):
             self.type = DateTypes.determine_type(self.getRawMinValue())
             if self.type not in DateTypes.QDateTypes:# call these to throw a nice exception early if no format can be found
                 self.findValidValues(self.fromTimeAttribute,settings.timeFormat)
-                self.findValidValues(self.toTimeAttribute,settings.timeFormat)
+                if self.fromTimeAttribute!=self.toTimeAttribute:
+                    self.findValidValues(self.toTimeAttribute,settings.timeFormat)
 
-            type2 = DateTypes.determine_type(self.getRawMaxValue())
             self.timeFormat = self.determine_format(self.getRawMinValue(), settings.timeFormat)
-            tf2 = self.determine_format(self.getRawMaxValue(), settings.timeFormat)
-
-            if self.type!=type2 or self.timeFormat!=tf2:
-                raise InvalidTimeLayerError("Invalid time layer: To and From attributes must have "
+            if self.toTimeAttribute != self.fromTimeAttribute:
+                type2 = DateTypes.determine_type(self.getRawMaxValue())
+                tf2 = self.determine_format(self.getRawMaxValue(), settings.timeFormat)
+                if self.type!=type2 or self.timeFormat!=tf2:
+                    raise InvalidTimeLayerError("Invalid time layer: To and From attributes must have "
                                         "exact same format")
 
             self.offset = int(settings.offset)

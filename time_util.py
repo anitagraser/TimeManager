@@ -106,6 +106,12 @@ def _str_switch(str, substr1, substr2):
     if i1>i2:
         return str[:i2]+substr1+str[i2+len(substr2):i1]+substr2+str[i1+len(substr1):]
 
+def generate_all_timezones(fmt):
+    l = []
+    for i in range(-12,15):
+        l.append(fmt+("-" if i<0 else "+")+str(abs(i)).zfill(2))
+    return l
+
 YMD_SUPPORTED_FORMATS = [
 "%Y-%m-%d %H:%M:%S.%f",
 "%Y-%m-%d %H:%M:%S",
@@ -122,14 +128,15 @@ YMD_SUPPORTED_FORMATS = [
 "%Y.%m.%d %H:%M:%S",
 "%Y.%m.%d %H:%M",
 "%Y.%m.%d",
-]
+]+generate_all_timezones("%Y-%m-%d %H:%M:%S")
+
+
 
 DMY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%Y","%d"), YMD_SUPPORTED_FORMATS)
 MDY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%m","%d"), DMY_SUPPORTED_FORMATS)
 
 
-SUPPORTED_FORMATS = list(set(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS +
-                             DMY_SUPPORTED_FORMATS))
+SUPPORTED_FORMATS = list(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS + DMY_SUPPORTED_FORMATS)
 
 def is_date_object(val):
     return isinstance(val, datetime) or isinstance(val, bcdate_util.BCDate)

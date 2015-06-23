@@ -129,7 +129,8 @@ class TestForLayersWithOnePointPerSecond(TestWithQGISLauncher):
         self.assertEquals(len(self.tlm.getActiveVectors()),1)
         self.assertEquals(len(self.tlm.getActiveRasters()),0)
         self.assertEquals(timeLayer.getDateType(), typ)
-        self.assertEquals(timeLayer.getTimeFormat(), tf)
+        if tf is not None:
+            self.assertEquals(timeLayer.getTimeFormat(), tf)
         expected_datetime = time_util.epoch_to_datetime(self.get_start_time())
         self.assertEquals(self.tlm.getCurrentTimePosition(),expected_datetime)
         self.tlm.setTimeFrameType("seconds")
