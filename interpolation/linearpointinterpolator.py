@@ -4,8 +4,7 @@ from queryinterpolator import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from .. import logging as logging
-from logging import info, warn, error
+from ..logging import info, warn, error
 
 class LinearPointInterpolator(Interpolator):
 
@@ -18,6 +17,7 @@ class LinearPointInterpolator(Interpolator):
         return coords
 
     def interpolate(self, Tvalue, Tvalues, Gvalues):
+        warn("{}, inbetween {}".format(Tvalue,Tvalues))
         xpos1,ypos1 = Gvalues[0] 
         xpos2,ypos2 = Gvalues[1] 
         # Interpolate

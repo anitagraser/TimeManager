@@ -14,7 +14,7 @@ DEFAULT_GRANULARITY_IN_SECONDS = 1
 ## interpolation settings
 NO_INTERPOLATION = "No interpolation (faster)"
 LINEAR_POINT_INTERPOLATION = "Linear interpolation (point geometries only)"
-LINEAR_POINT_LOW_MEM = "Linear interpolation for big datasets (point geometries only)"
+LINEAR_POINT_LOW_MEM = "Linear interpolation for big datasets (must be sorted by time)"
 INTERPOLATION_MODES = {LINEAR_POINT_INTERPOLATION:True,
                        LINEAR_POINT_LOW_MEM:True, 
                        NO_INTERPOLATION:False,}

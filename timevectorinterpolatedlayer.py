@@ -74,7 +74,6 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             self.fromInterpolator = ifactory.get_interpolator_from_text(self.mode)
             self.fromInterpolator.load(self)
             self.n=0
-            self.previous_ids = set()
             info("Interpolated layer {} created successfully!".format(self.layer.name()))
         except Exception,e :
             raise InvalidTimeLayerError("Traceback:"+traceback.format_exc(e))
@@ -133,12 +132,9 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
 
         #info("setTimeRestriction Called {} times".format(self.n))
         #info("size of layer at {}:{}".format(start_epoch,self.memLayer.featureCount(),))
-
         geoms = self.getInterpolatedGeometries(start_epoch, end_epoch)
         #Add the geometries as features
         self._clearMemoryLayer()
-
-        self.previous_ids = set()
 
         features = []
         for i,geom in enumerate(geoms):
@@ -147,7 +143,6 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             feature.setGeometry(QgsGeometry.fromPoint(geom))
             #feature.setAttributes([start_epoch+i])
             features.append(feature) # if no attributes, it will fail
-            self.previous_ids.add(feature.id())
             self.n = self.n + 1
 
         #info("add {}features:".format(len(features)))

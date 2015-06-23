@@ -5,7 +5,7 @@ from .. import time_util as time_util
 from .. import conf as conf
 from .. import logging as logging
 from .. import qgis_utils as qgs
-from logging import info, warn, error
+from ..logging import info, warn, error
 from interpolator import Interpolator
 
 try:
@@ -27,6 +27,7 @@ class QueryInterpolator(Interpolator):
         self.timeLayer = None
 
     def load(self, timeLayer, *args, **kwargs):
+        warn("loaded??")
         self.timeLayer = timeLayer
         self.timeColumn  = self.timeLayer.getTimeAttributes()[0]
 
@@ -55,7 +56,7 @@ class QueryInterpolator(Interpolator):
         exp = self._time_query_string(epoch, self.timeColumn, '=')
         exp+= self._id_query_string(id)
         req.setFilterExpression(exp)
-        info("Geom query Expression {}".format(exp))
+        warn("Geom query Expression {}".format(exp))
         s = self.timeLayer.subsetString()
         self.timeLayer.setSubsetString("")
         featIt = self.timeLayer.layer.dataProvider().getFeatures(req)
@@ -64,30 +65,35 @@ class QueryInterpolator(Interpolator):
             return self.getGeometryFromFeature(feat)
         return None
 
-    def _get_tvalue(self, id, epoch, symbol,func):
+    def _get_tvalue(self, id, epoch, symbol,get_first):
         req = QgsFeatureRequest() 
         exp = self._time_query_string(epoch, self.timeColumn, symbol)
         exp+= self._id_query_string(id)
         req.setFilterExpression(exp)
-        #from PyQt4.QtCore import pyqtRemoveInputHook
-        #pyqtRemoveInputHook()
-        #import pdb;pdb.set_trace()
+        warn(exp)
         s = self.timeLayer.subsetString()
         self.timeLayer.setSubsetString("")
         featIt = self.timeLayer.layer.dataProvider().getFeatures(req)
         self.timeLayer.setSubsetString(s)
-        V = None
-        for feat in featIt:
-            curr_epoch = self.getStartEpochFromFeature(feat, self.timeLayer)
-            if V is None:
-                V = curr_epoch
-            V = func(curr_epoch, V)
-        return V
+        l = list(featIt)
+        if get_first:
+            subList = l[:min(20, len(l))]
+        else:
+            subList = l[-min(20, len(l)):]
+        feats = sorted(subList, key=lambda feat: self.getStartEpochFromFeature(feat, self.timeLayer))
+        if not feats:
+            return None
+        if get_first:
+            feat = feats[0]
+        else:
+            feat = feats[-1]
+        curr_epoch = self.getStartEpochFromFeature(feat, self.timeLayer)
+        return curr_epoch
 
     def get_Tvalue_before(self, id, epoch):
-        return self._get_tvalue(id, epoch, "<", max)
+        return self._get_tvalue(id, epoch, "<",False)
 
     def get_Tvalue_after(self, id, epoch):
-        return self._get_tvalue(id, epoch, ">", min)
+        return self._get_tvalue(id, epoch, ">",True)
 
 
