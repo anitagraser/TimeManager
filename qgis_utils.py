@@ -25,7 +25,7 @@ def isNumericField(layer, field):
     return typ==QVariant.Int or typ==QVariant.LongLong or typ==QVariant.ULongLong or typ == QVariant.Double
 
 def getVersion():
-    return float(QGis.QGIS_VERSION[:3]) 
+    return QGis.QGIS_VERSION_INT
 
 def getAllJoinedLayers(layerIds):
     """get the ids of the layers that are joined on the given layerIds"""

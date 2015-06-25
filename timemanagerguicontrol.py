@@ -238,8 +238,8 @@ class TimeManagerGuiControl(QObject):
         except:
             # slider is not properly initialized yet
             return
-        if self.model.getActiveDelimitedText() and qgs.getVersion()<2.9:
-            time.sleep(0.1) # hack to fix issue in qgis core with delimited text
+        if self.model.getActiveDelimitedText() and qgs.getVersion()<20900:
+            time.sleep(0.1) # hack to fix issue in qgis core with delimited text which was fixed in 2.9
         self.signalSliderTimeChanged.emit(pct)
         
     def currentTimeChangedDateText(self,qdate):
