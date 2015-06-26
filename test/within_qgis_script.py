@@ -35,6 +35,7 @@ def disableUseOfGlobalCrs():
 
 def tm_dir():
     return os.path.join(QgsApplication.qgisSettingsDirPath(),"python","plugins","timemanager")
+
 def new_project():
     iface.newProject()
 

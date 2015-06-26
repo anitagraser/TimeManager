@@ -27,13 +27,12 @@ from logging import info, warn, error
 
 I18N_FOLDER="i18n"
 
-
 class timemanager:
     """ plugin information """
     name = "timemanager"
     longName = "TimeManager Plugin for QGIS >= 2.3"
     description = "Working with temporal vector data"
-    version = "Version 2.0" 
+    version = "Version 2.1" 
     qgisMinimumVersion = '2.3' 
     author = "Anita Graser, Karolina Alexiou"
     pluginUrl = "https://github.com/anitagraser/TimeManager"

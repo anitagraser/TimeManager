@@ -49,14 +49,18 @@ class AddLayerDialog:
         return self.dialog.comboBoxLayers.count()
 
     def populate(self, layerIds):
+        idlayers_it = QgsMapLayerRegistry.instance().mapLayers().iteritems()
+        selected_idlayers = filter(lambda idlayer: idlayer[0] in layerIds, idlayers_it)
+        self.populateFromLayers(selected_idlayers)
+
+    def populateFromLayers(self, idlayers):
         self.tempLayerIndexToId = {}
         i = 0
-        for (id,layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
-            if id in layerIds:
-                unicode_name = unicode(layer.name())
-                self.add_layer_to_select(unicode_name)
-                self.tempLayerIndexToId[i] = id
-                i+=1
+        for (id,layer) in idlayers:
+            unicode_name = unicode(layer.name())
+            self.add_layer_to_select(unicode_name)
+            self.tempLayerIndexToId[i] = id
+            i+=1
 
         if self.layer_count()== 0:
             msg = 'There are no unmanaged layers of requested type in the project!'
@@ -115,7 +119,6 @@ class VectorLayerDialog(AddLayerDialog):
             self.dialog.comboBoxID.addItem(attr.name())
 
     def add_connections(self):
-
         super(VectorLayerDialog, self).add_connections()
         QObject.connect(self.dialog.comboBoxInterpolation,SIGNAL("currentIndexChanged(const QString &)"),
             self.maybeEnableIDBox)

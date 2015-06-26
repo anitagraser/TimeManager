@@ -4,8 +4,12 @@ from PyQt4.QtGui import QApplication
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt, QDate, QDateTime, QCoreApplication, QTranslator
 import TimeManager.timemanagerguicontrol as guicontrol
+import TimeManager.rasterlayerdialog as rl
+import TimeManager.vectorlayerdialog as vl
 import TimeManager.time_util as time_util
 import TimeManager.conf as conf
+import testcfg
+from qgis.core import QgsVectorLayer
 from PyQt4 import QtGui, QtCore
 import os
 
@@ -23,6 +27,10 @@ class testGuiControl(unittest.TestCase):
     def setUpClass(self):
         self.app = QtGui.QApplication([])
 
+    @classmethod
+    def tearDownClass(self):
+        self.app.quit()
+
     def test_UI_raw_text_and_translations(self):
         gui = self.window.getGui()
         settingsText = gui.dock.pushButtonOptions.text()
@@ -37,6 +45,16 @@ class testGuiControl(unittest.TestCase):
 
     def setUp(self):
         self.window = TestApp()
+        self.path = os.path.join(os.path.dirname(os.path.abspath( __file__ )), os.pardir)
+        self.vector = vl.VectorLayerDialog(Mock(),os.path.join(self.path,guicontrol.ADD_VECTOR_LAYER_WIDGET_FILE) ,Mock())
+        self.raster = rl.RasterLayerDialog(Mock(),os.path.join(self.path,guicontrol.ADD_RASTER_LAYER_WIDGET_FILE) ,Mock())
+        self.vectorLayer =  QgsVectorLayer(os.path.join(testcfg.TEST_DATA_DIR, 'tweets.shp'), 'tweets', 'ogr')
+
+    def test_vector_dialog_populate(self):
+        self.assertIsNotNone(self.vector)
+        self.assertEqual(self.vector.layer_count(),0)
+        self.vector.populateFromLayers([("greatlayer4242",self.vectorLayer)])
+        self.assertEqual(self.vector.layer_count(),1)
 
     def test_options_dialog(self):
         #TODO more testing if the options dialog was created correctly

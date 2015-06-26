@@ -40,10 +40,10 @@ class RasterLayerDialog(AddLayerDialog):
         if isCDF and qgs.getVersion() < conf.MIN_RASTER_MULTIBAND:
             QMessageBox.information(self.iface.mainWindow(),'Info','QGIS 2.10 and higher is recommended for this feature')
         if isCDF and not CDFRasterLayer.isSupportedRaster(self.getSelectedLayer()) :
-            isCDF = False
-            self.dialog.isCDF.setChecked(Qt.Unchecked)
+            self.dialog.isCDF.setCheckState(Qt.Unchecked) # FIXME this triggers stuff again :(
             QMessageBox.information(self.iface.mainWindow(),'Error','To use this feature the raster should be using the '+\
                     'QgsSingleBandPseudoColorRenderer (can choose from Properties)')
+            return
         enable = not isCDF
         self.dialog.checkBoxEnd.setEnabled(enable)
         self.dialog.checkBoxStart.setEnabled(enable)
@@ -64,9 +64,11 @@ class RasterLayerDialog(AddLayerDialog):
             return
         self.dialog.show()
 
-    def guess_time_position_in_str(self, str_with_time):
+
+    @classmethod
+    def guess_time_position_in_str(cls, str_with_time):
         try:
-            m = re.match(self.TIME_REGEX, str_with_time)
+            m = re.match(cls.TIME_REGEX, str_with_time)
             return m.start(2), m.end(2)
         except Exception, e:
             info("Could not guess timestamp in raster filename. Cause {}".format(e))
