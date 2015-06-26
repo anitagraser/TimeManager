@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta
 import re
+from  qgis._core import QgsSingleBandPseudoColorRenderer
 
 from .. import time_util
 from ..timerasterlayer import TimeRasterLayer
@@ -24,14 +25,18 @@ class CDFRasterLayer(TimeRasterLayer):
             raise InvalidTimeLayerError(e)
 
     @classmethod
-    def _extract_time_from_bandname(cls, bandName):
+    def isSupportedRaster(cls, layer):
+        return isinstance(layer.renderer(), QgsSingleBandPseudoColorRenderer)
+
+    @classmethod
+    def extract_time_from_bandname(cls, bandName):
         pattern = "\s*\d+\s*\/\s*[^0-9]*(\d+)\s*.+"
         epochStr = re.findall(pattern,bandName)[0]
         return time_util.epoch_to_datetime(int(epochStr))
 
 
     @classmethod
-    def _get_first_band_between(cls, dts, start_dt, end_dt):
+    def get_first_band_between(cls, dts, start_dt, end_dt):
         """Get the index of the band whose timestamp is greater or equal to
         the starttime, but smaller than the endtime. If no such band is present,
         use the previous band"""
@@ -51,7 +56,7 @@ class CDFRasterLayer(TimeRasterLayer):
         p = self.layer.dataProvider()
         cnt = p.bandCount()
         for i in range(1, cnt+1):
-            self.band_to_dt.append(self._extract_time_from_bandname(p.generateBandName(i)))
+            self.band_to_dt.append(self.extract_time_from_bandname(p.generateBandName(i)))
 
         startTime = self.band_to_dt[0] 
         endTime = self.band_to_dt[-1] 
@@ -67,7 +72,7 @@ class CDFRasterLayer(TimeRasterLayer):
             return
         startTime = timePosition + timedelta(seconds=self.offset)
         endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
-        bandNo = self._get_first_band_between(self.band_to_dt, startTime, endTime)
+        bandNo = self.get_first_band_between(self.band_to_dt, startTime, endTime)
         self.layer.renderer().setBand(bandNo)
             
     def deleteTimeRestriction(self):

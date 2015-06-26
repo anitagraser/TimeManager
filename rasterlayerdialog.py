@@ -1,8 +1,6 @@
 from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4 import uic
-from PyQt4 import QtGui as QtGui
-from qgis._core import QgsMapLayerRegistry
+from PyQt4.QtGui import QMessageBox
+from  qgis._core import QgsSingleBandPseudoColorRenderer
 import re
 
 import qgis_utils as qgs
@@ -10,6 +8,7 @@ import layer_settings as ls
 import conf
 from vectorlayerdialog import AddLayerDialog
 from logging import info, warn, error
+from raster.cdflayer import CDFRasterLayer 
 
 class RasterLayerDialog(AddLayerDialog):
     TIME_REGEX = "([^\d])*(\d[\d_:\\-\.]*\d)([^\d])*"
@@ -38,6 +37,13 @@ class RasterLayerDialog(AddLayerDialog):
 
     def handleCDF(self, checkState):
         isCDF =  checkState == Qt.Checked
+        if isCDF and qgs.getVersion() < conf.MIN_RASTER_MULTIBAND:
+            QMessageBox.information(self.iface.mainWindow(),'Info','QGIS 2.10 and higher is recommended for this feature')
+        if isCDF and not CDFRasterLayer.isSupportedRaster(self.getSelectedLayer()) :
+            isCDF = False
+            self.dialog.isCDF.setChecked(Qt.Unchecked)
+            QMessageBox.information(self.iface.mainWindow(),'Error','To use this feature the raster should be using the '+\
+                    'QgsSingleBandPseudoColorRenderer (can choose from Properties)')
         enable = not isCDF
         self.dialog.checkBoxEnd.setEnabled(enable)
         self.dialog.checkBoxStart.setEnabled(enable)

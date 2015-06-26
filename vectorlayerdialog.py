@@ -13,7 +13,8 @@ from logging import info, warn, error
 class AddLayerDialog:
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, ui_path, out_table):
+    def __init__(self, iface, ui_path, out_table):
+        self.iface = iface
         self.tempLayerIndexToId = {}
         self.dialog = uic.loadUi(ui_path)
         self.out_table = out_table
@@ -24,6 +25,11 @@ class AddLayerDialog:
 
     def getSelectedLayerName(self):
         return self.dialog.comboBoxLayers.currentText()
+
+    def getSelectedLayer(self):
+        idx = self.dialog.comboBoxLayers.currentIndex()
+        layerId = self.tempLayerIndexToId[idx]
+        return qgs.getLayerFromId(layerId)
 
     def get_ids_already_in_out_table(self):
         """get list of layer ids listed in the tableWidget"""

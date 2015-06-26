@@ -112,9 +112,6 @@ class TimeVectorLayer(TimeLayer):
         """returns the layer's offset, integer in seconds"""
         return self.offset
 
-    def debug(self, msg):
-            QMessageBox.information(self.iface.mainWindow(),'Info', msg)
-
     def getProvider(self):
         return self.layer # the layer itself can be the provider,
         # which means that it can now about joined fields

@@ -6,7 +6,12 @@ about=TimeManager plugin
 qgisMinimumVersion=2.3
 author=Anita Graser, Karolina Alexiou (aka carolinux)
 email=anitagraser@gmx.at, carolinegr@gmail.com
-changelog=1.6.6
+changelog=2.1
+    - Can accumulate geometries in time (ie, no end time)
+    - Postgresql timezone support
+    - Support for interpolating in bigger datasets
+    - Support for animating multiband rasters using QgsSingleBandPseudoColorRenderer
+    2.0
     - removing experimental flag
     1.6.5
     - support for AD/BC formats

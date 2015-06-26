@@ -35,3 +35,7 @@ LOG_TAG="TimeManager"
 ## ARCH settings
 DEFAULT_DIGITS = 4 
 
+## version thresholds
+
+MIN_DTEXT_FIXED = 20900
+MIN_RASTER_MULTIBAND = 21000

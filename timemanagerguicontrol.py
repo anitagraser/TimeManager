@@ -238,7 +238,7 @@ class TimeManagerGuiControl(QObject):
         except:
             # slider is not properly initialized yet
             return
-        if self.model.getActiveDelimitedText() and qgs.getVersion()<20900:
+        if self.model.getActiveDelimitedText() and qgs.getVersion()<conf.MIN_DTEXT_FIXED:
             time.sleep(0.1) # hack to fix issue in qgis core with delimited text which was fixed in 2.9
         self.signalSliderTimeChanged.emit(pct)
         
@@ -295,9 +295,8 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.show()
 
         # create raster and vector dialogs
-        #self.rasterDialog = RasterLayerDialog()
-        self.vectorDialog = VectorLayerDialog(os.path.join(self.path,ADD_VECTOR_LAYER_WIDGET_FILE), self.optionsDialog.tableWidget)
-        self.rasterDialog = RasterLayerDialog(os.path.join(self.path,ADD_RASTER_LAYER_WIDGET_FILE), self.optionsDialog.tableWidget)
+        self.vectorDialog = VectorLayerDialog(self.iface, os.path.join(self.path,ADD_VECTOR_LAYER_WIDGET_FILE), self.optionsDialog.tableWidget)
+        self.rasterDialog = RasterLayerDialog(self.iface, os.path.join(self.path,ADD_RASTER_LAYER_WIDGET_FILE), self.optionsDialog.tableWidget)
         # establish connections
         self.optionsDialog.pushButtonAddVector.clicked.connect(self.vectorDialog.show)
         self.optionsDialog.pushButtonAddRaster.clicked.connect(self.rasterDialog.show)
@@ -323,9 +322,6 @@ class TimeManagerGuiControl(QObject):
     def saveOptions(self):
         """save the options from optionsDialog to timeLayerManager"""
         self.signalSaveOptions.emit()
-
-    def debug(self, msg):
-            QMessageBox.information(self.iface.mainWindow(),'Info', msg)
 
     def setOptionsDialogToNone(self):
         """set self.optionsDialog to None"""
