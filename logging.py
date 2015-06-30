@@ -4,16 +4,16 @@ import conf
 """Logging utilities to log messages in qgis with 
 a separate tab just for Time Manager"""
 
-def info(msg):
+def info(msg): # pragma: no cover
     QgsMessageLog.logMessage(str(msg), conf.LOG_TAG, QgsMessageLog.INFO)
 
-def warn(msg):
+def warn(msg): # pragma: no cover
     QgsMessageLog.logMessage(str(msg), conf.LOG_TAG)
 
-def error(msg):
+def error(msg): # pragma: no cover
     QgsMessageLog.logMessage(str(msg), conf.LOG_TAG, QgsMessageLog.CRITICAL)
 
-def log_exceptions(func):
+def log_exceptions(func): # pragma: no cover
     def log_after(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -22,7 +22,7 @@ def log_exceptions(func):
             return
     return log_after
 
-def debug_on_exceptions(func):
+def debug_on_exceptions(func): # pragma: no cover
     """ Only used for debugging"""
     def debug_after(*args, **kwargs):
         try:

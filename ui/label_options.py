@@ -5,7 +5,9 @@
 # Created: Thu Feb 12 10:53:29 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
-# WARNING! All changes made in this file will be lost!
+# WARNING! Do not regenerate this file unless you know what you're doing
+# This file is excluded from code coverage by # pragma: no cover directives
+# which would be deleted
 
 from PyQt4 import QtCore, QtGui
 
@@ -24,7 +26,7 @@ except AttributeError:
         return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_labelOptions(object):
-    def setupUi(self, labelOptions):
+    def setupUi(self, labelOptions): # pragma: no cover
         labelOptions.setObjectName(_fromUtf8("labelOptions"))
         labelOptions.resize(337, 235)
         self.label_4 = QtGui.QLabel(labelOptions)
@@ -102,7 +104,7 @@ class Ui_labelOptions(object):
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), labelOptions.reject)
         QtCore.QMetaObject.connectSlotsByName(labelOptions)
 
-    def retranslateUi(self, labelOptions):
+    def retranslateUi(self, labelOptions): # pragma: no cover
         labelOptions.setWindowTitle(_translate("labelOptions", "Options", None))
         self.label.setText(_translate("labelOptions", "Font:", None))
         self.label_2.setText(_translate("labelOptions", "Font Size:", None))

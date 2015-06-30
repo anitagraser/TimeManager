@@ -8,7 +8,7 @@ __author__="Karolina Alexiou"
 __email__="karolina.alexiou@teralytics.ch"
 
 
-def get_os():
+def get_os(): # pragma: no cover
     """Determine OS"""
     # details of platform implementation
     # https://hg.python.org/cpython/file/2.7/Lib/platform.py#l1568
@@ -26,5 +26,5 @@ def get_os():
 os_prefix_paths={LINUX:"/usr", MACOS:"/Applications/QGIS.app/Contents",
                  WINDOWS:"C:/PROGRA~1/QGISBR~1/apps/qgis"}
 
-def get_possible_prefix_path():
+def get_possible_prefix_path(): # pragma: no cover
     return os_prefix_paths[get_os()]

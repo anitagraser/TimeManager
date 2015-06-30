@@ -9,7 +9,7 @@ import TimeManager.vectorlayerdialog as vl
 import TimeManager.time_util as time_util
 import TimeManager.conf as conf
 import testcfg
-from qgis.core import QgsVectorLayer
+from qgis.core import QgsVectorLayer, QgsRasterLayer
 from PyQt4 import QtGui, QtCore
 import os
 
@@ -49,12 +49,25 @@ class testGuiControl(unittest.TestCase):
         self.vector = vl.VectorLayerDialog(Mock(),os.path.join(self.path,guicontrol.ADD_VECTOR_LAYER_WIDGET_FILE) ,Mock())
         self.raster = rl.RasterLayerDialog(Mock(),os.path.join(self.path,guicontrol.ADD_RASTER_LAYER_WIDGET_FILE) ,Mock())
         self.vectorLayer =  QgsVectorLayer(os.path.join(testcfg.TEST_DATA_DIR, 'tweets.shp'), 'tweets', 'ogr')
+        self.rasterLayer =  QgsRasterLayer(os.path.join(testcfg.TEST_DATA_DIR, 'clouds.nc'))
 
     def test_vector_dialog_populate(self):
         self.assertIsNotNone(self.vector)
         self.assertEqual(self.vector.layer_count(),0)
         self.vector.populateFromLayers([("greatlayer4242",self.vectorLayer)])
         self.assertEqual(self.vector.layer_count(),1)
+
+    def test_vector_dialog_idbox(self):
+        self.vector.maybeEnableIDBox(conf.NO_INTERPOLATION)
+        self.assertFalse(self.vector.dialog.comboBoxID.isEnabled())
+        self.vector.maybeEnableIDBox(conf.LINEAR_POINT_INTERPOLATION)
+        self.assertTrue(self.vector.dialog.comboBoxID.isEnabled())
+
+    def test_raster_dialog_populate(self):
+        self.assertIsNotNone(self.raster)
+        self.assertEqual(self.raster.layer_count(),0)
+        self.raster.populateFromLayers([("lookatalltheseclouds4242",self.rasterLayer)])
+        self.assertEqual(self.raster.layer_count(),1)
 
     def test_options_dialog(self):
         #TODO more testing if the options dialog was created correctly

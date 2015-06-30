@@ -246,6 +246,6 @@ assert(tlm.getCurrentTimePosition() == bcdate_util.BCDate(1))
 goBackward(gui)
 assert(tlm.getCurrentTimePosition() == bcdate_util.BCDate(-1))
 disableUseOfGlobalCrs()
-#sleep(5)
+tlm.clearTimeLayerList()
 ctrl.toggleArchaeology()
 

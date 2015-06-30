@@ -40,7 +40,7 @@ class RasterLayerDialog(AddLayerDialog):
         if isCDF and qgs.getVersion() < conf.MIN_RASTER_MULTIBAND:
             QMessageBox.information(self.iface.mainWindow(),'Info','QGIS 2.10 and higher is recommended for this feature')
         if isCDF and not CDFRasterLayer.isSupportedRaster(self.getSelectedLayer()) :
-            self.dialog.isCDF.setCheckState(Qt.Unchecked) # FIXME this triggers stuff again :(
+            self.dialog.isCDF.setCheckState(Qt.Unchecked)
             QMessageBox.information(self.iface.mainWindow(),'Error','To use this feature the raster should be using the '+\
                     'QgsSingleBandPseudoColorRenderer (can choose from Properties)')
             return
