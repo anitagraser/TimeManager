@@ -117,6 +117,7 @@ YMD_SUPPORTED_FORMATS = [
 "%Y-%m-%d %H:%M:%S",
 "%Y-%m-%d %H:%M",
 "%Y-%m-%dT%H:%M:%S",
+"%Y-%m-%dT%H:%M:%SZ",
 "%Y-%m-%d",
 "%Y/%m/%d %H:%M:%S.%f",
 "%Y/%m/%d %H:%M:%S",
@@ -128,6 +129,7 @@ YMD_SUPPORTED_FORMATS = [
 "%Y.%m.%d %H:%M:%S",
 "%Y.%m.%d %H:%M",
 "%Y.%m.%d",
+"%Y%m%d%H%M%SED"
 ]+generate_all_timezones("%Y-%m-%d %H:%M:%S")
 
 
