@@ -30,6 +30,9 @@ class TimeRasterLayer(TimeLayer):
     def hasSubsetStr(self):
         return False
 
+    def accumulateFeatures(self):
+        return False
+
     def getTimeAttributes(self):
         """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""
         return(self.fromTimeAttribute,self.toTimeAttribute)
