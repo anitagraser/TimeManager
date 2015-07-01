@@ -5,8 +5,7 @@ from qgis.core import QgsVectorLayer, QgsRasterLayer
 from timevectorlayer import TimeVectorLayer
 from timerasterlayer import TimeRasterLayer
 from timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
-from raster import cdflayer
-from cdflayer import CDFRasterLayer
+from raster.cdflayer import CDFRasterLayer
 import time_util
 
 

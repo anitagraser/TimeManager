@@ -8,8 +8,7 @@ import layer_settings as ls
 import conf
 from vectorlayerdialog import AddLayerDialog
 from logging import info, warn, error
-from raster import cdflayer
-from cdflayer import CDFRasterLayer 
+from raster.cdflayer import CDFRasterLayer 
 
 class RasterLayerDialog(AddLayerDialog):
     TIME_REGEX = "([^\d])*(\d[\d_:\\-\.]*\d)([^\d])*"
