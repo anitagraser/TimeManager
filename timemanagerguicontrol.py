@@ -405,8 +405,19 @@ class TimeManagerGuiControl(QObject):
         layout = txt.documentLayout()
         size = layout.documentSize()
         
-        x = width - 5 - size.width() if flags & Qt.AlignRight else 5
-        y = height - 5 - size.height() if flags & Qt.AlignBottom else 5
+        if flags & Qt.AlignRight:
+            x = width - 5 - size.width() 
+        elif flags & Qt.AlignLeft:
+            x  = 5
+        else:
+            x = width/2 - size.width()/2
+            
+        if flags & Qt.AlignBottom:
+            y = height - 5 - size.height()  
+        elif flags & Qt.AlignTop:    
+            y = 5
+        else:
+            y = height/2 - size.height()/2
 
         painter.translate(x, y)
         layout.draw(painter, QAbstractTextDocumentLayout.PaintContext())
