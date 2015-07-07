@@ -18,6 +18,7 @@ class AddLayerDialog:
         self.tempLayerIndexToId = {}
         self.dialog = uic.loadUi(ui_path)
         self.out_table = out_table
+        self.add_connections()
         # TODO assert it has a buttonbox and comboBoxLayers
 
     def getDialog(self):
@@ -25,6 +26,10 @@ class AddLayerDialog:
 
     def getSelectedLayerName(self):
         return self.dialog.comboBoxLayers.currentText()
+
+    def clear(self):
+        self.tempLayerIndexToId = {}
+        self.dialog.comboBoxLayers.clear()
 
     def getSelectedLayer(self):
         idx = self.dialog.comboBoxLayers.currentIndex()
@@ -54,7 +59,6 @@ class AddLayerDialog:
         self.populateFromLayers(selected_idlayers)
 
     def populateFromLayers(self, idlayers):
-        self.tempLayerIndexToId = {}
         i = 0
         for (id,layer) in idlayers:
             unicode_name = unicode(layer.name())
@@ -69,7 +73,6 @@ class AddLayerDialog:
 
         # add the attributes of the first layer in the select for gui initialization
         self.add_layer_attributes(0)
-        self.add_connections()
      
     @abc.abstractmethod
     def add_layer_attributes(self, id):
@@ -103,6 +106,8 @@ class VectorLayerDialog(AddLayerDialog):
     
     def add_layer_attributes(self, idx):
         """get list layer attributes, fill the combo boxes"""
+        if not self.tempLayerIndexToId:
+            return
         layerId = self.tempLayerIndexToId[self.dialog.comboBoxLayers.currentIndex()]
         fieldmap = qgs.getLayerAttributes(layerId)
         if fieldmap is None:
@@ -125,6 +130,7 @@ class VectorLayerDialog(AddLayerDialog):
         self.dialog.exportEmptyCheckbox.setChecked(Qt.Unchecked)
 
     def show(self):
+        self.clear()
         idsToIgnore = set(self.get_ids_already_in_out_table())
         allVectorIds = set(qgs.getAllLayerIds(lambda x:not qgs.isRaster(x)))
         try:

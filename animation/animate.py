@@ -2,7 +2,7 @@ import subprocess
 import os
 import glob
 from collections import namedtuple
-from ..logging import info
+from ..logging import info, error
 
 IMAGEMAGICK="convert"
 FFMPEG="ffmpeg"
@@ -18,6 +18,8 @@ def is_in_path(exec_name):
 
 def make_animation(out_folder, delay_millis, frame_pattern=DEFAULT_FRAME_PATTERN):
     if not is_in_path(IMAGEMAGICK):
+        error("Imagemagick is not in path")
+        # FIXME exception is not thrown *within* qgis here
         raise Exception("Imagemagick is not in path")
     # Would this work in windozer?
     # or should i actually make the animation myself?
@@ -26,7 +28,9 @@ def make_animation(out_folder, delay_millis, frame_pattern=DEFAULT_FRAME_PATTERN
     delay_hundrendths = delay_millis/10
     ret =  subprocess.check_call([IMAGEMAGICK,"-delay",str(delay_hundrendths)] + all_frames + [out_file])
     if (ret != 0):
-        raise Exception("Something went wrong creating the animated gif from frames")
+        msg = "Something went wrong creating the animated gif from frames"
+        error(msg)
+        raise Exception(msg)
     info("Exported {} frames to gif {}".format(len(all_frames),out_file))
 
 #ffmpeg -f image2 -r 1 -i frame%02d.png -vcodec libx264 -vf fps=25 -pix_fmt yuv420p out.mp4

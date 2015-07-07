@@ -76,7 +76,7 @@ class TestDelimitedText(TestForLayersWithOnePointPerSecond):
         self.tlm.setTimeFrameType("seconds")
         start_time = time_util.str_to_datetime(timeLayer.getMinMaxValues()[0])
         end_time = time_util.str_to_datetime(timeLayer.getMinMaxValues()[1])
-        self.ctrl.exportVideoAtPath(tmpdir)
+        self.ctrl.exportVideo(tmpdir,100,False)
         screenshots_generated =  glob.glob(os.path.join(tmpdir, FRAME_FILENAME_PREFIX+"*"))
         #import ipdb; ipdb.set_trace()
         last_fn = self.ctrl.generate_frame_filename(tmpdir,len(screenshots_generated)-1, end_time)

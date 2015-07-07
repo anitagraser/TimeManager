@@ -141,6 +141,8 @@ class TimeManagerGuiControl(QObject):
 
     def sendAnimationOptions(self):
         path = self.animationDialog.lineEdit.text()
+        if path == "":
+            self.showAnimationOptions()
         delay_millis = self.animationDialog.spinBoxDelay.value()
         export_gif = self.animationDialog.radioAnimatedGif.isChecked()
         self.signalExportVideo.emit(path, delay_millis, export_gif)
