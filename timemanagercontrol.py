@@ -9,6 +9,7 @@ from timevectorlayer import *
 from timelayermanager import *
 from timemanagerprojecthandler import TimeManagerProjectHandler
 from time_util import *
+from animation import animate
 import time_util
 import bcdate_util
 from bcdate_util import BCDate
@@ -91,7 +92,7 @@ class TimeManagerControl(QObject):
         Gui"""
 
         self.guiControl.showOptions.connect(self.showOptionsDialog)
-        self.guiControl.exportVideo.connect(self.exportVideo)
+        self.guiControl.signalExportVideo.connect(self.exportVideo)
         self.guiControl.toggleTime.connect(self.toggleTimeManagement)
         self.guiControl.toggleArchaeology.connect(self.toggleArchaeology)
         self.guiControl.back.connect(self.stepBackward)
@@ -241,7 +242,7 @@ class TimeManagerControl(QObject):
         self.stopAnimation()
         self.guiControl.showOptionsDialog(self.timeLayerManager.getTimeLayerList(),self.animationFrameLength,self.playBackwards,self.loopAnimation)
 
-    def exportVideoAtPath(self, path):
+    def exportFramesAtPath(self, path):
         self.saveAnimationPath = path
         if self.saveAnimationPath:
             self.saveAnimation = True
@@ -249,12 +250,13 @@ class TimeManagerControl(QObject):
             self.toggleAnimation()
             self.showMessage('Image sequence from current position onwards is being saved to '+self.saveAnimationPath+'.\n\nPlease wait until the process is finished.')
 
-    def exportVideo(self):
-        """export 'video' - currently only image sequence"""
-        path = str(QFileDialog.getExistingDirectory (self.iface.mainWindow(),'Pick export '
-                                                                       'destination',self.saveAnimationPath))
-
-        self.exportVideoAtPath(path)
+    def exportVideo(self, path, delay_millis, export_gif):
+        """export 'video' - currently choice between image sequence or animated gif"""
+        self.exportFramesAtPath(path)
+        # create gif  
+        if export_gif:
+            self.showMessage("Creating animated gif at {}".format(self.saveAnimationPath))
+            animate.make_animation(path, delay_millis)
 
     def toggleAnimation(self):
         """toggle animation on/off"""

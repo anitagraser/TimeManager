@@ -38,6 +38,7 @@ ADD_VECTOR_LAYER_WIDGET_FILE ="addLayer.ui"
 ADD_RASTER_LAYER_WIDGET_FILE ="addRasterLayer.ui"
 ARCH_WIDGET_FILE = "arch.ui"
 OPTIONS_WIDGET_FILE = "options.ui"
+ANIMATION_WIDGET_FILE = "animate.ui"
 
 
 class TimestampLabelConfig(object):
@@ -55,7 +56,7 @@ class TimeManagerGuiControl(QObject):
     """This class controls all plugin-related GUI elements. Emitted signals are defined here."""
     
     showOptions = pyqtSignal()
-    exportVideo = pyqtSignal()
+    signalExportVideo = pyqtSignal(str,int,bool)
     toggleTime = pyqtSignal()
     toggleArchaeology = pyqtSignal()
     back = pyqtSignal()
@@ -126,6 +127,23 @@ class TimeManagerGuiControl(QObject):
 
     def getOptionsDialog(self):
         return self.optionsDialog
+
+    def showAnimationOptions(self):
+        self.animationDialog = uic.loadUi(os.path.join(self.path,ANIMATION_WIDGET_FILE))
+        def selectFile():
+           self.animationDialog.lineEdit.setText(QFileDialog.getOpenFileName())
+        self.animationDialog.pushButton.clicked.connect(self.selectAnimationFolder)
+        self.animationDialog.buttonBox.accepted.connect(self.sendAnimationOptions)
+        self.animationDialog.show()
+
+    def selectAnimationFolder(self):
+       self.animationDialog.lineEdit.setText(QtGui.QFileDialog.getExistingDirectory())
+
+    def sendAnimationOptions(self):
+        path = self.animationDialog.lineEdit.text()
+        delay_millis = self.animationDialog.spinBoxDelay.value()
+        export_gif = self.animationDialog.radioAnimatedGif.isChecked()
+        self.signalExportVideo.emit(path, delay_millis, export_gif)
 
     def showLabelOptions(self):
         # TODO maybe more clearly
@@ -202,7 +220,7 @@ class TimeManagerGuiControl(QObject):
         self.showOptions.emit()
         
     def exportVideoClicked(self):
-        self.exportVideo.emit()
+        self.showAnimationOptions()
         
     def toggleTimeClicked(self):
         self.toggleTime.emit()
