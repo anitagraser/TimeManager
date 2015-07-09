@@ -118,6 +118,7 @@ YMD_SUPPORTED_FORMATS = [
 "%Y-%m-%d %H:%M",
 "%Y-%m-%dT%H:%M:%S",
 "%Y-%m-%dT%H:%M:%SZ",
+"%Y-%m-%dT%HZ",
 "%Y-%m-%d",
 "%Y/%m/%d %H:%M:%S.%f",
 "%Y/%m/%d %H:%M:%S",
@@ -137,8 +138,9 @@ YMD_SUPPORTED_FORMATS = [
 DMY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%Y","%d"), YMD_SUPPORTED_FORMATS)
 MDY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x,"%m","%d"), DMY_SUPPORTED_FORMATS)
 
+OTHER_FORMATS = ["%Y-%m"]
 
-SUPPORTED_FORMATS = list(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS + DMY_SUPPORTED_FORMATS)
+SUPPORTED_FORMATS = list(YMD_SUPPORTED_FORMATS + MDY_SUPPORTED_FORMATS + DMY_SUPPORTED_FORMATS + OTHER_FORMATS)
 
 def is_date_object(val):
     return isinstance(val, datetime) or isinstance(val, bcdate_util.BCDate)
