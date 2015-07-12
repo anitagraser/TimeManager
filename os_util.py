@@ -14,7 +14,7 @@ def get_os(): # pragma: no cover
     # https://hg.python.org/cpython/file/2.7/Lib/platform.py#l1568
     if "linux" in platform.platform().lower():
         return LINUX
-    elif "macos" in platform.platform().lower():
+    elif "macos" or "darwin" in platform.platform().lower():
         return MACOS
     elif "windows" in platform.platform().lower():
         return WINDOWS
