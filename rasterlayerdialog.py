@@ -57,6 +57,7 @@ class RasterLayerDialog(AddLayerDialog):
     def show(self):
         idsToIgnore = set(self.get_ids_already_in_out_table())
         allRasterIds = set(qgs.getAllLayerIds(lambda x:qgs.isRaster(x)))
+        self.clear()
         try:
             self.populate(allRasterIds - idsToIgnore)
         except Exception,e:

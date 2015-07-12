@@ -6,6 +6,7 @@ from timevectorlayer import TimeVectorLayer
 from timerasterlayer import TimeRasterLayer
 from timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
 from raster.cdflayer import CDFRasterLayer
+from raster.wmstlayer import WMSTRasterLayer
 import time_util
 
 
@@ -21,6 +22,8 @@ class TimeLayerFactory:
         elif type(layer) == QgsVectorLayer and interpolate:
             return TimeVectorInterpolatedLayer
         elif type(layer) == QgsRasterLayer:
+            if "Web Map Service" in layer.dataProvider().description():
+                return WMSTRasterLayer
             if isNetCDF:
                 return CDFRasterLayer
             else:

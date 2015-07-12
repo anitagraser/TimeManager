@@ -267,7 +267,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         start_time = end_time - timedelta(seconds=100)
         self.tlm.setCurrentTimePosition(start_time)
         layer_duration_in_seconds = (end_time-start_time).total_seconds()
-        self.ctrl.exportVideoAtPath(tmpdir)
+        self.ctrl.exportVideo(tmpdir,100,False)
         screenshots_generated =  glob.glob(os.path.join(tmpdir, FRAME_FILENAME_PREFIX+"*"))
         self.assertTrue(len(screenshots_generated) < math.ceil(layer_duration_in_seconds + 1))
         shutil.rmtree(tmpdir)
@@ -279,7 +279,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         start_time = time_util.str_to_datetime(self.timeLayer.getMinMaxValues()[0])
         end_time = time_util.str_to_datetime(self.timeLayer.getMinMaxValues()[1])
         layer_duration_in_hours = (end_time-start_time).total_seconds() / 3600.0
-        self.ctrl.exportVideoAtPath(tmpdir)
+        self.ctrl.exportVideo(tmpdir,100,False)
         screenshots_generated =  glob.glob(os.path.join(tmpdir, FRAME_FILENAME_PREFIX+"*"))
         self.assertEqual(len(screenshots_generated), math.ceil(layer_duration_in_hours + 1))
         for i in range(int(math.ceil(layer_duration_in_hours + 1))):

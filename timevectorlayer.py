@@ -240,7 +240,7 @@ class TimeVectorLayer(TimeLayer):
             subsetString= "{} AND {}".format(self.originalSubsetString, subsetString)
         success = self.layer.setSubsetString(subsetString)
         if not success:
-            raise SubstringException("Could not set substring to".format(subsetString))
+            raise SubstringException("Could not set substring to {}".format(subsetString))
         else:
             self.currSubsetString = subsetString
 
