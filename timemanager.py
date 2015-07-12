@@ -32,7 +32,7 @@ class timemanager:
     name = "timemanager"
     longName = "TimeManager Plugin for QGIS >= 2.3"
     description = "Working with temporal vector data"
-    version = "Version 2.1" 
+    version = "Version 2.1.5" 
     qgisMinimumVersion = '2.3' 
     author = "Anita Graser, Karolina Alexiou"
     pluginUrl = "https://github.com/anitagraser/TimeManager"
