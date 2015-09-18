@@ -31,8 +31,10 @@ class CDFRasterLayer(TimeRasterLayer):
     @classmethod
     def extract_time_from_bandname(cls, bandName):
         pattern = "\s*\d+\s*\/\s*[^0-9]*(\d+)\s*.+"
-        epochStr = re.findall(pattern,bandName)[0]
-        return time_util.epoch_to_datetime(int(epochStr))
+        epoch = int(re.findall(pattern,bandName)[0])
+        if "minute" in bandName.lower():
+            epoch = epoch * 60 # the number is originally in minutes, so need to multiply by 60
+        return time_util.epoch_to_datetime(epoch)
 
 
     @classmethod
