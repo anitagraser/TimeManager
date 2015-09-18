@@ -18,7 +18,7 @@ class TimeRasterLayer(TimeLayer):
         TimeLayer.__init__(self,settings.layer,settings.isEnabled)
         self.layer = settings.layer
         self.fromTimeAttribute = settings.startTimeAttribute
-        self.toTimeAttribute = settings.endTimeAttribute
+        self.toTimeAttribute = settings.endTimeAttribute if settings.endTimeAttribute!="" else self.fromTimeAttribute
         self.timeFormat = self.determine_format(settings.startTimeAttribute, settings.timeFormat)
         self.offset = int(settings.offset)
         
