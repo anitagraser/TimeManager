@@ -64,15 +64,26 @@ class TimeRasterLayer(TimeLayer):
 
         startTime = timePosition + timedelta(seconds=self.offset)
         endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
-        if str_to_datetime(self.fromTimeAttribute, self.getTimeFormat()) < endTime and str_to_datetime(self.toTimeAttribute, self.getTimeFormat()) >= startTime:
+        layerStartTime = str_to_datetime(self.fromTimeAttribute, self.getTimeFormat())
+        layerEndTime = str_to_datetime(self.toTimeAttribute, self.getTimeFormat())
+        self.hideOrShowLayer(startTime, endTime, layerStartTime, layerEndTime)
+
+    def hideOrShowLayer(self, startTime, endTime, layerStartTime, layerEndTime):
+        if layerStartTime < endTime and layerEndTime >= startTime:
             # if the timestamp is within the extent --> show the raster
-            self.layer.renderer().setOpacity(1) # no transparency  
+            self.show()
         else: # hide the raster
-            self.layer.renderer().setOpacity(0)   # total transparency
+            self.hide()
+
+    def hide(self):
+        self.layer.renderer().setOpacity(0)
+
+    def show(self):
+        self.layer.renderer().setOpacity(1)
             
     def deleteTimeRestriction(self):
         """The layer is removed from Time Manager and is therefore always shown"""
-        self.layer.renderer().setOpacity(1)
+        self.show()
 
     def hasTimeRestriction(self):
         """returns true if current layer.subsetString is not equal to originalSubsetString"""

@@ -26,7 +26,10 @@ class CDFRasterLayer(TimeRasterLayer):
 
     @classmethod
     def isSupportedRaster(cls, layer):
-        return isinstance(layer.renderer(), QgsSingleBandPseudoColorRenderer)
+        # multiband layers need to have a particular renderer
+        # this has to do with qgis python bindings 
+        # see https://github.com/qgis/QGIS/pull/2163
+        return not cls.is_multiband(layer) or isinstance(layer.renderer(), QgsSingleBandPseudoColorRenderer)
 
     @classmethod
     def extract_time_from_bandname(cls, bandName):
@@ -42,8 +45,8 @@ class CDFRasterLayer(TimeRasterLayer):
         """Get the index of the band whose timestamp is greater or equal to
         the starttime, but smaller than the endtime. If no such band is present,
         use the previous band"""
-        # idx = np.searchsorted(self.band_to_dt, start_dt, side='right')
         # TODO find later a faster way which takes advantage of the sorting 
+        # idx = np.searchsorted(self.band_to_dt, start_dt, side='right')
 
         for i,dt in enumerate(dts):
            if dt>=start_dt:
@@ -53,6 +56,10 @@ class CDFRasterLayer(TimeRasterLayer):
                    return max(i-1,0) + 1
         
         return len(dts) # persist the last band forever
+    
+    @classmethod
+    def is_multiband(cls, layer):
+        return layer.dataProvider().bandCount()>1
 
     def getTimeExtents(self):
         p = self.layer.dataProvider()
@@ -74,9 +81,19 @@ class CDFRasterLayer(TimeRasterLayer):
             return
         startTime = timePosition + timedelta(seconds=self.offset)
         endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
-        bandNo = self.get_first_band_between(self.band_to_dt, startTime, endTime)
-        self.layer.renderer().setBand(bandNo)
+        if not self.is_multiband(self.layer):
+            # Note: opportunity to subclass here if logic becomes more complicated
+            layerStartTime = self.extract_time_from_bandname(self.layer.dataProvider().generateBandName(1))
+            self.hideOrShowLayer(startTime, endTime,layerStartTime, layerStartTime)
+            return
+        else:
+            bandNo = self.get_first_band_between(self.band_to_dt, startTime, endTime)
+            self.layer.renderer().setBand(bandNo)
             
     def deleteTimeRestriction(self):
         """The layer is removed from Time Manager and is therefore always shown"""
-        self.layer.renderer().setBand(1)
+        if not self.is_multiband(self.layer):
+            self.show()
+            return
+        else:
+            self.layer.renderer().setBand(1)
