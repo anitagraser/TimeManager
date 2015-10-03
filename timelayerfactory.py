@@ -12,6 +12,7 @@ import time_util
 
 class TimeLayerFactory:
     """Helper class to determine the class of the time layer to create"""
+
     @classmethod
     def get_timelayer_class_from_settings(cls, settings):
         layer = settings.layer

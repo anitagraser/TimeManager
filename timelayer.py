@@ -1,16 +1,18 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-import conf
 import abc
+
+import conf
 import time_util
+
 
 class TimeLayer:
     """Manages the properties of a managed (managable) layer."""
 
-    __metaclass__ = abc.ABCMeta # this class cannot be instantiated directly
+    __metaclass__ = abc.ABCMeta  # this class cannot be instantiated directly
 
-    def __init__(self,layer,enabled=True):
+    def __init__(self, layer, enabled=True):
         self.layer = layer
         self.timeEnabled = enabled
 
@@ -55,15 +57,15 @@ class TimeLayer:
     def getLayer(self):
         """Get the layer associated with the current timeLayer"""
         return self.layer
-    
-    def getName( self ):
+
+    def getName(self):
         """Get the layer name as it is shown in the layers dock"""
         return self.layer.name()
 
     def getLayerId(self):
         """returns the layerID as registered in QgisMapLayerRegistry"""
         try:
-            return self.layer.id() # function call for QGIS >= 1.7
+            return self.layer.id()  # function call for QGIS >= 1.7
         except AttributeError:
             return self.layer.getLayerID()
 
@@ -74,14 +76,18 @@ class TimeLayer:
         """whether timeManagement is enabled for this layer"""
         return self.timeEnabled
 
+
 class NotATimeAttributeError(Exception):
     def __init__(self, value):
         self.value = value
+
     def __str__(self):
-         return repr(self.value)
+        return repr(self.value)
+
 
 class InvalidTimeLayerError(Exception):
     def __init__(self, value):
         self.value = value
+
     def __str__(self):
-         return repr(self.value)
+        return repr(self.value)

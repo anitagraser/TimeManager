@@ -1,14 +1,15 @@
+import re
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import QMessageBox
-from  qgis._core import QgsSingleBandPseudoColorRenderer
-import re
 
 import qgis_utils as qgs
 import layer_settings as ls
 import conf
 from vectorlayerdialog import AddLayerDialog
-from logging import info, warn, error
-from raster.cdflayer import CDFRasterLayer 
+from logging import info, warn
+from raster.cdflayer import CDFRasterLayer
+
 
 class RasterLayerDialog(AddLayerDialog):
     TIME_REGEX = "([^\d])*(\d[\d_:\\-\.]*\d)([^\d])*"
@@ -18,14 +19,16 @@ class RasterLayerDialog(AddLayerDialog):
 
     def __init__(self, *args):
         super(RasterLayerDialog, self).__init__(*args)
-    
+
     def extract_settings(self):
         return ls.getSettingsFromAddRasterLayersUI(self.dialog, self.tempLayerIndexToId)
 
     def add_connections(self):
         super(RasterLayerDialog, self).add_connections()
-        self.dialog.checkBoxStart.setChecked(Qt.Checked if RasterLayerDialog.startChecked else Qt.Unchecked)
-        self.dialog.checkBoxEnd.setChecked(Qt.Checked if RasterLayerDialog.endChecked else Qt.Unchecked)
+        self.dialog.checkBoxStart.setChecked(
+            Qt.Checked if RasterLayerDialog.startChecked else Qt.Unchecked)
+        self.dialog.checkBoxEnd.setChecked(
+            Qt.Checked if RasterLayerDialog.endChecked else Qt.Unchecked)
         self.dialog.spinBoxStart1.valueChanged.connect(self.refreshStart)
         self.dialog.spinBoxStart2.valueChanged.connect(self.refreshStart)
         self.dialog.spinBoxEnd1.valueChanged.connect(self.refreshEnd)
@@ -36,13 +39,15 @@ class RasterLayerDialog(AddLayerDialog):
         self.dialog.isCDF.stateChanged.connect(self.handleCDF)
 
     def handleCDF(self, checkState):
-        isCDF =  checkState == Qt.Checked
+        isCDF = checkState == Qt.Checked
         if isCDF and qgs.getVersion() < conf.MIN_RASTER_MULTIBAND:
-            QMessageBox.information(self.iface.mainWindow(),'Info','QGIS 2.10 and higher is recommended for this feature')
-        if isCDF and not CDFRasterLayer.isSupportedRaster(self.getSelectedLayer()) :
+            QMessageBox.information(self.iface.mainWindow(), 'Info',
+                                    'QGIS 2.10 and higher is recommended for this feature')
+        if isCDF and not CDFRasterLayer.isSupportedRaster(self.getSelectedLayer()):
             self.dialog.isCDF.setCheckState(Qt.Unchecked)
-            QMessageBox.information(self.iface.mainWindow(),'Error','To use this feature the raster should be using the '+\
-                    'QgsSingleBandPseudoColorRenderer (can choose from Properties)')
+            QMessageBox.information(self.iface.mainWindow(), 'Error',
+                                    'To use this feature the raster should be using the ' +
+                                    'QgsSingleBandPseudoColorRenderer (can choose from Properties)')
             return
         enable = not isCDF
         self.dialog.checkBoxEnd.setEnabled(enable)
@@ -56,15 +61,14 @@ class RasterLayerDialog(AddLayerDialog):
 
     def show(self):
         idsToIgnore = set(self.get_ids_already_in_out_table())
-        allRasterIds = set(qgs.getAllLayerIds(lambda x:qgs.isRaster(x)))
+        allRasterIds = set(qgs.getAllLayerIds(lambda x: qgs.isRaster(x)))
         self.clear()
         try:
             self.populate(allRasterIds - idsToIgnore)
-        except Exception,e:
+        except Exception, e:
             warn(e)
             return
         self.dialog.show()
-
 
     @classmethod
     def guess_time_position_in_str(cls, str_with_time):
@@ -73,7 +77,7 @@ class RasterLayerDialog(AddLayerDialog):
             return m.start(2), m.end(2)
         except Exception, e:
             info("Could not guess timestamp in raster filename. Cause {}".format(e))
-            return (0,0)
+            return (0, 0)
 
     def refreshStart(self, ignore_val=0):
         if self.dialog.checkBoxStart.checkState() == Qt.Checked:
@@ -82,7 +86,7 @@ class RasterLayerDialog(AddLayerDialog):
             end = self.dialog.spinBoxStart2.value()
             self.dialog.textStart.setText(self.getSelectedLayerName()[start:end])
         else:
-            RasterLayerDialog.startChecked = False 
+            RasterLayerDialog.startChecked = False
 
     def refreshEnd(self, ignore_val=0):
         if self.dialog.checkBoxEnd.checkState() == Qt.Checked:
@@ -91,7 +95,7 @@ class RasterLayerDialog(AddLayerDialog):
             end = self.dialog.spinBoxEnd2.value()
             self.dialog.textEnd.setText(self.getSelectedLayerName()[start:end])
         else:
-            RasterLayerDialog.endChecked = False 
+            RasterLayerDialog.endChecked = False
 
     def add_layer_attributes(self, idx):
         """get list layer attributes, fill the combo boxes"""

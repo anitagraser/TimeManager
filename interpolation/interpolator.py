@@ -1,10 +1,12 @@
 import abc
 from collections import defaultdict
 from qgis.core import *
+
 from .. import time_util as time_util
 from .. import conf as conf
 from .. import logging as logging
 from logging import info, warn, error
+
 
 try:
     import numpy as np
@@ -12,11 +14,11 @@ except:
     pass
 __author__ = 'carolinux'
 
-
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 STEP = 0.0000001
+
 
 class Interpolator:
     __metaclass__ = abc.ABCMeta
@@ -42,17 +44,17 @@ class Interpolator:
         pass
 
     @abc.abstractmethod
-    def get_Tvalue_before(self,id, timestamp):
+    def get_Tvalue_before(self, id, timestamp):
         """Get the largest T value in the data where T <= timestamp"""
         pass
 
     @abc.abstractmethod
-    def get_Tvalue_after(self,id, timestamp):
+    def get_Tvalue_after(self, id, timestamp):
         """Get the smallest T value in the data where T >= timestamp"""
         pass
 
     @abc.abstractmethod
-    def get_Gvalue(self,id, timestamp):
+    def get_Gvalue(self, id, timestamp):
         """Return the actual geometry for id and timestamp.
         The (id,timestamp) pair must exist in the data"""
         pass
@@ -80,58 +82,61 @@ class Interpolator:
     def getInterpolatedValue(self, id, t1, t2):
         """Get the interpolated G value given an id and a timestamp range"""
 
-        #info("value for id{}, start{}, end{}".format(id,t1,t2))
+        # info("value for id{}, start{}, end{}".format(id,t1,t2))
         before = self.get_Tvalues_before(id, t1)
         after = self.get_Tvalues_after(id, t2)
-        if len(before) == 0  or len(after) == 0 :
-            warn("Could not interpolate for time range: {}-{}. Not enough values before or after".format(t1,t2))
+        if len(before) == 0 or len(after) == 0:
+            warn(
+                "Could not interpolate for time range: {}-{}. Not enough values before or after".format(
+                    t1, t2))
             return None
         before.reverse()
         Tvalues = before + after
-        Gvalues  = map(lambda x: self.get_Gvalue(id,x), Tvalues)
+        Gvalues = map(lambda x: self.get_Gvalue(id, x), Tvalues)
 
         return self.interpolate(t1, Tvalues, Gvalues)
 
-    def get_Tvalues_before(self,id, t):
+    def get_Tvalues_before(self, id, t):
         """Get a sequence of T values <= t"""
         res = []
-        lastt = t 
+        lastt = t
         first = True
         for i in range(self.num_Tvalues_before()):
             if not first:
                 lastt = lastt - STEP
-            lastt = self.get_Tvalue_before(id,lastt)
+            lastt = self.get_Tvalue_before(id, lastt)
             first = False
             if lastt is None:
                 return res
-            else: 
+            else:
                 res.append(lastt)
         return res
 
 
-    def get_Tvalues_after(self,id, t ):
+    def get_Tvalues_after(self, id, t):
         """ Get a sequence of T values >= t"""
         res = []
-        lastt = t 
+        lastt = t
         first = True
         for i in range(self.num_Tvalues_after()):
             if not first:
-                lastt= lastt + STEP
-            lastt = self.get_Tvalue_after(id,lastt)
+                lastt = lastt + STEP
+            lastt = self.get_Tvalue_after(id, lastt)
             first = False
             if lastt is None:
                 return res
-            else: 
+            else:
                 res.append(lastt)
         return res
 
     def getStartEpochFromFeature(self, feat, layer):
         # TODO: is pending the correct choice?
-        return time_util.timeval_to_epoch(feat[layer.fromTimeAttributeIndex],time_util.PENDING)
+        return time_util.timeval_to_epoch(feat[layer.fromTimeAttributeIndex], time_util.PENDING)
 
     def getEndEpochFromFeature(self, feat, layer):
         # TODO: from??
-        pass 
+        pass
+
 
 class MemoryLoadInterpolator(Interpolator):
     """Interpolator that loads all the data it needs and stores it in
@@ -145,35 +150,36 @@ class MemoryLoadInterpolator(Interpolator):
         self.min_epoch = None
 
     def load(self, timeLayer, *args, **kwargs):
-        features = timeLayer.layer.getFeatures(QgsFeatureRequest() )
+        features = timeLayer.layer.getFeatures(QgsFeatureRequest())
         hasLimit = "limit" in kwargs
         i = 0
         for feat in features:
-            from_time = self.getStartEpochFromFeature(feat, timeLayer) 
-            to_time = from_time 
-            geom = self.getGeometryFromFeature(feat) 
+            from_time = self.getStartEpochFromFeature(feat, timeLayer)
+            to_time = from_time
+            geom = self.getGeometryFromFeature(feat)
             if geom is None:
                 continue
-            if i==0:
+            if i == 0:
                 self.max_epoch = to_time
                 self.min_epoch = to_time
             else:
                 self.max_epoch = max(self.max_epoch, to_time)
                 self.min_epoch = max(self.min_epoch, to_time)
-            id = conf.DEFAULT_ID if not timeLayer.hasIdAttribute() else feat[timeLayer.idAttributeIndex]
+            id = conf.DEFAULT_ID if not timeLayer.hasIdAttribute() else feat[
+                timeLayer.idAttributeIndex]
             self._addIdEpochTuple(id, from_time, geom)
-            i = i+1
-            if hasLimit and i> kwargs["limit"]:
+            i = i + 1
+            if hasLimit and i > kwargs["limit"]:
                 break
-            
+
         self._sort()
 
     def get_Gvalue(self, id, epoch):
-        return self.id_time_to_geom[(id,epoch)]
-    
+        return self.id_time_to_geom[(id, epoch)]
+
     def ids(self):
         return self.id_to_time.keys()
-    
+
     def minmax(self):
         """ return min and max epoch stored"""
         return (self.min_epoch, self.max_epoxh)
@@ -184,22 +190,25 @@ class MemoryLoadInterpolator(Interpolator):
 
     def _sort(self):
         for id in self.id_to_time.keys():
-            self.id_to_time[id].sort() # in place sorting
+            self.id_to_time[id].sort()  # in place sorting
 
     def get_Tvalue_before(self, id, epoch):
         if self.id_to_time[id][0] > epoch:
-            return None if not self.interpolate_left() else self.id_to_time[id][0] # already at smallest timestamp
-        idx = np.searchsorted(self.id_to_time[id],epoch)
+            return None if not self.interpolate_left() else self.id_to_time[id][
+                0]  # already at smallest timestamp
+        idx = np.searchsorted(self.id_to_time[id], epoch)
         if idx == len(self.id_to_time[id]):
             return self.id_to_time[id][-1]
-        if idx>0 and self.id_to_time[id][idx]>epoch: # need to find a value smaller than current
-            idx=idx-1
+        if idx > 0 and self.id_to_time[id][
+            idx] > epoch:  # need to find a value smaller than current
+            idx = idx - 1
         return self.id_to_time[id][idx]
 
     def get_Tvalue_after(self, id, epoch):
         if self.id_to_time[id][-1] < epoch:
-            return None if not self.interpolate_right() else self.id_to_time[id][-1] # already at largest timestamp
-        idx=np.searchsorted(self.id_to_time[id],epoch)
+            return None if not self.interpolate_right() else self.id_to_time[id][
+                -1]  # already at largest timestamp
+        idx = np.searchsorted(self.id_to_time[id], epoch)
         if idx == len(self.id_to_time[id]):
             return self.id_to_time[id][-1]
         return self.id_to_time[id][idx]

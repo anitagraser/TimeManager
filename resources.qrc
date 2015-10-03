@@ -1,14 +1,14 @@
 <RCC>
-  <qresource prefix="/">
-    <file>images/power_off.png</file>
-    <file>images/back.png</file>
-    <file>images/forward.png</file>
-    <file>images/play.png</file>
-    <file>images/power_on.png</file>
-    <file>images/arch.png</file>
-    <file>images/arch_off.png</file>
-  </qresource>
-  <qresource prefix="i18n">
-    <file>i18n/timemanager_de.qm</file>
-  </qresource>
+    <qresource prefix="/">
+        <file>images/power_off.png</file>
+        <file>images/back.png</file>
+        <file>images/forward.png</file>
+        <file>images/play.png</file>
+        <file>images/power_on.png</file>
+        <file>images/arch.png</file>
+        <file>images/arch_off.png</file>
+    </qresource>
+    <qresource prefix="i18n">
+        <file>i18n/timemanager_de.qm</file>
+    </qresource>
 </RCC>

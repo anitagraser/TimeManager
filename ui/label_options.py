@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'label_options.ui'
 #
 # Created: Thu Feb 12 10:53:29 2015
-#      by: PyQt4 UI code generator 4.10.4
+# by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! Do not regenerate this file unless you know what you're doing
 # This file is excluded from code coverage by # pragma: no cover directives
@@ -19,14 +19,16 @@ except AttributeError:
 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
+
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig, _encoding)
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
+
 class Ui_labelOptions(object):
-    def setupUi(self, labelOptions): # pragma: no cover
+    def setupUi(self, labelOptions):  # pragma: no cover
         labelOptions.setObjectName(_fromUtf8("labelOptions"))
         labelOptions.resize(337, 235)
         self.label_4 = QtGui.QLabel(labelOptions)
@@ -95,16 +97,19 @@ class Ui_labelOptions(object):
         self.verticalLayout_3.addLayout(self.verticalLayout_2)
         self.buttonBox = QtGui.QDialogButtonBox(self.layoutWidget)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(
+            QtGui.QDialogButtonBox.Cancel | QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.verticalLayout_3.addWidget(self.buttonBox)
 
         self.retranslateUi(labelOptions)
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), labelOptions.accept)
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), labelOptions.reject)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")),
+                               labelOptions.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")),
+                               labelOptions.reject)
         QtCore.QMetaObject.connectSlotsByName(labelOptions)
 
-    def retranslateUi(self, labelOptions): # pragma: no cover
+    def retranslateUi(self, labelOptions):  # pragma: no cover
         labelOptions.setWindowTitle(_translate("labelOptions", "Options", None))
         self.label.setText(_translate("labelOptions", "Font:", None))
         self.label_2.setText(_translate("labelOptions", "Font Size:", None))
@@ -112,5 +117,6 @@ class Ui_labelOptions(object):
         self.label_5.setText(_translate("labelOptions", "Placement Direction:", None))
         self.label_6.setText(_translate("labelOptions", "Text Color:", None))
         self.label_7.setText(_translate("labelOptions", "Bg Color:", None))
+
 
 from qgis import gui
