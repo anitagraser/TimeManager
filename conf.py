@@ -15,25 +15,26 @@ DEFAULT_GRANULARITY_IN_SECONDS = 1
 NO_INTERPOLATION = "No interpolation (faster)"
 LINEAR_POINT_INTERPOLATION = "Linear interpolation (point geometries only)"
 LINEAR_POINT_LOW_MEM = "Linear interpolation for big datasets (must be sorted by time)"
-INTERPOLATION_MODES = {LINEAR_POINT_INTERPOLATION:True,
-                       LINEAR_POINT_LOW_MEM:True, 
-                       NO_INTERPOLATION:False,}
+INTERPOLATION_MODES = {LINEAR_POINT_INTERPOLATION: True,
+                       LINEAR_POINT_LOW_MEM: True,
+                       NO_INTERPOLATION: False, }
 
-INTERPOLATION_MODE_TO_CLASS = {LINEAR_POINT_INTERPOLATION:"LinearPointInterpolatorWithMemory",
-                               LINEAR_POINT_LOW_MEM:"LinearPointInterpolatorWithQuery",
-                            }
+INTERPOLATION_MODE_TO_CLASS = {
+    LINEAR_POINT_INTERPOLATION: "LinearPointInterpolatorWithMemory",
+    LINEAR_POINT_LOW_MEM: "LinearPointInterpolatorWithQuery",
+}
 DEFAULT_ID = 0
 NO_ID_TEXT = "None - every geometry is a position of the same moving object in time"
 
 ## load/save settings
-SAVE_DELIMITER=';'
+SAVE_DELIMITER = ';'
 
-## logging settings 
+## logging settings
 
-LOG_TAG="TimeManager"
+LOG_TAG = "TimeManager"
 
 ## ARCH settings
-DEFAULT_DIGITS = 4 
+DEFAULT_DIGITS = 4
 
 ## version thresholds
 

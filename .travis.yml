@@ -22,6 +22,7 @@ install:
         - sudo apt-get install qgis --force-yes
         - sudo apt-get install python-qgis
         - sudo apt-get install vnc4server # to mock an X Server
+        - pip install pep8==1.4.6
         - pip install mock
         - pip install nose
         - pip install coverage
@@ -34,7 +35,9 @@ before_script:
         - psql -U postgres  mydb -c "create extension postgis"
         - psql -U postgres -c "ALTER USER postgres WITH PASSWORD 'postgres'"; 
 
-script:  bash run_tests.sh # this runs tests with coverage
+script:
+        - bash run_tests.sh # this runs tests with coverage
+        - sh pep8.sh # run pep8 on the python code
 
 after_success:
     coveralls

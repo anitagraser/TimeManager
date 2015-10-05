@@ -5,23 +5,22 @@ Created on Thu Mar 22 18:33:13 2012
 @author: Anita
 """
 
+from datetime import timedelta
 
-from datetime import datetime, timedelta
-from qgis.core import *
 from timelayer import *
-from time_util import get_format_of_timeval, str_to_datetime
+from time_util import str_to_datetime
 import conf
-from logging import info
+
 
 class TimeRasterLayer(TimeLayer):
     def __init__(self, settings, iface=None):
-        TimeLayer.__init__(self,settings.layer,settings.isEnabled)
+        TimeLayer.__init__(self, settings.layer, settings.isEnabled)
         self.layer = settings.layer
         self.fromTimeAttribute = settings.startTimeAttribute
-        self.toTimeAttribute = settings.endTimeAttribute if settings.endTimeAttribute!="" else self.fromTimeAttribute
+        self.toTimeAttribute = settings.endTimeAttribute if settings.endTimeAttribute != "" else self.fromTimeAttribute
         self.timeFormat = self.determine_format(settings.startTimeAttribute, settings.timeFormat)
         self.offset = int(settings.offset)
-        
+
         try:
             self.getTimeExtents()
         except NotATimeAttributeError, e:
@@ -35,17 +34,17 @@ class TimeRasterLayer(TimeLayer):
 
     def getTimeAttributes(self):
         """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""
-        return(self.fromTimeAttribute,self.toTimeAttribute)
+        return (self.fromTimeAttribute, self.toTimeAttribute)
 
     def getTimeFormat(self):
         """returns the layer's time format"""
         return self.timeFormat
-        
+
     def getOffset(self):
         """returns the layer's offset, integer in seconds"""
         return self.offset
 
-    def getTimeExtents( self ):
+    def getTimeExtents(self):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
         startStr = self.fromTimeAttribute
         endStr = self.toTimeAttribute
@@ -54,9 +53,9 @@ class TimeRasterLayer(TimeLayer):
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
-        return (startTime,endTime)
+        return (startTime, endTime)
 
-    def setTimeRestriction(self,timePosition,timeFrame):
+    def setTimeRestriction(self, timePosition, timeFrame):
         """Constructs the query, including the original subset"""
         if not self.timeEnabled:
             self.deleteTimeRestriction()
@@ -72,7 +71,7 @@ class TimeRasterLayer(TimeLayer):
         if layerStartTime < endTime and layerEndTime >= startTime:
             # if the timestamp is within the extent --> show the raster
             self.show()
-        else: # hide the raster
+        else:  # hide the raster
             self.hide()
 
     def hide(self):
@@ -80,17 +79,18 @@ class TimeRasterLayer(TimeLayer):
 
     def show(self):
         self.layer.renderer().setOpacity(1)
-            
+
     def deleteTimeRestriction(self):
         """The layer is removed from Time Manager and is therefore always shown"""
         self.show()
 
     def hasTimeRestriction(self):
         """returns true if current layer.subsetString is not equal to originalSubsetString"""
-        return True #self.layer.subsetString != self.originalSubsetString
-        
+        return True  # self.layer.subsetString != self.originalSubsetString
+
     def getSaveString(self):
         """get string to save in project file"""
         delimiter = conf.SAVE_DELIMITER
-        return delimiter.join([self.getLayerId(),'',self.fromTimeAttribute,self.toTimeAttribute,str(self.timeEnabled),
-                self.timeFormat,str(self.offset)])
+        return delimiter.join([self.getLayerId(), '', self.fromTimeAttribute, self.toTimeAttribute,
+                               str(self.timeEnabled),
+                               self.timeFormat, str(self.offset)])

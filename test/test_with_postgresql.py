@@ -1,5 +1,6 @@
 import sip
-sip.setapi('QString', 2) # strange things happen without this. Must import before PyQt imports
+
+sip.setapi('QString', 2)  # strange things happen without this. Must import before PyQt imports
 # if using ipython: do this on bash before
 # export QT_API=pyqt
 from qgis.core import *
@@ -15,21 +16,21 @@ from nose.tools import raises
 
 import psycopg2
 
-DBNAME="mydb"
-TABLE="pts"
+DBNAME = "mydb"
+TABLE = "pts"
 
-GEOMETRY_COL="geom"
-DATE_COL="_date"
-DATE_TZ_COL="_datetz"
-EPOCH_COL="epoch"
-DATE_STR_COL="datestr"
-DATE_STR_COL_DMY="datestr_dmy"
+GEOMETRY_COL = "geom"
+DATE_COL = "_date"
+DATE_TZ_COL = "_datetz"
+EPOCH_COL = "epoch"
+DATE_STR_COL = "datestr"
+DATE_STR_COL_DMY = "datestr_dmy"
 
-STARTTIME=time_util.datetime_to_epoch(datetime(2014,12,31,23,59,59))
+STARTTIME = time_util.datetime_to_epoch(datetime(2014, 12, 31, 23, 59, 59))
 
-TZ_STATEMENT ="SET timezone='UTC';"
+TZ_STATEMENT = "SET timezone='UTC';"
 
-SQL_STATEMENT="""
+SQL_STATEMENT = """
 DROP TABLE IF EXISTS {0:s};
 CREATE TABLE {0:s} (
 
@@ -56,14 +57,14 @@ update pts set {2:s} = to_timestamp(epoch);
 update pts set {3:s} = to_timestamp(epoch);
 update pts set {5:s} = to_char(_date,'YYYY/MM/DD HH24:MI:SS');
 update pts set {6:s} = to_char(_date,'DD.MM.YYYY HH24:MI:SS');
-""".format(TABLE,GEOMETRY_COL,DATE_COL,DATE_TZ_COL,EPOCH_COL, DATE_STR_COL,
-           DATE_STR_COL_DMY,STARTTIME,STARTTIME+1,STARTTIME+2,STARTTIME+3,STARTTIME+4)
+""".format(TABLE, GEOMETRY_COL, DATE_COL, DATE_TZ_COL, EPOCH_COL, DATE_STR_COL,
+           DATE_STR_COL_DMY, STARTTIME, STARTTIME + 1, STARTTIME + 2, STARTTIME + 3, STARTTIME + 4)
 
-CUSTOM_FORMAT="%Y/%m/%d %H:%M:%S"
-CUSTOM_FORMAT_DMY="%d.%m.%Y %H:%M:%S"
+CUSTOM_FORMAT = "%Y/%m/%d %H:%M:%S"
+CUSTOM_FORMAT_DMY = "%d.%m.%Y %H:%M:%S"
+
 
 class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
-
     conn = None
 
     @classmethod
@@ -81,7 +82,7 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestPostgreSQL,cls).tearDownClass()
+        super(TestPostgreSQL, cls).tearDownClass()
         cls.conn.cursor().execute("DROP TABLE IF EXISTS {};".format(TABLE))
         cls.conn.close()
 
@@ -89,47 +90,48 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
         return STARTTIME
 
     def setUp(self):
-        super(TestPostgreSQL,self).setUp()
+        super(TestPostgreSQL, self).setUp()
         uri = QgsDataSourceURI()
         uri.setConnection('localhost', '5432', DBNAME, "postgres", "postgres")
         uri.setDataSource('public', TABLE, GEOMETRY_COL, '')
-        self.layer =  QgsVectorLayer(uri.uri(), TABLE, 'postgres')
+        self.layer = QgsVectorLayer(uri.uri(), TABLE, 'postgres')
         self.assertTrue(self.layer.isValid())
-        self.assertEquals(self.layer.featureCount(),5)
+        self.assertEquals(self.layer.featureCount(), 5)
 
     def test_integers(self):
         self.assertTrue(qgis_utils.isNumericField(self.layer, EPOCH_COL))
-        self._test_layer(self.layer,EPOCH_COL,timevectorlayer.DateTypes.IntegerTimestamps,
+        self._test_layer(self.layer, EPOCH_COL, timevectorlayer.DateTypes.IntegerTimestamps,
                          time_util.UTC)
 
     def test_date_str(self):
         self.assertTrue(not qgis_utils.isNumericField(self.layer, DATE_STR_COL))
-        self._test_layer(self.layer,DATE_STR_COL,timevectorlayer.DateTypes.DatesAsStrings,
+        self._test_layer(self.layer, DATE_STR_COL, timevectorlayer.DateTypes.DatesAsStrings,
                          CUSTOM_FORMAT)
 
     def test_date_str_dmy(self):
-        start_dt=time_util.epoch_to_datetime(STARTTIME)
-        end_dt=time_util.epoch_to_datetime(STARTTIME+1)
+        start_dt = time_util.epoch_to_datetime(STARTTIME)
+        end_dt = time_util.epoch_to_datetime(STARTTIME + 1)
         # assert that lexicographical string comparison is off
-        self.assertTrue(start_dt<end_dt and time_util.datetime_to_str(start_dt,CUSTOM_FORMAT_DMY)>
-                        time_util.datetime_to_str(end_dt,CUSTOM_FORMAT_DMY))
-        #self._test_layer(self.layer, DATE_STR_COL_DMY,timevectorlayer.DateTypes.DatesAsStrings,
+        self.assertTrue(
+            start_dt < end_dt and time_util.datetime_to_str(start_dt, CUSTOM_FORMAT_DMY) >
+            time_util.datetime_to_str(end_dt, CUSTOM_FORMAT_DMY))
+        # self._test_layer(self.layer, DATE_STR_COL_DMY,timevectorlayer.DateTypes.DatesAsStrings,
         #                 CUSTOM_FORMAT_DMY)
 
     def test_date(self):
-        self._test_layer(self.layer, DATE_COL,timevectorlayer.DateTypes.DatesAsStrings,
+        self._test_layer(self.layer, DATE_COL, timevectorlayer.DateTypes.DatesAsStrings,
                          time_util.DEFAULT_FORMAT)
 
     @raises(Exception)
     def test_to_from_are_different_types(self):
         # currently not supported, verify that exception is thrown
-         self._test_layer(self.layer, DATE_COL,timevectorlayer.DateTypes.DatesAsStrings,
-                          time_util.DEFAULT_FORMAT,attr2=DATE_STR_COL_DMY)
+        self._test_layer(self.layer, DATE_COL, timevectorlayer.DateTypes.DatesAsStrings,
+                         time_util.DEFAULT_FORMAT, attr2=DATE_STR_COL_DMY)
 
     @unittest.skip
     def test_date_with_timezone(self):
-        self._test_layer(self.layer, DATE_TZ_COL,timevectorlayer.DateTypes.DatesAsStrings, None)
+        self._test_layer(self.layer, DATE_TZ_COL, timevectorlayer.DateTypes.DatesAsStrings, None)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     unittest.main()

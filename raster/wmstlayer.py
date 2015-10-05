@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, timedelta
-import re
-from  qgis._core import QgsSingleBandPseudoColorRenderer
+from datetime import timedelta
 
 from .. import time_util
 from ..timerasterlayer import TimeRasterLayer
 from ..timelayer import TimeLayer, NotATimeAttributeError
-from ..logging import info
+
 
 class WMSTRasterLayer(TimeRasterLayer):
     IGNORE_PREFIX = "IgnoreGetFeatureInfoUrl=1&IgnoreGetMapUrl=1&"
+
     def __init__(self, settings, iface=None):
-        TimeLayer.__init__(self,settings.layer, settings.isEnabled)
-        
-        self.fromTimeAttribute = settings.startTimeAttribute 
-        self.toTimeAttribute = settings.endTimeAttribute 
+        TimeLayer.__init__(self, settings.layer, settings.isEnabled)
+
+        self.fromTimeAttribute = settings.startTimeAttribute
+        self.toTimeAttribute = settings.endTimeAttribute
         self.timeFormat = self.determine_format(settings.startTimeAttribute, settings.timeFormat)
         self.offset = int(settings.offset)
         self.originalUri = self.layer.dataProvider().dataSourceUri()
@@ -32,16 +31,17 @@ class WMSTRasterLayer(TimeRasterLayer):
         url = "http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r-t.cgi?&SERVICE=WMS&REQUEST=GetCapabilities"
         # TODO get extents from the xml somehow
         import urllib2
+
         raw_xml = urllib2.urlopen(url).read()
         name = self._get_wmts_layer_name()
-        return None,None
+        return None, None
 
     def getTimeExtents(self):
-        startTime, endTime =time_util.str_to_datetime(self.fromTimeAttribute, self.timeFormat),\
-                time_util.str_to_datetime(self.toTimeAttribute, self.timeFormat)
+        startTime, endTime = time_util.str_to_datetime(self.fromTimeAttribute, self.timeFormat), \
+                             time_util.str_to_datetime(self.toTimeAttribute, self.timeFormat)
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
-        return (startTime,endTime)
+        return (startTime, endTime)
 
     def addUrlMark(self):
         if "?" in self.originalUri:
@@ -49,18 +49,20 @@ class WMSTRasterLayer(TimeRasterLayer):
         else:
             return "?"
 
-    def setTimeRestriction(self,timePosition,timeFrame):
+    def setTimeRestriction(self, timePosition, timeFrame):
         """Constructs the query, including the original subset"""
         if not self.timeEnabled:
             self.deleteTimeRestriction()
             return
         startTime = timePosition + timedelta(seconds=self.offset)
         endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
-        self.layer.dataProvider().setDataSourceUri(self.IGNORE_PREFIX+\
-                self.originalUri + self.addUrlMark() + "TIME={}/{}"\
-                .format(time_util.datetime_to_str(startTime,self.timeFormat),time_util.datetime_to_str(endTime,self.timeFormat)))
+        self.layer.dataProvider().setDataSourceUri(self.IGNORE_PREFIX + \
+                                                   self.originalUri + self.addUrlMark() + "TIME={}/{}" \
+                                                   .format(
+            time_util.datetime_to_str(startTime, self.timeFormat),
+            time_util.datetime_to_str(endTime, self.timeFormat)))
         self.layer.dataProvider().reloadData()
-            
+
     def deleteTimeRestriction(self):
         """The layer is removed from Time Manager and is therefore always shown"""
         self.layer.dataProvider().setDataSourceUri(self.originalUri)

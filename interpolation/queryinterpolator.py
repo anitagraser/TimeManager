@@ -1,22 +1,16 @@
-import abc
-from collections import defaultdict
 from qgis.core import *
+
 from .. import time_util as time_util
-from .. import conf as conf
-from .. import logging as logging
 from .. import qgis_utils as qgs
-from ..logging import info, warn, error
+from ..logging import warn
 from interpolator import Interpolator
+
 
 try:
     import numpy as np
 except:
     pass
 __author__ = 'carolinux'
-
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 
 
 class QueryInterpolator(Interpolator):
@@ -29,7 +23,7 @@ class QueryInterpolator(Interpolator):
     def load(self, timeLayer, *args, **kwargs):
         warn("loaded??")
         self.timeLayer = timeLayer
-        self.timeColumn  = self.timeLayer.getTimeAttributes()[0]
+        self.timeColumn = self.timeLayer.getTimeAttributes()[0]
 
     def _value_for_query(self, val, col):
         if qgs.isNumericField(self.timeLayer.layer, col):
@@ -40,21 +34,23 @@ class QueryInterpolator(Interpolator):
     def _id_query_string(self, id):
         if self.timeLayer.hasIdAttribute():
             idColumn = self.timeLayer.getIdAttribute()
-            return " AND {}={}".format(QgsExpression.quotedColumnRef(idColumn), self._value_for_query(id, idColumn)) 
+            return " AND {}={}".format(QgsExpression.quotedColumnRef(idColumn),
+                                       self._value_for_query(id, idColumn))
         else:
             return ""
 
     def _time_query_string(self, epoch, col, symbol="="):
-        if self.timeLayer.getDateType() == time_util.DateTypes.IntegerTimestamps: 
-            return "{} {} {}".format(QgsExpression.quotedColumnRef(col), symbol,epoch)
+        if self.timeLayer.getDateType() == time_util.DateTypes.IntegerTimestamps:
+            return "{} {} {}".format(QgsExpression.quotedColumnRef(col), symbol, epoch)
         else:
             timeStr = time_util.epoch_to_str(epoch, self.timeLayer.getTimeFormat())
-            return "{} {} {}".format(QgsExpression.quotedColumnRef(col), symbol,QgsExpression.quotedString(timeStr))
+            return "{} {} {}".format(QgsExpression.quotedColumnRef(col), symbol,
+                                     QgsExpression.quotedString(timeStr))
 
     def get_Gvalue(self, id, epoch):
-        req = QgsFeatureRequest() 
+        req = QgsFeatureRequest()
         exp = self._time_query_string(epoch, self.timeColumn, '=')
-        exp+= self._id_query_string(id)
+        exp += self._id_query_string(id)
         req.setFilterExpression(exp)
         warn("Geom query Expression {}".format(exp))
         s = self.timeLayer.subsetString()
@@ -65,10 +61,10 @@ class QueryInterpolator(Interpolator):
             return self.getGeometryFromFeature(feat)
         return None
 
-    def _get_tvalue(self, id, epoch, symbol,get_first):
-        req = QgsFeatureRequest() 
+    def _get_tvalue(self, id, epoch, symbol, get_first):
+        req = QgsFeatureRequest()
         exp = self._time_query_string(epoch, self.timeColumn, symbol)
-        exp+= self._id_query_string(id)
+        exp += self._id_query_string(id)
         req.setFilterExpression(exp)
         warn(exp)
         s = self.timeLayer.subsetString()
@@ -80,7 +76,8 @@ class QueryInterpolator(Interpolator):
             subList = l[:min(20, len(l))]
         else:
             subList = l[-min(20, len(l)):]
-        feats = sorted(subList, key=lambda feat: self.getStartEpochFromFeature(feat, self.timeLayer))
+        feats = sorted(subList,
+                       key=lambda feat: self.getStartEpochFromFeature(feat, self.timeLayer))
         if not feats:
             return None
         if get_first:
@@ -91,9 +88,9 @@ class QueryInterpolator(Interpolator):
         return curr_epoch
 
     def get_Tvalue_before(self, id, epoch):
-        return self._get_tvalue(id, epoch, "<",False)
+        return self._get_tvalue(id, epoch, "<", False)
 
     def get_Tvalue_after(self, id, epoch):
-        return self._get_tvalue(id, epoch, ">",True)
+        return self._get_tvalue(id, epoch, ">", True)
 
 

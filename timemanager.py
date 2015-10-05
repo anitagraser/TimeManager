@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-#=============================================================
+# =============================================================
 #===================   TimeManager    ========================
 #===================  a QGIS Plug-In  ========================
 #=============================================================
@@ -16,28 +16,29 @@
 
 
 from qgis.utils import qgsfunction, QgsExpression
+import os
+
 from PyQt4.QtCore import QTranslator, QCoreApplication, qVersion, QSettings, QLocale
+
 from timemanagercontrol import TimeManagerControl
 import time_util
-import resources # loads the icons
-import os
-import locale
-import conf
 from logging import info, warn, error
 
-I18N_FOLDER="i18n"
+
+I18N_FOLDER = "i18n"
+
 
 class timemanager:
     """ plugin information """
     name = "timemanager"
     longName = "TimeManager Plugin for QGIS >= 2.3"
     description = "Working with temporal vector data"
-    version = "Version 2.1.6" 
-    qgisMinimumVersion = '2.3' 
+    version = "Version 2.1.6"
+    qgisMinimumVersion = '2.3'
     author = "Anita Graser, Karolina Alexiou"
     pluginUrl = "https://github.com/anitagraser/TimeManager"
 
-    def __init__( self, iface ):
+    def __init__(self, iface):
         """initialize the plugin"""
         global control
         try:
@@ -50,19 +51,19 @@ class timemanager:
                 else:
                     lang = QSettings().value("locale/userLocale", "").split("_")[0]
             except:
-                lang="en" # could not get locale, OSX may have this bug
+                lang = "en"  # could not get locale, OSX may have this bug
             info("Plugin language loaded: {}".format(lang))
             self.change_i18n(lang)
             control = TimeManagerControl(iface)
 
     def getController(self):
         return control
-        
-    def initGui( self ):
+
+    def initGui(self):
         """initialize the gui"""
         control.load()
 
-    def unload( self ):
+    def unload(self):
         """Unload the plugin"""
         control.unload()
         QgsExpression.unregisterFunction("$animation_datetime")
@@ -78,27 +79,25 @@ class timemanager:
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
         translation_path = os.path.join(
             root, self.name, I18N_FOLDER,
-            self.name+"_" + str(new_lang) + ".qm")
+            self.name + "_" + str(new_lang) + ".qm")
         if os.path.exists(translation_path):
             self.translator = QTranslator()
             result = self.translator.load(translation_path)
             if not result:
-                error("Translation file {} for lang {} was not loaded properly,"\
-                        +"falling back to English".format(translation_path, new_lang))
+                error("Translation file {} for lang {} was not loaded properly,"
+                      + "falling back to English".format(translation_path, new_lang))
                 return
-            if  qVersion() > "4.3.3":
+            if qVersion() > "4.3.3":
                 QCoreApplication.installTranslator(self.translator)
             else:
                 self.translator = None
                 warn("Translation not supported for Qt <= {}".format(qVersion()))
         else:
-            if new_lang !="en":
+            if new_lang != "en":
                 warn("Translation failed for lang {}, falling back to English".format(new_lang))
-        
+
     @qgsfunction(0, "TimeManager")
     def animation_datetime(values, feature, parent):
         """called by QGIS to determine the current animation time"""
         return time_util.datetime_to_str(control.getTimeLayerManager().getCurrentTimePosition(),
                                          time_util.DEFAULT_FORMAT)
-  
-

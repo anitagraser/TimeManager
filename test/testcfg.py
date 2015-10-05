@@ -1,1 +1,1 @@
-TEST_DATA_DIR="./testdata"
+TEST_DATA_DIR = "./testdata"
