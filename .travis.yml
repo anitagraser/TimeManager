@@ -22,7 +22,7 @@ install:
         - sudo apt-get install qgis --force-yes
         - sudo apt-get install python-qgis
         - sudo apt-get install vnc4server # to mock an X Server
-        - pip install pep8
+        - pip install pep8==1.4.6
         - pip install mock
         - pip install nose
         - pip install coverage

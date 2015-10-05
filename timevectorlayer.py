@@ -236,8 +236,8 @@ class TimeVectorLayer(TimeLayer):
 
             subsetString = query_builder.build_query(
                 startTime, endTime, self.fromTimeAttribute,
-                self.toTimeAttribute, date_type=
-                self.getDateType(), date_format=self.getTimeFormat(), query_idiom=idiom,
+                self.toTimeAttribute, date_type=self.getDateType(),
+                date_format=self.getTimeFormat(), query_idiom=idiom,
                 acc=self.accumulateFeatures()
                 )
             try:
@@ -247,7 +247,7 @@ class TimeVectorLayer(TimeLayer):
                 # try the other one
                 # not sure if trying several idioms could make the screen flash
                 continue
-            #info("Subsetstring:"+subsetString)
+            # info("Subsetstring:"+subsetString)
             return
 
         raise SubstringException(
