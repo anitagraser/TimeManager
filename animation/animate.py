@@ -20,7 +20,7 @@ def is_in_path(exec_name):
     if get_os() == WINDOWS:
         return False
     try:
-        ret = subprocess.check_call([exec_name, "-h"])
+        ret = subprocess.check_call([exec_name, "-version"])
         return ret == 0
     except:
         return False
@@ -32,6 +32,7 @@ def make_animation(out_folder, delay_millis, frame_pattern=DEFAULT_FRAME_PATTERN
         raise Exception("Imagemagick is not in path. Please install ImageMagick!")
     out_file = os.path.join(out_folder, DEFAULT_ANIMATION_NAME)
     all_frames = glob.glob(os.path.join(out_folder, frame_pattern))
+    all_frames.sort()
     fps = 1000 / delay_millis
     args = [IMAGEMAGICK, "-delay", "1x" + str(fps)] + all_frames + [out_file]
     ret = subprocess.check_call(args)
