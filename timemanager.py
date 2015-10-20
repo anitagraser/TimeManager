@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-# =============================================================
+#=============================================================
 #===================   TimeManager    ========================
 #===================  a QGIS Plug-In  ========================
 #=============================================================
@@ -16,14 +16,14 @@
 
 
 from qgis.utils import qgsfunction, QgsExpression
-import os
-
 from PyQt4.QtCore import QTranslator, QCoreApplication, qVersion, QSettings, QLocale
-
 from timemanagercontrol import TimeManagerControl
 import time_util
+import resources  # loads the icons
+import os
+import locale
+import conf
 from logging import info, warn, error
-
 
 I18N_FOLDER = "i18n"
 
@@ -79,13 +79,15 @@ class timemanager:
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
         translation_path = os.path.join(
             root, self.name, I18N_FOLDER,
-            self.name + "_" + str(new_lang) + ".qm")
+            self.name+"_" + str(new_lang) + ".qm")
         if os.path.exists(translation_path):
             self.translator = QTranslator()
             result = self.translator.load(translation_path)
             if not result:
-                error("Translation file {} for lang {} was not loaded properly,"
-                      + "falling back to English".format(translation_path, new_lang))
+                error(
+                    "Translation file {} for lang {} was not loaded properly,"
+                    + "falling back to English".format(translation_path, new_lang)
+                    )
                 return
             if qVersion() > "4.3.3":
                 QCoreApplication.installTranslator(self.translator)
