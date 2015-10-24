@@ -119,7 +119,7 @@ def _str_switch(str, substr1, substr2):
 
 
 def generate_all_timezones(fmt):
-    l = [fmt+" UTC"] 
+    l = [fmt+" UTC"]
     for i in range(-12, 15):
         l.append(fmt + ("-" if i < 0 else "+") + str(abs(i)).zfill(2))
     return l
