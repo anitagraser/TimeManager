@@ -276,7 +276,7 @@ class TimeLayerManager(QObject):
         which are not ignored for emptiness detection in the project has
         featureCount>0 (or if we have active raster layers)"""
         all_layers = map(lambda x: x.layer,
-                         filter(lambda x: x.isEnabled() and (not qgs.isRaster(x)) and x.geometriesCountForExport(),
+                filter(lambda x: x.isEnabled() and (not qgs.isRaster(x.layer)) and x.geometriesCountForExport(),
                                 self.getTimeLayerList()))
         total_features = 0
         for layer in all_layers:
