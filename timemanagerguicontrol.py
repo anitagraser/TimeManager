@@ -295,12 +295,6 @@ class TimeManagerGuiControl(QObject):
                           loopAnimation=False):
         """show the optionsDialog and populate it with settings from timeLayerManager"""
 
-        # check if the dialog is already showing
-        if self.optionsDialog is not None:
-            self.optionsDialog.raise_()
-            self.optionsDialog.activateWindow()
-            return
-
         # load the form
         self.optionsDialog = uic.loadUi(os.path.join(self.path, OPTIONS_WIDGET_FILE))
 
@@ -334,8 +328,6 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.pushButtonAddRaster.clicked.connect(self.rasterDialog.show)
         self.optionsDialog.pushButtonRemove.clicked.connect(self.removeLayer)
         self.optionsDialog.buttonBox.accepted.connect(self.saveOptions)
-        self.optionsDialog.buttonBox.rejected.connect(self.setOptionsDialogToNone)
-        self.optionsDialog.rejected.connect(self.setOptionsDialogToNone)
         self.optionsDialog.buttonBox.helpRequested.connect(self.showHelp)
 
     def showOrHideLabelOptions(self):
@@ -355,10 +347,6 @@ class TimeManagerGuiControl(QObject):
     def saveOptions(self):
         """save the options from optionsDialog to timeLayerManager"""
         self.signalSaveOptions.emit()
-
-    def setOptionsDialogToNone(self):
-        """set self.optionsDialog to None"""
-        self.optionsDialog = None
 
     def removeLayer(self):
         """removes the currently selected layer (= row) from options"""
