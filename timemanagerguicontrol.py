@@ -334,7 +334,6 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.pushButtonAddRaster.clicked.connect(self.rasterDialog.show)
         self.optionsDialog.pushButtonRemove.clicked.connect(self.removeLayer)
         self.optionsDialog.buttonBox.accepted.connect(self.saveOptions)
-        self.optionsDialog.buttonBox.accepted.connect(self.setOptionsDialogToNone)
         self.optionsDialog.buttonBox.rejected.connect(self.setOptionsDialogToNone)
         self.optionsDialog.rejected.connect(self.setOptionsDialogToNone)
         self.optionsDialog.buttonBox.helpRequested.connect(self.showHelp)

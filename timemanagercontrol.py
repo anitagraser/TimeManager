@@ -612,6 +612,8 @@ class TimeManagerControl(QObject):
             except:
                 continue
 
+            # destroy the dialog object after it has been used
+            self.guiControl.setOptionsDialogToNone()
             self.timeLayerManager.refreshTimeRestrictions()
 
     def createTimeLayerFromRow(self, row):
