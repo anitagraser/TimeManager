@@ -33,7 +33,7 @@ class timemanager:
     name = "timemanager"
     longName = "TimeManager Plugin for QGIS >= 2.3"
     description = "Working with temporal vector data"
-    version = "Version 2.2"
+    version = "Version 2.2.1"
     qgisMinimumVersion = '2.3'
     author = "Anita Graser, Karolina Alexiou"
     pluginUrl = "https://github.com/anitagraser/TimeManager"
@@ -67,6 +67,7 @@ class timemanager:
         """Unload the plugin"""
         control.unload()
         QgsExpression.unregisterFunction("$animation_datetime")
+        QgsExpression.unregisterFunction("animation_datetime")
 
     def change_i18n(self, new_lang):
         """Change internationalisation for the plugin.
