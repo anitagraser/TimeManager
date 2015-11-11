@@ -255,8 +255,10 @@ class TimeManagerControl(QObject):
                 'Image sequence from current position onwards is being saved to ' +
                 self.saveAnimationPath + '.\n\nPlease wait until the process is finished.')
 
-    def exportVideo(self, path, delay_millis, export_gif):
+    def exportVideo(self, path, delay_millis, export_gif, clear_frames):
         """export 'video' - currently choice between image sequence or animated gif"""
+        if clear_frames:
+            animate.clear_frames(path)
         self.exportFramesAtPath(path)
         # create gif
         if export_gif:
@@ -291,8 +293,11 @@ class TimeManagerControl(QObject):
             QTimer.singleShot(self.animationFrameLength, self.playAnimation)
 
     def generate_frame_filename(self, path, frame_index, currentTime):
-        return os.path.join(path, "{}{}.png".format(FRAME_FILENAME_PREFIX,
-                                                    str(frame_index).zfill(self.exportNameDigits)))
+        return os.path.join(path, "{}{}.{}".format(
+            FRAME_FILENAME_PREFIX,
+            str(frame_index).zfill(self.exportNameDigits),
+            FRAME_EXTENSION
+            ))
 
     def exportEmpty(self):
         return self.guiControl.exportEmpty
