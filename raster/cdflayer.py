@@ -35,8 +35,31 @@ class CDFRasterLayer(TimeRasterLayer):
 
     @classmethod
     def extract_time_from_bandname(cls, bandName):
-        pattern = "\s*\d+\s*\/\s*[^0-9]*(\d+)\s*.+"
-        epoch = int(re.findall(pattern, bandName)[0])
+        try:
+            from netcdftime import utime
+            return cls.extract_netcdf_time(bandName)
+        except:
+            return cls.extract_netcdf_time_fallback(bandName)
+
+    @classmethod
+    def extract_netcdf_time(cls, bandName):
+        """Convert netcdf time to datetime using appropriate library"""
+        from netcdftime import utime
+        epoch, units = cls.extract_epoch_units(bandName)
+        cdftime = utime(units, "proleptic_gregorian")
+        timestamps = cdftime.num2date([epoch])
+        return timestamps[0]
+
+    @classmethod
+    def extract_epoch_units(cls, bandName):
+        pattern = "\s*\d+\s*\/\s*[^0-9]*(\d+)\s*[(](.+)[)]"
+        matches = re.findall(pattern, bandName)[0]
+        return int(matches[0]), matches[1]
+
+    @classmethod
+    def extract_netcdf_time_fallback(cls, bandName):
+        """Fallback when netcdftime module isn't installed"""
+        epoch,_ = cls.extract_epoch_units(bandName)
         if "minute" in bandName.lower():
             epoch = epoch * 60  # the number is originally in minutes, so need to multiply by 60
         return time_util.epoch_to_datetime(epoch)
