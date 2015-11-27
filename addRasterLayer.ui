@@ -135,7 +135,7 @@
    <item>
     <widget class="QCheckBox" name="isCDF">
      <property name="text">
-      <string>Layer is netCDF file with time dimension (seconds or minutes after 1970)</string>
+      <string>Layer is netCDF file with time dimension</string>
      </property>
     </widget>
    </item>
