@@ -10,6 +10,8 @@ from ..timerasterlayer import TimeRasterLayer
 from ..timelayer import TimeLayer, NotATimeAttributeError
 
 
+DEFAULT_CALENDAR="proleptic_gregorian"
+
 class CDFRasterLayer(TimeRasterLayer):
 
     def get_calendar(self):
@@ -19,7 +21,7 @@ class CDFRasterLayer(TimeRasterLayer):
             time = nc.variables["time"]
             return time.calendar
         except:
-            return "proleptic_gregorian"
+            return DEFAULT_CALENDAR
 
     def get_filename(self):
         uri = self.layer.dataProvider().dataSourceUri()
@@ -52,7 +54,7 @@ class CDFRasterLayer(TimeRasterLayer):
                                                          QgsSingleBandPseudoColorRenderer)
 
     @classmethod
-    def extract_time_from_bandname(cls, bandName, calendar):
+    def extract_time_from_bandname(cls, bandName, calendar=DEFAULT_CALENDAR):
         try:
             from netcdftime import utime
             return cls.extract_netcdf_time(bandName, calendar)
