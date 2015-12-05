@@ -38,6 +38,14 @@ class RasterLayerDialog(AddLayerDialog):
         self.dialog.checkBoxEnd.stateChanged.connect(self.refreshEnd)
         self.dialog.isCDF.stateChanged.connect(self.handleCDF)
 
+    def haveNetCDF(self):
+        try:
+            import netCDF4
+            import netcdftime
+            return True
+        except:
+            return False
+
     def handleCDF(self, checkState):
         isCDF = checkState == Qt.Checked
         if isCDF and qgs.getVersion() < conf.MIN_RASTER_MULTIBAND:
@@ -49,6 +57,10 @@ class RasterLayerDialog(AddLayerDialog):
                                     'To use this feature the raster should be using the ' +
                                     'QgsSingleBandPseudoColorRenderer (can choose from Properties)')
             return
+        if isCDF and not self.haveNetCDF():
+            QMessageBox.information(self.iface.mainWindow(), 'Info',
+                                    'For full CDF support please pip install netCDF4')
+
         enable = not isCDF
         self.dialog.checkBoxEnd.setEnabled(enable)
         self.dialog.checkBoxStart.setEnabled(enable)
