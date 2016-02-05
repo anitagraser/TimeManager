@@ -8,9 +8,30 @@ from  qgis._core import QgsSingleBandPseudoColorRenderer
 from .. import time_util
 from ..timerasterlayer import TimeRasterLayer
 from ..timelayer import TimeLayer, NotATimeAttributeError
+from ..logging import warn
 
+
+DEFAULT_CALENDAR="proleptic_gregorian"
 
 class CDFRasterLayer(TimeRasterLayer):
+
+    def get_calendar(self):
+        try:
+            from netCDF4 import Dataset
+            nc = Dataset(self.get_filename(), mode='r')
+            time = nc.variables["time"]
+            return time.calendar
+        except:
+            return DEFAULT_CALENDAR
+
+    def get_filename(self):
+        uri = self.layer.dataProvider().dataSourceUri()
+        if "NETCDF" in uri:
+        # something like u'NETCDF:"/home/carolinux/Downloads/ex_jak_velsurf_mag (1).nc":velsurf_mag'
+            return uri.split('"')[1]
+        else:
+            return uri
+
     def __init__(self, settings, iface=None):
         TimeLayer.__init__(self, settings.layer, settings.isEnabled)
 
@@ -19,7 +40,7 @@ class CDFRasterLayer(TimeRasterLayer):
         self.timeFormat = time_util.NETCDF_BAND
         self.offset = int(settings.offset)
         self.band_to_dt = []
-
+        self.calendar = self.get_calendar()
         try:
             self.getTimeExtents()
         except NotATimeAttributeError, e:
@@ -34,9 +55,33 @@ class CDFRasterLayer(TimeRasterLayer):
                                                          QgsSingleBandPseudoColorRenderer)
 
     @classmethod
-    def extract_time_from_bandname(cls, bandName):
-        pattern = "\s*\d+\s*\/\s*[^0-9]*(\d+)\s*.+"
-        epoch = int(re.findall(pattern, bandName)[0])
+    def extract_time_from_bandname(cls, bandName, calendar=DEFAULT_CALENDAR):
+        try:
+            from netcdftime import utime
+            return cls.extract_netcdf_time(bandName, calendar)
+        except:
+            warn("Could not import netcdftime. Using fallback computation")
+            return cls.extract_netcdf_time_fallback(bandName)
+
+    @classmethod
+    def extract_netcdf_time(cls, bandName, calendar):
+        """Convert netcdf time to datetime using appropriate library"""
+        from netcdftime import utime
+        epoch, units = cls.extract_epoch_units(bandName)
+        cdftime = utime(units, calendar)
+        timestamps = cdftime.num2date([epoch])
+        return timestamps[0]
+
+    @classmethod
+    def extract_epoch_units(cls, bandName):
+        pattern = "\s*\d+\s*\/\s*[^0-9]*(\d+)\s*[(](.+)[)]"
+        matches = re.findall(pattern, bandName)[0]
+        return int(matches[0]), matches[1]
+
+    @classmethod
+    def extract_netcdf_time_fallback(cls, bandName):
+        """Fallback when netcdftime module isn't installed"""
+        epoch,_ = cls.extract_epoch_units(bandName)
         if "minute" in bandName.lower():
             epoch = epoch * 60  # the number is originally in minutes, so need to multiply by 60
         return time_util.epoch_to_datetime(epoch)
@@ -67,7 +112,7 @@ class CDFRasterLayer(TimeRasterLayer):
         p = self.layer.dataProvider()
         cnt = p.bandCount()
         for i in range(1, cnt + 1):
-            self.band_to_dt.append(self.extract_time_from_bandname(p.generateBandName(i)))
+            self.band_to_dt.append(self.extract_time_from_bandname(p.generateBandName(i), self.calendar))
 
         startTime = self.band_to_dt[0]
         endTime = self.band_to_dt[-1]

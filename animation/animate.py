@@ -4,12 +4,13 @@ import glob
 
 from ..logging import info, error
 from ..os_util import *
+from ..conf import FRAME_FILENAME_PREFIX, FRAME_EXTENSION
 
 
 IMAGEMAGICK = "convert"
 FFMPEG = "ffmpeg"
 DEFAULT_ANIMATION_NAME = "animation.gif"
-DEFAULT_FRAME_PATTERN = "*.png"
+DEFAULT_FRAME_PATTERN = "{}*.{}".format(FRAME_FILENAME_PREFIX, FRAME_EXTENSION)
 
 
 def can_animate():
@@ -25,6 +26,9 @@ def is_in_path(exec_name):
     except:
         return False
 
+def clear_frames(out_folder, frame_pattern=DEFAULT_FRAME_PATTERN):
+    all_frames = glob.glob(os.path.join(out_folder, frame_pattern))
+    map(os.remove, all_frames)
 
 def make_animation(out_folder, delay_millis, frame_pattern=DEFAULT_FRAME_PATTERN):
     if not can_animate():

@@ -58,7 +58,7 @@ class TimeManagerGuiControl(QObject):
     """This class controls all plugin-related GUI elements. Emitted signals are defined here."""
 
     showOptions = pyqtSignal()
-    signalExportVideo = pyqtSignal(str, int, bool)
+    signalExportVideo = pyqtSignal(str, int, bool, bool)
     toggleTime = pyqtSignal()
     toggleArchaeology = pyqtSignal()
     back = pyqtSignal()
@@ -151,7 +151,8 @@ class TimeManagerGuiControl(QObject):
             self.showAnimationOptions()
         delay_millis = self.animationDialog.spinBoxDelay.value()
         export_gif = self.animationDialog.radioAnimatedGif.isChecked()
-        self.signalExportVideo.emit(path, delay_millis, export_gif)
+        do_clear = self.animationDialog.clearCheckBox.isChecked()
+        self.signalExportVideo.emit(path, delay_millis, export_gif, do_clear)
 
     def showLabelOptions(self):
         # TODO maybe more clearly
