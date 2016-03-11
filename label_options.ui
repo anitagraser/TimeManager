@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>337</width>
-    <height>235</height>
+    <width>355</width>
+    <height>373</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Options</string>
@@ -31,8 +37,8 @@
     <rect>
      <x>20</x>
      <y>20</y>
-     <width>298</width>
-     <height>202</height>
+     <width>304</width>
+     <height>326</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -75,8 +81,44 @@
           </property>
          </widget>
         </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <widget class="QRadioButton" name="radioButton_dt">
+          <property name="text">
+           <string>DateTime</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QLineEdit" name="time_format"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <item>
+         <widget class="QRadioButton" name="radioButton_beginning">
+          <property name="text">
+           <string>Seconds elapsed since beginning of data</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_9">
+        <item>
+         <widget class="QRadioButton" name="radioButton_epoch">
+          <property name="text">
+           <string>Seconds elapsed since 1970-01-01</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>

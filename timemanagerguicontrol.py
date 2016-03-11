@@ -24,6 +24,7 @@ from ui import label_options
 import layer_settings as ls
 from vectorlayerdialog import VectorLayerDialog, AddLayerDialog
 from rasterlayerdialog import RasterLayerDialog
+from datetime import datetime
 
 
 # The QTSlider only supports integers as the min and max, therefore the maximum maximum value
@@ -52,7 +53,21 @@ class TimestampLabelConfig(object):
     placement = 'SE'  # Choose from
     color = 'black'  # Text color as name, rgb(RR,GG,BB), or #XXXXXX
     bgcolor = 'white'  # Background color as name, rgb(RR,GG,BB), or #XXXXXX
+    type ="dt"
 
+    def __init__(self, model):
+        self.model = model
+
+    def getLabel(self, dt):
+        if self.type=="dt":
+            return datetime_to_str(dt, self.fmt)
+        if self.type=="epoch":
+            return "Seconds elapsed: {}".format((dt - datetime(1970,1,1,0,0)).total_seconds())
+        if self.type=="beginning":
+            min_dt =  self.model.getProjectTimeExtents()[0]
+            return "Seconds elapsed: {}".format((dt - min_dt).total_seconds())
+        else:
+            raise Exception("Unsupported type {}".format(self.type))
 
 class TimeManagerGuiControl(QObject):
     """This class controls all plugin-related GUI elements. Emitted signals are defined here."""
@@ -113,7 +128,7 @@ class TimeManagerGuiControl(QObject):
         self.dock.dateTimeEditCurrentTime.setMinimumDate(MIN_QDATE)
         self.showLabel = conf.DEFAULT_SHOW_LABEL
         self.exportEmpty = conf.DEFAULT_EXPORT_EMPTY
-        self.labelOptions = TimestampLabelConfig()
+        self.labelOptions = TimestampLabelConfig(self.model)
 
         # placeholders for widgets that are added dynamically
         self.bcdateSpinBox = None
@@ -178,6 +193,12 @@ class TimeManagerGuiControl(QObject):
         self.labelOptions.color = self.labelOptionsDialog.text_color.color().name()
         self.labelOptions.placement = self.labelOptionsDialog.placement.currentText()
         self.labelOptions.fmt = self.labelOptionsDialog.time_format.text()
+        if self.labelOptionsDialog.radioButton_dt.isChecked():
+            self.labelOptions.type = "dt"
+        if self.labelOptionsDialog.radioButton_beginning.isChecked():
+            self.labelOptions.type = "beginning"
+        if self.labelOptionsDialog.radioButton_epoch.isChecked():
+            self.labelOptions.type = "epoch"
 
     def enableArchaeologyTextBox(self):
         self.dock.dateTimeEditCurrentTime.dateTimeChanged.connect(self.currentTimeChangedDateText)
@@ -409,7 +430,7 @@ class TimeManagerGuiControl(QObject):
         if dt is None:
             return
 
-        labelString = datetime_to_str(dt, self.labelOptions.fmt)
+        labelString = self.labelOptions.getLabel(dt)
 
         # Determine placement of label given cardinal directions
         flags = 0
