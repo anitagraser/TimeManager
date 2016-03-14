@@ -16,6 +16,9 @@ DEFAULT_FRAME_PATTERN = "{}*.{}".format(FRAME_FILENAME_PREFIX, FRAME_EXTENSION)
 def can_animate():
     return is_in_path(IMAGEMAGICK)
 
+def can_export_video():
+    return is_in_path(FFMPEG)
+
 
 def is_in_path(exec_name):
     if get_os() == WINDOWS:
@@ -45,14 +48,18 @@ def make_animation(out_folder, delay_millis, frame_pattern=DEFAULT_FRAME_PATTERN
         error(msg)
         raise Exception(msg)
     info("Exported {} frames to gif {} (call :{})".format(len(all_frames), out_file, args))
+    return out_file
 
 
 # ffmpeg -f image2 -r 1 -i frame%02d.png -vcodec libx264 -vf fps=25 -pix_fmt yuv420p out.mp4
 #http://unix.stackexchange.com/questions/68770/converting-png-frames-to-video-at-1-fps
 
-def make_video(out_folder, settings):
-    # TODO in the future
-    pass
-    frames_glob = os.path.join(outFolder, "")
-    subprocess.check_call(["ffmpeg", "-f", "image2", "-i", frames_glob, out_file])
+def make_video(out_folder, digits):
+    outfile = os.path.join(out_folder,"out.mp4")
+    # something like frame%03d.png as expected by ffmpeg
+    frame_pattern = os.path.join(out_folder,"{}%0{}d.{}".format(FRAME_FILENAME_PREFIX, digits ,FRAME_EXTENSION))
+    # TODO: Make this configurable (when understanding how it works)
+    subprocess.check_call(["sh", "video.sh", frame_pattern, outfile])
+    info("Exported video to {}".format(outfile))
+    return outfile
 

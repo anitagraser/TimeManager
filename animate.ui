@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>462</width>
-    <height>221</height>
+    <width>466</width>
+    <height>267</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>10</x>
      <y>20</y>
      <width>435</width>
-     <height>183</height>
+     <height>211</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -50,7 +50,14 @@
     <item>
      <widget class="QRadioButton" name="radioAnimatedGif">
       <property name="text">
-       <string>Animated gif (requires ImageMagick in path, Linux only)</string>
+       <string>Animated gif (requires ImageMagick in path, Linux/OSX only)</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QRadioButton" name="radioVideo">
+      <property name="text">
+       <string>Video (requires ffmpeg in path, Linux/OSX only)</string>
       </property>
      </widget>
     </item>

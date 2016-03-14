@@ -255,7 +255,7 @@ class TimeManagerControl(QObject):
                 'Image sequence from current position onwards is being saved to ' +
                 self.saveAnimationPath + '.\n\nPlease wait until the process is finished.')
 
-    def exportVideo(self, path, delay_millis, export_gif, clear_frames=False):
+    def exportVideo(self, path, delay_millis, export_gif,export_video=False,clear_frames=False):
         """export 'video' - currently choice between image sequence or animated gif"""
         if clear_frames:
             animate.clear_frames(path)
@@ -264,6 +264,9 @@ class TimeManagerControl(QObject):
         if export_gif:
             self.showMessage("Creating animated gif at {}".format(self.saveAnimationPath))
             animate.make_animation(path, delay_millis)
+        if export_video:
+            self.showMessage("Creating video at {}".format(self.saveAnimationPath))
+            animate.make_video(path, self.exportNameDigits)
 
     def toggleAnimation(self):
         """toggle animation on/off"""
