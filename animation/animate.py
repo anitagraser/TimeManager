@@ -39,6 +39,10 @@ def make_animation(out_folder, delay_millis, frame_pattern=DEFAULT_FRAME_PATTERN
         raise Exception("Imagemagick is not in path. Please install ImageMagick!")
     out_file = os.path.join(out_folder, DEFAULT_ANIMATION_NAME)
     all_frames = glob.glob(os.path.join(out_folder, frame_pattern))
+    if len(all_frames)==0:
+        msg = "Couldn't find any frames with pattern {} in folder {} to animate".format(frame_pattern, out_folder)
+        error(msg)
+        raise Exception(msg)
     all_frames.sort()
     fps = 1000 / delay_millis
     args = [IMAGEMAGICK, "-delay", "1x" + str(fps)] + all_frames + [out_file]
