@@ -140,18 +140,18 @@
     </message>
     <message>
         <location filename="addLayer.ui" line="22"/>
-        <source>Layer:</source>
-        <translation>Couche :</translation>
+        <source>Layer</source>
+        <translation>Couche</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="32"/>
-        <source>Start Time:</source>
-        <translation>Date :</translation>
+        <source>Start time</source>
+        <translation>Date</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="42"/>
-        <source>End Time:</source>
-        <translation>Fin :</translation>
+        <source>End time</source>
+        <translation>Fin</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="100"/>
@@ -160,8 +160,8 @@
     </message>
     <message>
         <location filename="addLayer.ui" line="76"/>
-        <source>Offset (in sec):</source>
-        <translation>Décalage (en sec.):</translation>
+        <source>Offset (in sec)</source>
+        <translation>Décalage (en sec.)</translation>
     </message>
     <message>
         <location filename="addRasterLayer.ui" line="35"/>

@@ -141,18 +141,18 @@
     </message>
     <message>
         <location filename="addLayer.ui" line="22"/>
-        <source>Layer:</source>
+        <source>Layer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="32"/>
-        <source>Start Time:</source>
-        <translation type="unfinished">Anfang:</translation>
+        <source>Start time</source>
+        <translation type="unfinished">Startzeit</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="42"/>
-        <source>End Time:</source>
-        <translation type="unfinished">Ende:</translation>
+        <source>End time</source>
+        <translation type="unfinished">Endzeit</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="100"/>
@@ -166,7 +166,7 @@
     </message>
     <message>
         <location filename="addLayer.ui" line="76"/>
-        <source>Offset (in sec):</source>
+        <source>Offset (in sec)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

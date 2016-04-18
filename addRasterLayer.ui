@@ -22,7 +22,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Start Time:</string>
+        <string>Start time</string>
        </property>
       </widget>
      </item>
@@ -39,7 +39,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Layer:</string>
+        <string>Layer</string>
        </property>
       </widget>
      </item>
@@ -52,7 +52,7 @@
      <item row="12" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
-        <string>Offset (in sec):</string>
+        <string>Offset (in sec)</string>
        </property>
       </widget>
      </item>
@@ -98,7 +98,7 @@
      <item row="3" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>End Time:</string>
+        <string>End time</string>
        </property>
       </widget>
      </item>

@@ -140,23 +140,23 @@
     </message>
     <message>
         <location filename="addLayer.ui" line="22"/>
-        <source>Layer:</source>
-        <translation>Warstwa:</translation>
+        <source>Layer</source>
+        <translation>Warstwa</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="32"/>
-        <source>Start Time:</source>
-        <translation>Początek czasu:</translation>
+        <source>Start time</source>
+        <translation>Początek czasu</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="42"/>
-        <source>End Time:</source>
-        <translation>Koniec czasu:</translation>
+        <source>End time</source>
+        <translation>Koniec czasu</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="76"/>
-        <source>Offset (in sec):</source>
-        <translation>Przesunięcie (w sekundach):</translation>
+        <source>Offset (in sec)</source>
+        <translation>Przesunięcie (w sekundach)</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="100"/>

@@ -140,23 +140,23 @@
     </message>
     <message>
         <location filename="addLayer.ui" line="22"/>
-        <source>Layer:</source>
-        <translation>图层:</translation>
+        <source>Layer</source>
+        <translation>图层</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="32"/>
-        <source>Start Time:</source>
-        <translation>起始时间:</translation>
+        <source>Start time</source>
+        <translation>起始时间</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="42"/>
-        <source>End Time:</source>
-        <translation>结束时间:</translation>
+        <source>End time</source>
+        <translation>结束时间</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="76"/>
-        <source>Offset (in sec):</source>
-        <translation>偏移 (秒):</translation>
+        <source>Offset (in sec)</source>
+        <translation>偏移 (秒)</translation>
     </message>
     <message>
         <location filename="addLayer.ui" line="100"/>
