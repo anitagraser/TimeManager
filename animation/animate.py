@@ -12,6 +12,7 @@ FFMPEG = "ffmpeg"
 DEFAULT_ANIMATION_NAME = "animation.gif"
 DEFAULT_FRAME_PATTERN = "{}*.{}".format(FRAME_FILENAME_PREFIX, FRAME_EXTENSION)
 
+file_dir = os.path.dirname(os.path.realpath('__file__'))
 
 def can_animate():
     return is_in_path(IMAGEMAGICK)
@@ -63,7 +64,8 @@ def make_video(out_folder, digits):
     # something like frame%03d.png as expected by ffmpeg
     frame_pattern = os.path.join(out_folder,"{}%0{}d.{}".format(FRAME_FILENAME_PREFIX, digits ,FRAME_EXTENSION))
     # TODO: Make this configurable (when understanding how it works)
-    subprocess.check_call(["sh", "video.sh", frame_pattern, outfile])
+    video_script = os.path.join(file_dir,"video.sh")
+    subprocess.check_call(["sh", video_script, frame_pattern, outfile])
     info("Exported video to {}".format(outfile))
     return outfile
 
