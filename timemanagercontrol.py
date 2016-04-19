@@ -500,7 +500,8 @@ class TimeManagerControl(QObject):
                         'timeFrameSize': self.getTimeLayerManager().getTimeFrameSize(),
                         'active': self.getTimeLayerManager().isEnabled(),
                         'mode': int(time_util.is_archaelogical()),
-                        'digits': time_util.getArchDigits()}
+                        'digits': time_util.getArchDigits(),
+                        'labelFormat': self.guiControl.getLabelFormat()}
 
             TimeManagerProjectHandler.writeSettings(settings)
 
@@ -516,6 +517,7 @@ class TimeManagerControl(QObject):
     METASETTINGS['timeFrameType'] = str
     METASETTINGS['timeFrameSize'] = int
     METASETTINGS['active'] = int
+    METASETTINGS['labelFormat'] = str
 
     def readSettings(self):
         """load and restore settings from project file"""
@@ -536,6 +538,7 @@ class TimeManagerControl(QObject):
             'timeFrameType': (self.restoreTimeFrameType, DEFAULT_FRAME_UNIT),
             'timeFrameSize': (self.guiControl.setTimeFrameSize, DEFAULT_FRAME_SIZE),
             'active': (self.setActive, 0),
+            'labelFormat': (self.guiControl.setLabelFormat, time_util.DEFAULT_FORMAT),
         }
 
         for setting_name in self.METASETTINGS.keys():

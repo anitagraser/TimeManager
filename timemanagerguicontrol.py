@@ -141,6 +141,14 @@ class TimeManagerGuiControl(QObject):
         except:
             pass  # OK for testing
 
+    def getLabelFormat(self):
+        return self.labelOptions.fmt
+
+    def setLabelFormat(self, fmt):
+        if not fmt:
+            return
+        self.labelOptions.fmt = fmt
+
     def toggleDock(self):
         self.dock.setVisible(not self.dock.isVisible())
 
