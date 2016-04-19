@@ -125,13 +125,14 @@ def generate_all_timezones(fmt):
     return l
 
 
-YMD_SUPPORTED_FORMATS = [
+BASIC_SUPPORTED_FORMATS = [
     "%Y-%m-%d %H:%M:%S.%f",
     "%Y-%m-%d %H:%M:%S",
     "%Y-%m-%d %H:%M",
     "%Y-%m-%dT%H:%M:%S",
     "%Y-%m-%dT%H:%M:%SZ",
-    "%Y-%m-%dT%HZ",
+    "%Y-%m-%dT%H:%M",
+    "%Y-%m-%dT%H:%MZ",
     "%Y-%m-%d",
     "%Y/%m/%d %H:%M:%S.%f",
     "%Y/%m/%d %H:%M:%S",
@@ -144,7 +145,9 @@ YMD_SUPPORTED_FORMATS = [
     "%Y.%m.%d %H:%M",
     "%Y.%m.%d",
     "%Y%m%d%H%M%SED"
-] + generate_all_timezones("%Y-%m-%d %H:%M:%S")
+]
+
+YMD_SUPPORTED_FORMATS = BASIC_SUPPORTED_FORMATS + generate_all_timezones("%Y-%m-%d %H:%M:%S")
 
 DMY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x, "%Y", "%d"), YMD_SUPPORTED_FORMATS)
 MDY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x, "%m", "%d"), DMY_SUPPORTED_FORMATS)
@@ -342,8 +345,8 @@ def createNiceMessage(dateStr, specified_fmt, is_arch, e):
                "button next to Settings"
 
     if specified_fmt == PENDING:
-        return "Could not match value {} with any of the supported formats. Tried {}".format(
-            dateStr, SUPPORTED_FORMATS)
+        return "Could not match value {} with any of the supported formats. Tried: <br> {}".format(
+            dateStr, '<br>'.join(OTHER_FORMATS + BASIC_SUPPORTED_FORMATS))
     else:
         return "You specified that the format of {} is {}, but this did not succeed. Please check again".format(
             dateStr, specified_fmt)

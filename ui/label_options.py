@@ -2,12 +2,10 @@
 
 # Form implementation generated from reading ui file 'label_options.ui'
 #
-# Created: Thu Feb 12 10:53:29 2015
-# by: PyQt4 UI code generator 4.10.4
+# Created: Fri Mar 11 15:03:27 2016
+#      by: PyQt4 UI code generator 4.10.4
 #
-# WARNING! Do not regenerate this file unless you know what you're doing
-# This file is excluded from code coverage by # pragma: no cover directives
-# which would be deleted
+# WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore, QtGui
 
@@ -19,24 +17,27 @@ except AttributeError:
 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
-
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig, _encoding)
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
-
 class Ui_labelOptions(object):
-    def setupUi(self, labelOptions):  # pragma: no cover
+    def setupUi(self, labelOptions):
         labelOptions.setObjectName(_fromUtf8("labelOptions"))
-        labelOptions.resize(337, 235)
+        labelOptions.resize(355, 373)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(labelOptions.sizePolicy().hasHeightForWidth())
+        labelOptions.setSizePolicy(sizePolicy)
         self.label_4 = QtGui.QLabel(labelOptions)
         self.label_4.setGeometry(QtCore.QRect(462, 41, 16, 17))
         self.label_4.setText(_fromUtf8(""))
         self.label_4.setObjectName(_fromUtf8("label_4"))
         self.layoutWidget = QtGui.QWidget(labelOptions)
-        self.layoutWidget.setGeometry(QtCore.QRect(20, 20, 298, 202))
+        self.layoutWidget.setGeometry(QtCore.QRect(20, 20, 304, 326))
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.verticalLayout_3 = QtGui.QVBoxLayout(self.layoutWidget)
         self.verticalLayout_3.setMargin(0)
@@ -66,10 +67,29 @@ class Ui_labelOptions(object):
         self.label_3 = QtGui.QLabel(self.layoutWidget)
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.horizontalLayout_2.addWidget(self.label_3)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout_6 = QtGui.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(_fromUtf8("horizontalLayout_6"))
+        self.radioButton_dt = QtGui.QRadioButton(self.layoutWidget)
+        self.radioButton_dt.setChecked(True)
+        self.radioButton_dt.setObjectName(_fromUtf8("radioButton_dt"))
+        self.horizontalLayout_6.addWidget(self.radioButton_dt)
         self.time_format = QtGui.QLineEdit(self.layoutWidget)
         self.time_format.setObjectName(_fromUtf8("time_format"))
-        self.horizontalLayout_2.addWidget(self.time_format)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout_6.addWidget(self.time_format)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_6)
+        self.horizontalLayout_7 = QtGui.QHBoxLayout()
+        self.horizontalLayout_7.setObjectName(_fromUtf8("horizontalLayout_7"))
+        self.radioButton_beginning = QtGui.QRadioButton(self.layoutWidget)
+        self.radioButton_beginning.setObjectName(_fromUtf8("radioButton_beginning"))
+        self.horizontalLayout_7.addWidget(self.radioButton_beginning)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_7)
+        self.horizontalLayout_9 = QtGui.QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(_fromUtf8("horizontalLayout_9"))
+        self.radioButton_epoch = QtGui.QRadioButton(self.layoutWidget)
+        self.radioButton_epoch.setObjectName(_fromUtf8("radioButton_epoch"))
+        self.horizontalLayout_9.addWidget(self.radioButton_epoch)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_9)
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.label_5 = QtGui.QLabel(self.layoutWidget)
@@ -97,26 +117,25 @@ class Ui_labelOptions(object):
         self.verticalLayout_3.addLayout(self.verticalLayout_2)
         self.buttonBox = QtGui.QDialogButtonBox(self.layoutWidget)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(
-            QtGui.QDialogButtonBox.Cancel | QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.verticalLayout_3.addWidget(self.buttonBox)
 
         self.retranslateUi(labelOptions)
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")),
-                               labelOptions.accept)
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")),
-                               labelOptions.reject)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), labelOptions.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), labelOptions.reject)
         QtCore.QMetaObject.connectSlotsByName(labelOptions)
 
-    def retranslateUi(self, labelOptions):  # pragma: no cover
+    def retranslateUi(self, labelOptions):
         labelOptions.setWindowTitle(_translate("labelOptions", "Options", None))
         self.label.setText(_translate("labelOptions", "Font:", None))
         self.label_2.setText(_translate("labelOptions", "Font Size:", None))
         self.label_3.setText(_translate("labelOptions", "Time Format:", None))
+        self.radioButton_dt.setText(_translate("labelOptions", "DateTime", None))
+        self.radioButton_beginning.setText(_translate("labelOptions", "Seconds elapsed since beginning of data", None))
+        self.radioButton_epoch.setText(_translate("labelOptions", "Seconds elapsed since 1970-01-01", None))
         self.label_5.setText(_translate("labelOptions", "Placement Direction:", None))
         self.label_6.setText(_translate("labelOptions", "Text Color:", None))
         self.label_7.setText(_translate("labelOptions", "Bg Color:", None))
-
 
 from qgis import gui
