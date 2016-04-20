@@ -12,7 +12,7 @@ FFMPEG = "ffmpeg"
 DEFAULT_ANIMATION_NAME = "animation.gif"
 DEFAULT_FRAME_PATTERN = "{}*.{}".format(FRAME_FILENAME_PREFIX, FRAME_EXTENSION)
 
-file_dir = os.path.dirname(os.path.realpath('__file__'))
+file_dir = os.path.dirname(os.path.realpath(__file__))
 
 def can_animate():
     return is_in_path(IMAGEMAGICK)
