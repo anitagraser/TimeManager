@@ -11,6 +11,7 @@ DEFAULT_FRAME_LENGTH = 500
 FRAME_FILENAME_PREFIX = "frame"
 FRAME_EXTENSION = "png"
 DEFAULT_GRANULARITY_IN_SECONDS = 1
+LAST_ANIMATION_PATH_TAG = "last_animation_path"
 
 ## interpolation settings
 NO_INTERPOLATION = "No interpolation (faster)"
