@@ -37,7 +37,7 @@ before_script:
 
 script:
         - bash run_tests.sh # this runs tests with coverage
-        - sh pep8.sh # run pep8 on the python code
+        #- sh pep8.sh # run pep8 on the python code
 
 after_success:
     coveralls
