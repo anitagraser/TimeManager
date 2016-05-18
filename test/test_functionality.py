@@ -200,7 +200,9 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         test_file = os.path.join(testcfg.TEST_DATA_DIR, "sample_project.qgs")
         if os.path.exists(test_file):
             os.remove(test_file)
-        self.ctrl.writeSettings(None)
+        label_fmt = "Time flies  %Y-%m-%d"
+        self.ctrl.guiControl.getLabelFormat.return_value = label_fmt
+        self.ctrl.writeSettings()
         QgsProject.instance().write(QtCore.QFileInfo(test_file))
 
         # change settings
@@ -218,6 +220,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.assertEquals(self.tlm.getCurrentTimePosition(), initial_time)
         self.assertEquals(self.ctrl.loopAnimation, True)
         self.ctrl.guiControl.setTimeFrameSize.assert_called_with(1)
+        self.ctrl.guiControl.setLabelFormat.assert_called_with(label_fmt)
 
 
     @skip

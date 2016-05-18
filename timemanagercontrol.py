@@ -479,7 +479,7 @@ class TimeManagerControl(QObject):
         except:  # tests dont work with mocked qcoreapplications unfortunately
             pass
 
-    def writeSettings(self, doc):
+    def writeSettings(self):
         """write all relevant settings to the project file XML """
         if not self.getTimeLayerManager().isEnabled():
             return
