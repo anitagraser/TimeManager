@@ -45,7 +45,11 @@ class WMSTRasterLayer(TimeRasterLayer):
 
     def addUrlMark(self):
         if "?" in self.originalUri:
-            return "&"
+            if self.originalUri.endswith('?'):
+                # concatting a & behind ? is messing up QGIS wms parseUri: do NOT add anything behind it
+                return ""
+            else:
+                return "&"
         else:
             return "?"
 
