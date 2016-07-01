@@ -4,8 +4,7 @@ from qgis.core import *
 
 from .. import time_util as time_util
 from .. import conf as conf
-from .. import logging as logging
-from logging import info, warn, error
+from  ..tmlogging import info, warn, error
 
 
 try:

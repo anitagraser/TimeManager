@@ -23,7 +23,7 @@ import resources  # loads the icons
 import os
 import locale
 import conf
-from logging import info, warn, error
+from tmlogging import info, warn, error
 
 I18N_FOLDER = "i18n"
 

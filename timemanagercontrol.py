@@ -17,7 +17,7 @@ import time_util
 import bcdate_util
 from bcdate_util import BCDate
 from conf import *
-from logging import info, warn, error, log_exceptions
+from tmlogging import info, warn, error, log_exceptions
 
 
 class TimeManagerControl(QObject):

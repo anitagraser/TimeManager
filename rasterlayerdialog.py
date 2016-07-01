@@ -7,7 +7,7 @@ import qgis_utils as qgs
 import layer_settings as ls
 import conf
 from vectorlayerdialog import AddLayerDialog
-from logging import info, warn
+from tmlogging import info, warn
 from raster.cdflayer import CDFRasterLayer
 
 

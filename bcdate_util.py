@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from PyQt4.QtCore import QDateTime
 import PyQt4.QtCore as QtCore
 
-from logging import warn
+from tmlogging import warn
 import conf
 
 
