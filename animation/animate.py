@@ -2,7 +2,7 @@ import subprocess
 import os
 import glob
 
-from ..logging import info, error
+from ..tmlogging import info, error
 from ..os_util import *
 from ..conf import FRAME_FILENAME_PREFIX, FRAME_EXTENSION
 

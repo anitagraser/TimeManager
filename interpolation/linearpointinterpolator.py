@@ -1,7 +1,7 @@
 from interpolator import *
 from queryinterpolator import *
 
-from ..logging import warn
+from ..tmlogging import warn
 
 
 class LinearPointInterpolator(Interpolator):
