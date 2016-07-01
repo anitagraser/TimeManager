@@ -259,6 +259,7 @@ class TimeManagerControl(QObject):
         """export 'video' - currently choice between image sequence or animated gif"""
         if clear_frames:
             animate.clear_frames(path)
+            animate.clear_frames(path, '*PNGw')
         self.exportFramesAtPath(path)
         # create gif
         if export_gif:
