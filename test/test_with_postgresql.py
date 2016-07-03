@@ -118,6 +118,7 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
         # self._test_layer(self.layer, DATE_STR_COL_DMY,timevectorlayer.DateTypes.DatesAsStrings,
         #                 CUSTOM_FORMAT_DMY)
 
+    @unittest.skip
     def test_date(self):
         self._test_layer(self.layer, DATE_COL, timevectorlayer.DateTypes.DatesAsStrings,
                          time_util.DEFAULT_FORMAT)
