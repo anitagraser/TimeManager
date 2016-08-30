@@ -12,7 +12,7 @@ before_install:
         - psql -c 'create database mydb;' -U postgres
 
 install:
-        - sudo rm /etc/apt/sources.list.d/ubuntugis-stable-source.list # work around for qgis/postgis package problems on travis
+    #  - sudo rm /etc/apt/sources.list.d/ubuntugis-stable-source.list # work around for qgis/postgis package problems on travis
         - echo "deb http://qgis.org/debian $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list
         - echo "deb-src http://qgis.org/debian $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list
         - gpg --keyserver keyserver.ubuntu.com --recv 997D3880
