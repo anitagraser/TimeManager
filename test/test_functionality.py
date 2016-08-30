@@ -81,26 +81,34 @@ class TestWithQGISLauncher(unittest.TestCase):
         QtCore.QCoreApplication.setOrganizationName('QGIS')
         QtCore.QCoreApplication.setApplicationName('QGIS2')
 
-        prefix = os_util.get_possible_prefix_path() if PREFIX_PATH is None else PREFIX_PATH
-        QgsApplication.setPrefixPath(prefix, True)
-        QgsApplication.initQgis()
-
-        if len(QgsProviderRegistry.instance().providerList()) == 0:
-            raise Exception("Could not detect the QGIS prefix path. Maybe you installed "
-                            "QGIS in a non standard location. It is possible to figure "
-                            "this from the Python console within a running QGIS. Type  "
-                            "QgsApplication.showSettings().split(\"\\t\") and look for a " \
-                            "filepath after the " \
-                            "word Prefix and "
-                            "then set it as "
-                            "PREFIX_PATH='foo' "
-                            "on the top of the "
-                            "file "
-                            "test_functionality.py")
+        # OLD (that is
+        # prefix = os_util.get_possible_prefix_path() if PREFIX_PATH is None else PREFIX_PATH
+        # QgsApplication.setPrefixPath(prefix, True)
+        # QgsApplication.initQgis()
+        #
+        # if len(QgsProviderRegistry.instance().providerList()) == 0:
+        #     raise Exception("Could not detect the QGIS prefix path. Maybe you installed "
+        #                     "QGIS in a non standard location. It is possible to figure "
+        #                     "this from the Python console within a running QGIS. Type  "
+        #                     "QgsApplication.showSettings().split(\"\\t\") and look for a " \
+        #                     "filepath after the " \
+        #                     "word Prefix and "
+        #                     "then set it as "
+        #                     "PREFIX_PATH='foo' "
+        #                     "on the top of the "
+        #                     "file "
+        #                     "test_functionality.py")
 
     def setUp(self):
-        iface = Mock()
-        self.ctrl = RiggedTimeManagerControl(iface)
+
+        prefix = os_util.get_possible_prefix_path() if PREFIX_PATH is None else PREFIX_PATH
+
+        self.qgs = QgsApplication(sys.argv, False)
+        self.qgs.setPrefixPath(prefix, True)
+        self.qgs.initQgis()
+
+        self.iface = Mock()
+        self.ctrl = RiggedTimeManagerControl(self.iface)
         self.ctrl.load()
         self.tlm = self.ctrl.getTimeLayerManager()
 
