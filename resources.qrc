@@ -1,9 +1,11 @@
 <RCC>
   <qresource prefix="/">
+    <file>images/pause.png</file>
     <file>images/power_off.png</file>
     <file>images/back.png</file>
     <file>images/forward.png</file>
     <file>images/play.png</file>
+    <file>images/pause.png</file>
     <file>images/power_on.png</file>
     <file>images/arch.png</file>
     <file>images/arch_off.png</file>
