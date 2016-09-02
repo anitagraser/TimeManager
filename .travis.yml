@@ -10,6 +10,7 @@ virtualenv:
 
 before_install:
         - psql -c 'create database mydb;' -U postgres
+        - psql -U postgres -c "create extension postgis"
 
 install:
     #  - sudo rm /etc/apt/sources.list.d/ubuntugis-stable-source.list # work around for qgis/postgis package problems on travis
