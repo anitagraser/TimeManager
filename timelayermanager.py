@@ -23,6 +23,8 @@ class TimeLayerManager(QObject):
     timeRestrictionsRefreshed = pyqtSignal(object)
     # the signal when the start and end time are changed
     projectTimeExtentsChanged = pyqtSignal(object)
+    # the signal when the timeFrame has changed (being size, unit, discrete or start)
+    timeFrameChanged = pyqtSignal()
     # the signal for when we dont have any layers left managed by TimeManager
     lastLayerRemoved = pyqtSignal()
 
@@ -31,10 +33,11 @@ class TimeLayerManager(QObject):
         self.iface = iface
         self.timeManagementEnabled = True
         self.timeLayerList = []
-        self.setProjectTimeExtents((None, None))
-        self.setCurrentTimePosition(None)
         self.timeFrameType = conf.DEFAULT_FRAME_UNIT
         self.timeFrameSize = conf.DEFAULT_FRAME_SIZE
+        self.timeFrameDiscrete = conf.DEFAULT_FRAME_IS_DISCRETE
+        self.setProjectTimeExtents((None, None))
+        self.setCurrentTimePosition(None)
 
     def isEnabled(self):
         """return true if the manager is enabled"""
@@ -89,8 +92,7 @@ class TimeLayerManager(QObject):
         if self.timeFrameType == 'years':
             return relativedelta(years=self.timeFrameSize)  # years are not supported by timedelta
         elif self.timeFrameType == 'months':
-            return relativedelta(
-                months=self.timeFrameSize)  # months are not supported by timedelta
+            return relativedelta(months=self.timeFrameSize)  # months are not supported by timedelta
         elif self.timeFrameType == 'weeks':
             return timedelta(weeks=self.timeFrameSize)
         elif self.timeFrameType == 'days':
@@ -131,6 +133,7 @@ class TimeLayerManager(QObject):
             # info("Set the time position to {}".format(self.getCurrentTimePosition()))
         self.updateProjectTimeExtents()
         self.refreshTimeRestrictions()
+        # TODO?? emit a signal that a layer is added to the model?
 
     def removeTimeLayer(self, layerId):
         """remove the timeLayer with the given layerId"""
@@ -162,6 +165,11 @@ class TimeLayerManager(QObject):
             start = min(self.getProjectTimeExtents()[0], extents[0])
             end = max(self.getProjectTimeExtents()[1], extents[1])
             self.setProjectTimeExtents((start, end))
+        # BUT if we are doing discrete time steps, fix the start and end
+        if self.timeFrameDiscrete and self.getProjectTimeExtents()[0] is not None:
+            new_extent = time_util.to_discrete_datetime(
+                self.getProjectTimeExtents(), self.getTimeFrameType(), self.getTimeFrameSize())
+            self.setProjectTimeExtents(new_extent)
 
     def setProjectTimeExtents(self, timeExtents):
         """set projectTimeExtents to given time extent and emit signal 'projectTimeExtentsChanged(list)'"""
@@ -180,11 +188,18 @@ class TimeLayerManager(QObject):
         """Defines the type of the time frame, accepts all values usable by timedelta/relativedelta objects:
         days, seconds, microseconds, milliseconds, minutes, hours, weeks, months, years"""
         self.timeFrameType = frameType
+        self.timeFrameChanged.emit()
         self.refreshTimeRestrictions()
 
     def setTimeFrameSize(self, frameSize):
         """Defines the size of the time frame"""
         self.timeFrameSize = frameSize
+        self.timeFrameChanged.emit()
+        self.refreshTimeRestrictions()
+
+    def setTimeFrameDiscrete(self, bool):
+        self.timeFrameDiscrete = bool
+        self.timeFrameChanged.emit()
         self.refreshTimeRestrictions()
 
     @log_exceptions
@@ -196,6 +211,7 @@ class TimeLayerManager(QObject):
                                                                                  type(
                                                                                      timePosition)))
         self.currentTimePosition = timePosition
+        #info("Setting currentTimePosition to %s" % self.currentTimePosition)
         if self.isEnabled():
             self.refreshTimeRestrictions()
 

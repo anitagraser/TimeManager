@@ -1,4 +1,4 @@
-import platform
+import platform, os
 
 LINUX = "linux"
 MACOS = "macos"
@@ -29,4 +29,11 @@ os_prefix_paths = {LINUX: "/usr", MACOS: "/Applications/QGIS.app/Contents",
 
 
 def get_possible_prefix_path():  # pragma: no cover
-    return os_prefix_paths[get_os()]
+    # ideally the dev environment has set a "QGIS_PREFIX_PATH"
+    if os.getenv("QGIS_PREFIX_PATH", None) is not None:
+        return os.getenv("QGIS_PREFIX_PATH")
+    elif os.getenv("PREFIX_PATH", None) is not None:
+        return os.getenv("PREFIX_PATH")
+    else:
+        # raw guessing
+        return os_prefix_paths[get_os()]

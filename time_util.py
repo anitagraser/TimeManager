@@ -2,6 +2,7 @@ import time
 import re  # for hacking strftime
 import abc
 from datetime import datetime, timedelta
+from math import ceil
 
 from dateutil.relativedelta import relativedelta
 from PyQt4.QtCore import QDateTime
@@ -400,3 +401,149 @@ def get_frame_count(start, end, td):
 
 def is_archaeological_layer(layer):
     return layer.getTimeFormat() in [bcdate_util.BC_FORMAT]
+
+
+def to_discrete_datetime(extent, time_type, time_frame):
+    """
+    :param extent: current start end end time (as (datetime, datetime) tuple) from project extents
+    :param time_type: one of "minutes", "years" etc
+    :param time_frame: length of a time frame in the TimeManager plugin (in time_type units!)
+    :return: an extent, being a tuple of a start datetiem and an end datetime
+
+    Given the time_frame, time_type and time_start, return a new start/endtime in which current start_time fits,
+    but is starting on a time_start (of type time_type) and within not more then one time_frame from current
+    end_time.
+
+    In other words: find the first (last) best discrete datetime before current start_time and best discrete
+    endtime after current end_time
+    """
+
+    dt0 = extent[0]  # datetime 0 /start
+    d0 = dt0.date()  # date 0 /start
+    t0 = dt0.time()  # time 0 / start
+    # dte, de and te stand for datetime-end, date-end, time-end
+
+    if time_type == "microseconds":
+        # first round start to hh:mm:ss.000000
+        dt0 = datetime.combine(d0, t0.replace(microsecond=0))
+        # determine new time_length
+        time_length = (datetime_to_epoch(extent[1]) - datetime_to_epoch(dt0)) * 1000000  # microseconds
+        # determine max possible frames in this time_length, round to top
+        frames = ceil(time_length/time_frame)
+        if frames == 0:
+            frames = 1
+        # how many seconds are there in these number of frames * frame_time
+        microseconds = int(frames * time_frame)
+        # add that number of seconds to the startdatetime to create a new enddatetime
+        dte = dt0 + timedelta(microseconds=microseconds)
+    elif time_type == "milliseconds":
+        # first round start to hh:mm:ss.000000
+        dt0 = datetime.combine(d0, t0.replace(microsecond=0))
+        # determine new time_length
+        time_length = (datetime_to_epoch(extent[1]) - datetime_to_epoch(dt0)) * 1000  # milliseconds
+        # determine max possible frames in this time_length, round to top
+        frames = ceil(time_length/time_frame)
+        if frames == 0:
+            frames = 1
+        # how many seconds are there in these number of frames * frame_time
+        milliseconds = int(frames * time_frame)
+        # add that number of seconds to the startdatetime to create a new enddatetime
+        dte = dt0 + timedelta(milliseconds=milliseconds)
+    elif time_type == "seconds":
+        # first round start to hh:mm:00.000000
+        dt0 = datetime.combine(d0, t0.replace(second=0, microsecond=0))
+        # determine new time_length
+        time_length = datetime_to_epoch(extent[1]) - datetime_to_epoch(dt0)
+        # determine max possible frames in this time_length, round to top
+        frames = ceil(time_length/time_frame)
+        if frames == 0:
+            frames = 1
+        # how many seconds are there in these number of frames * frame_time
+        seconds = int(frames * time_frame)
+        # add that number of seconds to the startdatetime to create a new enddatetime
+        dte = dt0 + timedelta(seconds=seconds)
+    elif time_type == "minutes":
+        # first round start to yyyy-mm-ddThh:00:00.000000
+        dt0 = datetime.combine(d0, t0.replace(minute=0, second=0, microsecond=0))
+        # determine new time_length (in seconds, multiply by 60)
+        time_length = (datetime_to_epoch(extent[1]) - datetime_to_epoch(dt0)) / (60)
+        # determine max possible frames in this time_length, round to top
+        frames = ceil(time_length / time_frame)
+        if frames == 0:
+            frames = 1
+        # how many minutes are there in these number of frames * frame_time
+        minutes = int(frames * time_frame)
+        # add that number of minutes to the startdatetime to create a new enddatetime
+        dte = dt0 + timedelta(minutes=minutes)
+    elif time_type == "hours":
+        # first round start to yyyy-mm-ddThh:00:00.000000
+        dt0 = datetime.combine(d0, t0.replace(minute=0, second=0, microsecond=0))
+        # determine new time_length (in seconds, multiply by 60*60)
+        time_length = (datetime_to_epoch(extent[1]) - datetime_to_epoch(dt0)) / (60*60)
+        # determine max possible frames in this time_length, round to top
+        frames = ceil(time_length / time_frame)
+        if frames == 0:
+            frames = 1
+        # how many hours are there in these number of frames * frame_time
+        hours = int(frames * time_frame)
+        # add that number of hours to the startdatetime to create a new enddatetime
+        dte = dt0 + timedelta(hours=hours)
+    else:
+        # date based...
+        t0 = t0.replace(hour=0, minute=0, second=0, microsecond=0)
+        if time_type == "days":
+            # first round start to yyyy-mm-ddT00:00:00.000000
+            dt0 = datetime.combine(d0, t0)
+            # determine new time_length (in seconds)
+            time_length = datetime_to_epoch(extent[1]) - datetime_to_epoch(dt0)
+            # determine max possible frames in this time_length, round to top
+            frames = ceil(time_length / (time_frame * 24 * 60 * 60))
+            if frames == 0:
+                frames = 1
+            # how many days are there in these number of frames * frame_time
+            days = int(frames * time_frame)
+            # add that number of hours to the startdatetime to create a new enddatetime
+            dte = dt0 + relativedelta(days=days)
+        elif time_type == "weeks":
+            # first round start to yyyy-mm-ddT00:00:00.000000
+            dt0 = datetime.combine(d0, t0)
+            # determine new time_length (in seconds)
+            time_length = datetime_to_epoch(extent[1]) - datetime_to_epoch(dt0)
+            # determine max possible frames in this time_length, round to top
+            frames = ceil(time_length / (time_frame * 7 * 24 * 60 * 60))
+            if frames == 0:
+                frames = 1
+            # how many days are there in these number of frames * frame_time
+            weeks = int(frames * time_frame)
+            # add that number of hours to the startdatetime to create a new enddatetime
+            dte = dt0 + relativedelta(weeks=weeks)
+        elif time_type == "months":
+            # first round start to yyyy-mm-ddT00:00:00.000000
+            dt0 = datetime.combine(d0, t0)
+            # determine new time_length (in seconds)
+            time_length = datetime_to_epoch(extent[1]) - datetime_to_epoch(dt0)
+            # determine max possible frames in this time_length, round to top
+            frames = ceil(time_length / (time_frame * (365.25/12) * 24 * 60 * 60))
+            if frames == 0:
+                frames = 1
+            # how many days are there in these number of frames * frame_time
+            months = int(frames * time_frame)
+            # add that number of hours to the startdatetime to create a new enddatetime
+            dte = dt0 + relativedelta(months=months)
+        elif time_type == "years":
+            # first round start to yyyy-1-1T00:00:00.000000
+            dt0 = datetime.combine(d0.replace(month=1, day=1), t0)
+            # determine new time_length (in seconds)
+            time_length = datetime_to_epoch(extent[1]) - datetime_to_epoch(dt0)
+            # determine max possible frames in this time_length, round to top
+            frames = ceil(time_length / (time_frame * 365.25 * 24 * 60 * 60))
+            if frames == 0:
+                frames = 1
+            # how many years are there in these number of frames * frame_time
+            years = int(frames * time_frame)
+            # add that number of hours to the startdatetime to create a new enddatetime
+            dte = dt0 + relativedelta(years=years)
+
+    return (dt0, dte)
+
+

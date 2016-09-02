@@ -112,6 +112,9 @@ class TestWithQGISLauncher(unittest.TestCase):
         self.ctrl.load()
         self.tlm = self.ctrl.getTimeLayerManager()
 
+    def test_setup(self):
+        self.assertNotEquals(self.qgs, None)
+
 
 class TestForLayersWithOnePointPerSecond(TestWithQGISLauncher):
     """This class tests the functionality of layers for data that contains one point per second
