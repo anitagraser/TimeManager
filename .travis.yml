@@ -3,7 +3,7 @@ language: python
 python:
         - "2.7"
 addons:
-  postgresql: "9.1"
+  postgresql: "9.3"
 
 virtualenv:
       system_site_packages: true
@@ -13,7 +13,7 @@ before_install:
         - psql -U postgres -c "create extension postgis"
 
 install:
-    #  - sudo rm /etc/apt/sources.list.d/ubuntugis-stable-source.list # work around for qgis/postgis package problems on travis
+        - sudo rm -rf /etc/apt/sources.list.d/*gis*list # work around for qgis/postgis package problems on travis
         - echo "deb http://qgis.org/debian $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list
         - echo "deb-src http://qgis.org/debian $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list
         - gpg --keyserver keyserver.ubuntu.com --recv 997D3880
