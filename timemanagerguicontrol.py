@@ -294,7 +294,12 @@ class TimeManagerGuiControl(QObject):
         self.forward.emit()
 
     def playClicked(self):
+        if self.dock.pushButtonPlay.isChecked():
+            self.dock.pushButtonPlay.setIcon(QIcon(":/images/pause.png"))
+        else:
+            self.dock.pushButtonPlay.setIcon(QIcon(":/images/play.png"))
         self.play.emit()
+
 
     def currentTimeChangedSlider(self, sliderVal):
         try:
