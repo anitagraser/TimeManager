@@ -33,7 +33,7 @@ install:
 before_script:
         - echo -e "p4ssw0rd\np4ssw0rd\n" | vncserver -geometry 1024x768 :99
         - export DISPLAY=:99.0
-        - psql -U postgres  mydb -c "create extension postgis"
+        #- psql -U postgres  mydb -c "create extension postgis"
         - psql -U postgres -c "ALTER USER postgres WITH PASSWORD 'postgres'"; 
 
 script:
