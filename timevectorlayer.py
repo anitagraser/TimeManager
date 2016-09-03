@@ -18,7 +18,7 @@ from query_builder import QueryIdioms
 import query_builder
 from conf import SAVE_DELIMITER
 import layer_settings as ls
-from logging import info, warn, error
+from tmlogging import info, warn, error
 
 
 POSTGRES_TYPE = 'PostgreSQL database with PostGIS extension'

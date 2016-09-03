@@ -10,9 +10,10 @@ virtualenv:
 
 before_install:
         - psql -c 'create database mydb;' -U postgres
+        - psql -U postgres -c "create extension postgis"
 
 install:
-        - sudo rm /etc/apt/sources.list.d/ubuntugis-stable-source.list # work around for qgis/postgis package problems on travis
+        - sudo rm -rf /etc/apt/sources.list.d/*gis*list # work around for qgis/postgis package problems on travis
         - echo "deb http://qgis.org/debian $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list
         - echo "deb-src http://qgis.org/debian $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list
         - gpg --keyserver keyserver.ubuntu.com --recv 997D3880
@@ -37,7 +38,7 @@ before_script:
 
 script:
         - bash run_tests.sh # this runs tests with coverage
-        - sh pep8.sh # run pep8 on the python code
+        #- sh pep8.sh # run pep8 on the python code
 
 after_success:
     coveralls

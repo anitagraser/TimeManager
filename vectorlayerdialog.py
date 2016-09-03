@@ -8,7 +8,7 @@ from qgis._core import QgsMapLayerRegistry
 import qgis_utils as qgs
 import layer_settings as ls
 import conf
-from logging import warn
+from tmlogging import warn
 
 
 class AddLayerDialog:

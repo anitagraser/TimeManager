@@ -5,7 +5,7 @@ from PyQt4.QtGui import QColor
 from PyQt4.QtCore import QVariant
 from qgis._core import QgsMapLayerRegistry
 
-from logging import warn
+from tmlogging import warn
 
 
 __author__ = 'carolinux'

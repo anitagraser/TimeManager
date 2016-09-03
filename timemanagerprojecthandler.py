@@ -16,6 +16,18 @@ class TimeManagerProjectHandler(QObject):
     Variables read from a file have to be put into context by the calling class."""
 
     @classmethod
+    def set_plugin_setting(cls, name, value):
+        """Set temporary settings"""
+        QSettings().setValue("TimeManager/"+name, value)
+
+    @classmethod
+    def plugin_setting(cls,name):
+        val = QSettings().value("TimeManager/"+name)
+        if isinstance(val, QPyNullVariant):
+            val = None
+        return val
+
+    @classmethod
     def writeSettings(cls, settings):
         """write the list of settings to QgsProject instance"""
         for (key, value) in settings.items():

@@ -12,7 +12,7 @@ from timelayer import NotATimeAttributeError
 from time_util import *
 import time_util
 import conf
-from logging import info, log_exceptions
+from tmlogging import info, log_exceptions
 import qgis_utils as qgs
 
 

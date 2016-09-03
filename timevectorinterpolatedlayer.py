@@ -9,7 +9,7 @@ from time_util import datetime_to_epoch
 from conf import DEFAULT_ID
 from interpolation import interpolator_factory as ifactory
 import qgis_utils as qgs
-from logging import info
+from tmlogging import info
 
 
 # Ideas for extending
@@ -52,7 +52,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             self.memLayer.setCrs(self.layer.crs())
             qgs.setLayerColor(self.memLayer, qgs.getLayerColor(self.layer))
             qgs.setLayerSize(self.memLayer, qgs.getLayerSize(self.layer))
-            qgs.setLayerTransparency(self.memLayer, 0.5)
+            #qgs.setLayerTransparency(self.memLayer, 0.5)
             qgs.refreshSymbols(self.iface, self.memLayer)
 
             QgsMapLayerRegistry.instance().addMapLayer(self.memLayer)

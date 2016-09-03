@@ -25,6 +25,7 @@ import layer_settings as ls
 from vectorlayerdialog import VectorLayerDialog, AddLayerDialog
 from rasterlayerdialog import RasterLayerDialog
 from datetime import datetime
+from timemanagerprojecthandler import TimeManagerProjectHandler
 
 
 # The QTSlider only supports integers as the min and max, therefore the maximum maximum value
@@ -166,12 +167,18 @@ class TimeManagerGuiControl(QObject):
         self.animationDialog.show()
 
     def selectAnimationFolder(self):
-        self.animationDialog.lineEdit.setText(QtGui.QFileDialog.getExistingDirectory())
+
+        prev_directory = TimeManagerProjectHandler.plugin_setting(conf.LAST_ANIMATION_PATH_TAG)
+        if prev_directory:
+            self.animationDialog.lineEdit.setText(QtGui.QFileDialog.getExistingDirectory(directory=prev_directory))
+        else:
+            self.animationDialog.lineEdit.setText(QtGui.QFileDialog.getExistingDirectory())
 
     def sendAnimationOptions(self):
         path = self.animationDialog.lineEdit.text()
         if path == "":
             self.showAnimationOptions()
+        TimeManagerProjectHandler.set_plugin_setting(conf.LAST_ANIMATION_PATH_TAG, path)
         delay_millis = self.animationDialog.spinBoxDelay.value()
         export_gif = self.animationDialog.radioAnimatedGif.isChecked()
         export_video = self.animationDialog.radioVideo.isChecked()
@@ -287,7 +294,12 @@ class TimeManagerGuiControl(QObject):
         self.forward.emit()
 
     def playClicked(self):
+        if self.dock.pushButtonPlay.isChecked():
+            self.dock.pushButtonPlay.setIcon(QIcon(":/images/pause.png"))
+        else:
+            self.dock.pushButtonPlay.setIcon(QIcon(":/images/play.png"))
         self.play.emit()
+
 
     def currentTimeChangedSlider(self, sliderVal):
         try:

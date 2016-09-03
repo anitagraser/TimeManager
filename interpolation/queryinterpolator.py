@@ -2,7 +2,7 @@ from qgis.core import *
 
 from .. import time_util as time_util
 from .. import qgis_utils as qgs
-from ..logging import warn
+from ..tmlogging import warn
 from interpolator import Interpolator
 
 

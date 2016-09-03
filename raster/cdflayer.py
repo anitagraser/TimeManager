@@ -8,7 +8,7 @@ from  qgis._core import QgsSingleBandPseudoColorRenderer
 from .. import time_util
 from ..timerasterlayer import TimeRasterLayer
 from ..timelayer import TimeLayer, NotATimeAttributeError
-from ..logging import warn
+from ..tmlogging import warn
 
 
 DEFAULT_CALENDAR="proleptic_gregorian"

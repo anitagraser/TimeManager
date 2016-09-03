@@ -17,7 +17,7 @@ import time_util
 import bcdate_util
 from bcdate_util import BCDate
 from conf import *
-from logging import info, warn, error, log_exceptions
+from tmlogging import info, warn, error, log_exceptions
 
 
 class TimeManagerControl(QObject):
@@ -35,7 +35,8 @@ class TimeManagerControl(QObject):
         QObject.__init__(self)
         self.iface = iface
         self.setPropagateGuiChanges(True)  # set this to False to be able to update the time in
-        # the gui without signals getting emitted
+                                           # the gui without signals getting emitted
+        self.timer = None    # timer used for animation will be started in waitAfterRenderComplete()
 
     def load(self):
         """ Load the plugin"""
@@ -259,6 +260,7 @@ class TimeManagerControl(QObject):
         """export 'video' - currently choice between image sequence or animated gif"""
         if clear_frames:
             animate.clear_frames(path)
+            animate.clear_frames(path, '*PNGw')
         self.exportFramesAtPath(path)
         # create gif
         if export_gif:
@@ -293,7 +295,10 @@ class TimeManagerControl(QObject):
         if self.saveAnimation:  # make animation/export run as fast as possible
             self.playAnimation(painter)
         else:
-            QTimer.singleShot(self.animationFrameLength, self.playAnimation)
+            if self.timer is None:
+                self.timer = QTimer()
+                self.timer.timeout.connect(self.playAnimation)
+            self.timer.start(self.animationFrameLength)
 
     def generate_frame_filename(self, path, frame_index, currentTime):
         return os.path.join(path, "{}{}.{}".format(
@@ -479,7 +484,7 @@ class TimeManagerControl(QObject):
         except:  # tests dont work with mocked qcoreapplications unfortunately
             pass
 
-    def writeSettings(self, doc):
+    def writeSettings(self):
         """write all relevant settings to the project file XML """
         if not self.getTimeLayerManager().isEnabled():
             return
