@@ -19,9 +19,6 @@ from bcdate_util import BCDate
 from conf import *
 from tmlogging import info, warn, error, log_exceptions
 
-# in python script opnemen
-import pydevd
-
 class TimeManagerControl(QObject):
     """Controls the logic behind the GUI. Signals are processed here."""
 
