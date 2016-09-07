@@ -1,4 +1,5 @@
-import platform, os
+import platform
+import os
 
 LINUX = "linux"
 MACOS = "macos"

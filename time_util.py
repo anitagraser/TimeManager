@@ -408,7 +408,7 @@ def to_discrete_datetime(extent, time_type, time_frame):
     :param extent: current start end end time (as (datetime, datetime) tuple) from project extents
     :param time_type: one of "minutes", "years" etc
     :param time_frame: length of a time frame in the TimeManager plugin (in time_type units!)
-    :return: an extent, being a tuple of a start datetiem and an end datetime
+    :return: an extent, being a tuple of a start datetime and an end datetime
 
     Given the time_frame, time_type and time_start, return a new start/endtime in which current start_time fits,
     but is starting on a time_start (of type time_type) and within not more then one time_frame from current
