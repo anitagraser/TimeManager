@@ -95,7 +95,7 @@
     </message>
     <message>
         <location filename="options.ui" line="172"/>
-        <source>play animation backwards </source>
+        <source>Play animation backwards </source>
         <translation>Reproducir la animación hacia atrás</translation>
     </message>
     <message>
