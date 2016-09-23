@@ -282,7 +282,7 @@ class TimeManagerControl(QObject):
             self.animationActivated = False
             if len(self.getTimeLayerManager().getTimeLayerList()) > 0:
                 error("Have layers, but animation not possible")
-        self.exportNameDigits = len(str(expectedNumberOfFrames))
+        self.exportNameDigits = len(str(expectedNumberOfFrames)) + 1 # add 1 to deal with cornercases (hacky fix)
         self.startAnimation()  # if animation is activated, it will start
 
     def startAnimation(self):
