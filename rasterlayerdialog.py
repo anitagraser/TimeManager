@@ -16,9 +16,13 @@ class RasterLayerDialog(AddLayerDialog):
 
     startChecked = False
     endChecked = False
+    textStart = ""
+    textEnd = ""
 
     def __init__(self, *args):
         super(RasterLayerDialog, self).__init__(*args)
+        self.dialog.textStart.setText(self.textStart)
+        self.dialog.textEnd.setText(self.textEnd)
 
     def extract_settings(self):
         return ls.getSettingsFromAddRasterLayersUI(self.dialog, self.tempLayerIndexToId)
