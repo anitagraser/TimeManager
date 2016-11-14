@@ -84,6 +84,7 @@ class TimeManagerGuiControl(QObject):
     signalSliderTimeChanged = pyqtSignal(float)
     signalTimeFrameType = pyqtSignal(str)
     signalTimeFrameSize = pyqtSignal(int)
+    signalTimeIsDiscrete = pyqtSignal(bool)
     signalSaveOptions = pyqtSignal()
     signalArchDigitsSpecified = pyqtSignal(int)
     signalArchCancelled = pyqtSignal()
@@ -114,6 +115,7 @@ class TimeManagerGuiControl(QObject):
         self.dock.comboBoxTimeExtent.currentIndexChanged[str].connect(
             self.currentTimeFrameTypeChanged)
         self.dock.spinBoxTimeExtent.valueChanged.connect(self.currentTimeFrameSizeChanged)
+        self.dock.checkBoxDiscrete.stateChanged.connect(self.checkBoxDiscreteChanged)
 
         # this signal is responsible for rendering the label
         self.iface.mapCanvas().renderComplete.connect(self.renderLabel)
@@ -326,6 +328,16 @@ class TimeManagerGuiControl(QObject):
             return
         self.signalTimeFrameSize.emit(frameSize)
 
+    def checkBoxDiscreteChanged(self, state):
+        self.signalTimeIsDiscrete.emit(self.dock.checkBoxDiscrete.isChecked())
+        self.currentTimeFrameTypeChanged(self.dock.comboBoxTimeExtent.currentText())
+
+    def showCheckBoxDiscrete(self, makeVisible=True):
+        if makeVisible:
+            self.dock.checkBoxDiscrete.show()
+        else:
+            self.dock.checkBoxDiscrete.hide()
+
     def unload(self):
         """unload the plugin"""
         self.iface.removeDockWidget(self.dock)
@@ -417,7 +429,7 @@ class TimeManagerGuiControl(QObject):
         self.iface.mapCanvas().refresh()
 
     def setTimeFrameSize(self, frameSize):
-        """set spinBoxTimeExtent to given framzeSize"""
+        """set spinBoxTimeExtent to given frameSize"""
         self.dock.spinBoxTimeExtent.setValue(frameSize)
 
     def setTimeFrameType(self, frameType):

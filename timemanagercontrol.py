@@ -19,7 +19,6 @@ from bcdate_util import BCDate
 from conf import *
 from tmlogging import info, warn, error, log_exceptions
 
-
 class TimeManagerControl(QObject):
     """Controls the logic behind the GUI. Signals are processed here."""
 
@@ -109,6 +108,7 @@ class TimeManagerControl(QObject):
 
         self.guiControl.signalTimeFrameType.connect(self.setTimeFrameType)
         self.guiControl.signalTimeFrameSize.connect(self.setTimeFrameSize)
+        self.guiControl.signalTimeIsDiscrete.connect(self.setTimeIsDiscrete)
         self.guiControl.signalSaveOptions.connect(self.saveOptions)
 
         self.guiControl.signalArchDigitsSpecified.connect(self.saveArchDigits)
@@ -128,6 +128,7 @@ class TimeManagerControl(QObject):
         # establish connections to timeLayerManager
         self.timeLayerManager.timeRestrictionsRefreshed.connect(self.refreshGuiWithCurrentTime)
         self.timeLayerManager.projectTimeExtentsChanged.connect(self.refreshGuiTimeExtents)
+        self.timeLayerManager.timeFrameChanged.connect(self.refreshGuiTimeFrameProperties)
         self.timeLayerManager.lastLayerRemoved.connect(self.disableAnimationExport)
 
     def restoreDefaults(self):
@@ -152,7 +153,8 @@ class TimeManagerControl(QObject):
         :param timeExtents: a tuple of start and end datetimes
         """
         self.setPropagateGuiChanges(False)
-        if timeExtents != (None, None):
+        #if timeExtents != (None, None):
+        if timeExtents[1] is not None:  # timeExtents[0] is set in different places!
             self.guiControl.dock.labelStartTime.setText(datetime_to_str(timeExtents[0],
                                                                         DEFAULT_FORMAT))
             self.guiControl.dock.labelEndTime.setText(datetime_to_str(timeExtents[1],
@@ -167,19 +169,39 @@ class TimeManagerControl(QObject):
                 # since it interfaces with a C++ class
                 newTimeLength = int(math.ceil(1.0 * timeLength / new_granularity))
                 timeLength = newTimeLength
-
             else:
                 self.setGranularitySeconds(1)
+
+            if self.getTimeLayerManager().timeFrameDiscrete:
+                # by dividing the timeLength by the timeFrame length we get 'discrete' steps in the QSlider
+                if self.getTimeLayerManager().getTimeFrameType() == "years":
+                    # timeLength and timeFrame here are both relativedelta.relativedelta type
+                    #  (of which you can ask years)
+                    timeLength = relativedelta(timeExtents[1], timeExtents[0])
+                    timeLength = timeLength.years/self.getTimeLayerManager().timeFrame().years
+                    self.guiControl.dock.horizontalTimeSlider.setTickPosition(QSlider.TicksBelow)
+                    self.guiControl.dock.horizontalTimeSlider.setTickInterval(1)
+
+                else:
+                    timeLength = (timeLength*self.getGranularitySeconds()) / self.getTimeLayerManager().timeFrame().total_seconds()
+                    self.guiControl.dock.horizontalTimeSlider.setTickPosition(QSlider.TicksBelow)
+                    self.guiControl.dock.horizontalTimeSlider.setTickInterval(1)
+            else:
+                # NO thicks!
+                self.guiControl.dock.horizontalTimeSlider.setTickPosition(QSlider.NoTicks)
+                self.guiControl.dock.horizontalTimeSlider.setTickInterval(0)
 
             self.guiControl.dock.horizontalTimeSlider.setMinimum(0)
             self.guiControl.dock.horizontalTimeSlider.setMaximum(timeLength)
 
         else:  # set to default values
-            self.setGranularitySeconds(1)
+            self.setGranularitySeconds(conf.DEFAULT_GRANULARITY_IN_SECONDS)
             self.guiControl.dock.labelStartTime.setText('not set')
             self.guiControl.dock.labelEndTime.setText('not set')
             self.guiControl.dock.horizontalTimeSlider.setMinimum(conf.MIN_TIMESLIDER_DEFAULT)
             self.guiControl.dock.horizontalTimeSlider.setMaximum(conf.MAX_TIMESLIDER_DEFAULT)
+            self.guiControl.dock.horizontalTimeSlider.setTickPosition(QSlider.NoTicks)
+            self.guiControl.dock.horizontalTimeSlider.setTickInterval(0)
 
         self.setPropagateGuiChanges(True)
 
@@ -191,13 +213,16 @@ class TimeManagerControl(QObject):
         # timeChanged, since they were changed to be in sync with the rest of the system on
         # purpose, no need to sync the system again
         self.setPropagateGuiChanges(False)
-        if currentTimePosition is None:
+        timeExtents = self.getTimeLayerManager().getProjectTimeExtents()
+
+        if currentTimePosition is None or timeExtents[0] is None or timeExtents[1] is None:
+            # just not ready yet to update the gui!
             self.setPropagateGuiChanges(True)
             return
 
         time_util.updateUi(self.guiControl.getTimeWidget(), currentTimePosition)
         timeval = datetime_to_epoch(currentTimePosition)
-        timeExtents = self.getTimeLayerManager().getProjectTimeExtents()
+
         try:
             pct = (timeval - datetime_to_epoch(timeExtents[0])) * 1.0 / (datetime_to_epoch(
                 timeExtents[1]) - datetime_to_epoch(timeExtents[0]))
@@ -214,6 +239,13 @@ class TimeManagerControl(QObject):
             error(e)
         finally:
             self.setPropagateGuiChanges(True)
+
+    def refreshGuiTimeFrameProperties(self):
+        self.guiControl.setTimeFrameType(self.getTimeLayerManager().timeFrameType)
+        # refreshing of horizontal ruler too, because ticks and discrete-or-not may be changed:
+        self.refreshGuiTimeExtents(self.getTimeLayerManager().getProjectTimeExtents())
+        # SHOULD THIS BE DONE VIA SIGNALS?
+        self.guiControl.dock.spinBoxTimeExtent.setValue(self.getTimeLayerManager().timeFrameSize)
 
     def disableAnimationExport(self):
         """disable the animation export button"""
@@ -392,6 +424,8 @@ class TimeManagerControl(QObject):
             self.guiControl.setWindowTitle("Time Manager")
             self.guiControl.setArchaeologyPressed(False)
             self.guiControl.disableArchaeologyTextBox()
+            # show checkBoxDiscrete when NOT in Archeo mode
+            self.guiControl.showCheckBoxDiscrete(True)
 
         else:
             if filter(lambda x: not time_util.is_archaeological_layer(x),
@@ -410,6 +444,9 @@ class TimeManagerControl(QObject):
             except:
                 error("should only happen during testing")
             self.guiControl.enableArchaeologyTextBox()
+            # disable timeFrameDiscrete, AND hide the checkbox to enable it
+            self.guiControl.showCheckBoxDiscrete(False)
+            self.getTimeLayerManager().setTimeFrameDiscrete(False)
             self.showMessage(
                 "Archaelogy mode enabled. Expecting data of the form {0} BC or {0} AD.".format(
                     "Y" * time_util.getArchDigits()) +
@@ -448,6 +485,13 @@ class TimeManagerControl(QObject):
         self.timeLayerManager.setTimeFrameSize(timeFrameSize)
         self.guiControl.refreshMapCanvas('setTimeFrameSize')
 
+    def setTimeIsDiscrete(self, use_discrete):
+        self.getTimeLayerManager().setTimeFrameDiscrete(use_discrete)
+        self.getTimeLayerManager().updateProjectTimeExtents()
+        # reset the time, as we are fiddling with both extents and timesteps?
+        self.refreshGuiTimeFrameProperties()
+        self.updateTimePositionFromSliderPct(0)
+
     def updateTimePositionFromSliderPct(self, pct):
         """See the percentage the slider is at and determine the datetime"""
         if not self.propagateGuiChanges:
@@ -459,6 +503,7 @@ class TimeManagerControl(QObject):
         except:
             # extents are not set
             realEpochTime = 0
+            return # as we set the timeframe start to 1970-0-0 below :-(
 
         self.getTimeLayerManager().setCurrentTimePosition(epoch_to_datetime(realEpochTime))
 
