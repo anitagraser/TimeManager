@@ -152,7 +152,7 @@ class TimeManagerControl(QObject):
         :param timeExtents: a tuple of start and end datetimes
         """
         self.setPropagateGuiChanges(False)
-        if timeExtents != (None, None):
+        if timeExtents[1] is not None:  # timeExtents[0] is set in different places, so only check timeExtents[1]
             self.guiControl.dock.labelStartTime.setText(datetime_to_str(timeExtents[0],
                                                                         DEFAULT_FORMAT))
             self.guiControl.dock.labelEndTime.setText(datetime_to_str(timeExtents[1],
@@ -191,7 +191,8 @@ class TimeManagerControl(QObject):
         # timeChanged, since they were changed to be in sync with the rest of the system on
         # purpose, no need to sync the system again
         self.setPropagateGuiChanges(False)
-        if currentTimePosition is None:
+        timeExtent = self.getTimeLayerManager().getProjectTimeExtents()
+        if currentTimePosition is None or timeExtent[0] is None or timeExtent[1] is None:
             self.setPropagateGuiChanges(True)
             return
 
