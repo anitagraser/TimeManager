@@ -169,13 +169,13 @@ class TimeManagerControl(QObject):
                 timeLength = newTimeLength
 
             else:
-                self.setGranularitySeconds(1)
+                self.setGranularitySeconds(conf.DEFAULT_GRANULARITY_IN_SECONDS)
 
             self.guiControl.dock.horizontalTimeSlider.setMinimum(0)
             self.guiControl.dock.horizontalTimeSlider.setMaximum(timeLength)
 
         else:  # set to default values
-            self.setGranularitySeconds(1)
+            self.setGranularitySeconds(conf.DEFAULT_GRANULARITY_IN_SECONDS)
             self.guiControl.dock.labelStartTime.setText('not set')
             self.guiControl.dock.labelEndTime.setText('not set')
             self.guiControl.dock.horizontalTimeSlider.setMinimum(conf.MIN_TIMESLIDER_DEFAULT)
