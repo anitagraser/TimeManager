@@ -457,8 +457,8 @@ class TimeManagerControl(QObject):
             realEpochTime = int(pct * (datetime_to_epoch(timeExtents[1]) - datetime_to_epoch(
                 timeExtents[0])) + datetime_to_epoch(timeExtents[0]))
         except:
-            # extents are not set
-            realEpochTime = 0
+            # extents are not set yet?
+            return
 
         self.getTimeLayerManager().setCurrentTimePosition(epoch_to_datetime(realEpochTime))
 
