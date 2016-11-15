@@ -417,7 +417,7 @@ class TimeManagerGuiControl(QObject):
         self.iface.mapCanvas().refresh()
 
     def setTimeFrameSize(self, frameSize):
-        """set spinBoxTimeExtent to given framzeSize"""
+        """set spinBoxTimeExtent to given frameSize"""
         self.dock.spinBoxTimeExtent.setValue(frameSize)
 
     def setTimeFrameType(self, frameType):
