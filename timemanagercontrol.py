@@ -224,8 +224,8 @@ class TimeManagerControl(QObject):
         """
         root = QgsProject.instance().layerTreeRoot()
         model = self.iface.layerTreeView().model()
-        for l in self.getTimeLayerManager().getManagedLayers():
-            model.refreshLayerLegend(root.findLayer(l.id()))
+        for l in self.getTimeLayerManager().getActiveVectors():
+            model.refreshLayerLegend(root.findLayer(l.getLayer().id()))
 
     def disableAnimationExport(self):
         """disable the animation export button"""
