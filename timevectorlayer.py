@@ -228,8 +228,9 @@ class TimeVectorLayer(TimeLayer):
         if self.getDateType() in DateTypes.QDateTypes:
             idioms_to_try = [QueryIdioms.OGR]
 
-        # if self.layer.dataProvider().storageType() in STORAGE_TYPES_WITH_SQL:
-        #    idioms_to_try = [QueryIdioms.SQL]
+        # use optimized query format for postgres + (timestamp|date) columns
+        if self.layer.dataProvider().storageType()==POSTGRES_TYPE and self.getDateType() in DateTypes.QDateTypes:
+            idioms_to_try = [QueryIdioms.SQL]
 
         tried = []
         for idiom in idioms_to_try:

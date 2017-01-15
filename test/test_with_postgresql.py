@@ -12,6 +12,7 @@ import TimeManager.time_util as time_util
 import TimeManager.timevectorlayer as timevectorlayer
 import TimeManager.timelayer as timelayer
 import TimeManager.qgis_utils as qgis_utils
+
 from nose.tools import raises
 
 import psycopg2
@@ -26,6 +27,8 @@ EPOCH_COL = "epoch"
 DATE_STR_COL = "datestr"
 DATE_STR_COL_DMY = "datestr_dmy"
 
+DATE_WITHOUT_TIME_COL = "date_without_time"
+
 STARTTIME = time_util.datetime_to_epoch(datetime(2014, 12, 31, 23, 59, 59))
 
 TZ_STATEMENT = "SET timezone='UTC';"
@@ -39,26 +42,28 @@ CREATE TABLE {0:s} (
    {3:s} timestamp with time zone, -- has timezone in format +xx
    {4:s} integer,
    {5:s} text,
-   {6:s} text
+   {6:s} text,
+   {7:s} date
 
 );
 
-insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s}) values (ST_MakePoint(1.0,1.02),NULL,NULL,
-{7},NULL,NULL);
-insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s}) values (ST_MakePoint(1.01,1.01),NULL,NULL,
-{8},NULL,NULL);
-insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s}) values (ST_MakePoint(1.02,1.01),NULL,NULL,
-{9},NULL,NULL);
-insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s}) values (ST_MakePoint(1.00,1.03),NULL,NULL,
-{10},NULL,NULL);
-insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s}) values (ST_MakePoint(1.0,1.04),NULL,NULL,
-{11},NULL,NULL);
+insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s},{7:s}) values (ST_MakePoint(1.0,1.02),NULL,NULL,
+{8},NULL,NULL,NULL);
+insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s},{7:s}) values (ST_MakePoint(1.01,1.01),NULL,NULL,
+{9},NULL,NULL,NULL);
+insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s},{7:s}) values (ST_MakePoint(1.02,1.01),NULL,NULL,
+{10},NULL,NULL,NULL);
+insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s},{7:s}) values (ST_MakePoint(1.00,1.03),NULL,NULL,
+{11},NULL,NULL,NULL);
+insert into pts ({1:s},{2:s},{3:s},{4:s},{5:s},{6:s},{7:s}) values (ST_MakePoint(1.0,1.04),NULL,NULL,
+{12},NULL,NULL,NULL);
 update pts set {2:s} = to_timestamp(epoch);
 update pts set {3:s} = to_timestamp(epoch);
 update pts set {5:s} = to_char(_date,'YYYY/MM/DD HH24:MI:SS');
 update pts set {6:s} = to_char(_date,'DD.MM.YYYY HH24:MI:SS');
+update pts set {7:s} = date(_date);
 """.format(TABLE, GEOMETRY_COL, DATE_COL, DATE_TZ_COL, EPOCH_COL, DATE_STR_COL,
-           DATE_STR_COL_DMY, STARTTIME, STARTTIME + 1, STARTTIME + 2, STARTTIME + 3, STARTTIME + 4)
+           DATE_STR_COL_DMY, DATE_WITHOUT_TIME_COL, STARTTIME, STARTTIME + 1, STARTTIME + 2, STARTTIME + 3, STARTTIME + 4)
 
 CUSTOM_FORMAT = "%Y/%m/%d %H:%M:%S"
 CUSTOM_FORMAT_DMY = "%d.%m.%Y %H:%M:%S"
@@ -107,6 +112,7 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
         self.assertTrue(not qgis_utils.isNumericField(self.layer, DATE_STR_COL))
         self._test_layer(self.layer, DATE_STR_COL, timevectorlayer.DateTypes.DatesAsStrings,
                          CUSTOM_FORMAT)
+        self.assertNotIn("character", self.layer.subsetString())
 
     def test_date_str_dmy(self):
         start_dt = time_util.epoch_to_datetime(STARTTIME)
@@ -118,9 +124,10 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
         # self._test_layer(self.layer, DATE_STR_COL_DMY,timevectorlayer.DateTypes.DatesAsStrings,
         #                 CUSTOM_FORMAT_DMY)
 
-    def test_date(self):
+    def test_date(self): # postgresql timestamp format
         self._test_layer(self.layer, DATE_COL, timevectorlayer.DateTypes.DatesAsStrings,
                          time_util.DEFAULT_FORMAT)
+        self.assertNotIn("character", self.layer.subsetString()) # assert that it uses the optimized format
 
     @raises(Exception)
     def test_to_from_are_different_types(self):
