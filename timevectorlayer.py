@@ -95,6 +95,9 @@ class TimeVectorLayer(TimeLayer):
             assert (self.timeFormat != time_util.PENDING)
             extents = self.getTimeExtents()
             info("Layer extents" + str(extents))
+        except ValueError:
+            # ValueErrors appear for virtual layers, see https://github.com/anitagraser/TimeManager/issues/219
+            raise InvalidTimeLayerError('This layer type is currently not supported.')
         except Exception, e:
             error(traceback.format_exc(e))
             raise InvalidTimeLayerError(e)
