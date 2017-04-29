@@ -503,7 +503,12 @@ class TimeManagerControl(QObject):
                         'active': self.getTimeLayerManager().isEnabled(),
                         'mode': int(time_util.is_archaelogical()),
                         'digits': time_util.getArchDigits(),
-                        'labelFormat': self.guiControl.getLabelFormat()}
+                        'labelFormat': self.guiControl.getLabelFormat(),
+                        'labelFont': self.guiControl.getLabelFont(),
+                        'labelSize': self.guiControl.getLabelSize(),
+                        'labelColor': self.guiControl.getLabelColor(),
+                        'labelBgColor': self.guiControl.getLabelBgColor(),
+                        'labelPlacement': self.guiControl.getLabelPlacement()}
 
             TimeManagerProjectHandler.writeSettings(settings)
 
@@ -520,6 +525,11 @@ class TimeManagerControl(QObject):
     METASETTINGS['timeFrameSize'] = int
     METASETTINGS['active'] = int
     METASETTINGS['labelFormat'] = str
+    METASETTINGS['labelFont'] = str
+    METASETTINGS['labelSize'] = int
+    METASETTINGS['labelColor'] = str
+    METASETTINGS['labelBgColor'] = str
+    METASETTINGS['labelPlacement'] = str
 
     def readSettings(self):
         """load and restore settings from project file"""
@@ -541,15 +551,22 @@ class TimeManagerControl(QObject):
             'timeFrameSize': (self.guiControl.setTimeFrameSize, DEFAULT_FRAME_SIZE),
             'active': (self.setActive, 0),
             'labelFormat': (self.guiControl.setLabelFormat, time_util.DEFAULT_FORMAT),
+            'labelFont': (self.guiControl.setLabelFont, time_util.DEFAULT_LABEL_FONT),
+            'labelSize': (self.guiControl.setLabelSize, time_util.DEFAULT_LABEL_SIZE),
+            'labelColor': (self.guiControl.setLabelColor, time_util.DEFAULT_LABEL_COLOR),
+            'labelBgColor': (self.guiControl.setLabelBgColor, time_util.DEFAULT_LABEL_BGCOLOR),
+            'labelPlacement': (self.guiControl.setLabelPlacement, time_util.DEFAULT_LABEL_PLACEMENT),
+            
         }
 
         for setting_name in self.METASETTINGS.keys():
-            restore_function, default_value = restore_functions[setting_name]
-            if setting_name not in settings:
-                setting_value = default_value
-            else:
-                setting_value = settings[setting_name]
-            restore_function(setting_value)
+            if restore_functions.has_key(setting_name):
+                restore_function, default_value = restore_functions[setting_name]
+                if setting_name not in settings:
+                    setting_value = default_value
+                else:
+                    setting_value = settings[setting_name]
+                restore_function(setting_value)
 
     def setAnimationFrameLength(self, value):
         self.animationFrameLength = value

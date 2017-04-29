@@ -144,11 +144,51 @@ class TimeManagerGuiControl(QObject):
 
     def getLabelFormat(self):
         return self.labelOptions.fmt
+        
+    def getLabelFont(self):
+        return self.labelOptions.font
+        
+    def getLabelSize(self):
+        return self.labelOptions.size
+        
+    def getLabelColor(self):
+        return self.labelOptions.color
+        
+    def getLabelBgColor(self):
+        return self.labelOptions.bgcolor
+        
+    def getLabelPlacement(self):
+        return self.labelOptions.placement
 
     def setLabelFormat(self, fmt):
         if not fmt:
             return
         self.labelOptions.fmt = fmt
+        
+    def setLabelFont(self, font):
+        if not font:
+            return
+        self.labelOptions.font = font
+        
+    def setLabelSize(self, size):
+        if not size:
+            return
+        self.labelOptions.size = size
+        
+    def setLabelColor(self, color):
+        if not color:
+            return 
+        self.labelOptions.color = color
+        
+    def setLabelBgColor(self, bgcolor):
+        if not bgcolor:
+            return
+        self.labelOptions.bgcolor = bgcolor
+        
+    def setLabelPlacement(self, placement):
+        if not placement:
+            return
+        self.labelOptions.placement = placement
 
     def toggleDock(self):
         self.dock.setVisible(not self.dock.isVisible())
