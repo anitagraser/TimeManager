@@ -50,8 +50,9 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
 
             # adjust memLayer to have same crs and same color as original layer, only half transparent
             self.memLayer.setCrs(self.layer.crs())
-            qgs.setLayerColor(self.memLayer, qgs.getLayerColor(self.layer))
-            qgs.setLayerSize(self.memLayer, qgs.getLayerSize(self.layer))
+            # copy the layer style to memLayer 
+            renderer = self.layer.rendererV2()
+            self.memLayer.setRendererV2(renderer)
             #qgs.setLayerTransparency(self.memLayer, 0.5)
             qgs.refreshSymbols(self.iface, self.memLayer)
 
