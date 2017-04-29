@@ -484,7 +484,7 @@ class TimeManagerGuiControl(QObject):
 
     def renderLabel(self, painter):
         """render the current timestamp on the map canvas"""
-        if not self.showLabel or not self.model.hasLayers():
+        if not self.showLabel or not self.model.hasLayers() or not self.dock.pushButtonToggleTime.isChecked():
             return
 
         dt = self.model.getCurrentTimePosition()
