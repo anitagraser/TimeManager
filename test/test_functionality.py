@@ -210,6 +210,11 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
             os.remove(test_file)
         label_fmt = "Time flies  %Y-%m-%d"
         self.ctrl.guiControl.getLabelFormat.return_value = label_fmt
+        self.ctrl.guiControl.getLabelFont.return_value = "Courier"
+        self.ctrl.guiControl.getLabelSize.return_value = 10
+        self.ctrl.guiControl.getLabelColor.return_value = "#000000"
+        self.ctrl.guiControl.getLabelBgColor.return_value = "#ffffff"
+        self.ctrl.guiControl.getLabelPlacement.return_value = "SE"        
         self.ctrl.writeSettings()
         QgsProject.instance().write(QtCore.QFileInfo(test_file))
 
