@@ -15,7 +15,7 @@ code of the language you want to contribute for, let's say 'it' for Italian
 * go to folder i18n
 * create a copy of timemanager_de.ts and rename it to timemanager_it.ts
 * edit the text file with your translations
-* (optional) If you can install lrelease on yor system, install it and run lrelease
+* (optional) If you can install lrelease on your system, install it and run lrelease
 timemanager_it.ts to create timemanager_it.qm. Add this file to git
 * Create a pull request with your translation file(s)
 
