@@ -273,7 +273,8 @@ class TimeVectorLayer(TimeLayer):
 
     def deleteTimeRestriction(self):
         """Restore original subset"""
-        self.setSubsetString(self.originalSubsetString)
+        success = self.layer.setSubsetString(self.originalSubsetString)
+        self.currSubsetString = self.originalSubsetString
 
     def hasTimeRestriction(self):
         """returns true if current layer.subsetString is not equal to originalSubsetString"""
