@@ -17,8 +17,8 @@ install:
         - sudo rm -rf /etc/apt/sources.list.d/*gis*list # work around for qgis/postgis package problems on travis
         - echo "deb http://qgis.org/debian $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list
         - echo "deb-src http://qgis.org/debian $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list
-        - gpg --keyserver keyserver.ubuntu.com --recv 997D3880
-        - gpg --export --armor 997D3880 | sudo apt-key add -
+        - gpg --keyserver keyserver.ubuntu.com --recv-key 073D307A618E5811
+        - gpg --export --armor 073D307A618E5811 | sudo apt-key add -
         - sudo apt-get update
         - sudo apt-get install python-qt4
         - sudo apt-get install qgis --force-yes
