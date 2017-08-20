@@ -4,8 +4,12 @@ sudo: true
 
 python:
         - "2.7"
+
 addons:
-  postgresql: "9.3"
+  postgresql: "9.5"
+  apt:
+    packages:
+      - postgresql-9.5-postgis-2.3
 
 virtualenv:
       system_site_packages: true
