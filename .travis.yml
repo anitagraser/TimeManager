@@ -42,7 +42,11 @@ before_script:
         - export DISPLAY=:99.0
         - psql -U postgres  mydb -c "create extension postgis"
         - psql -U postgres -c "ALTER USER postgres WITH PASSWORD 'postgres'"; 
-
+        - export QGIS_PREFIX_PATH=/usr
+        - export PYTHONPATH=${QGIS_PREFIX_PATH}/share/qgis/python/:${QGIS_PREFIX_PATH}/share/qgis/python/plugins:`pwd`/qfieldsync:${PYTHONPATH}
+        - echo "PYTHONPATH:" ${PYTHONPATH}
+        - export LD_LIBRARY_PATH=${QGIS_PREFIX_PATH}/lib
+        
 script:
         - bash run_tests.sh # this runs tests with coverage
         #- sh pep8.sh # run pep8 on the python code
