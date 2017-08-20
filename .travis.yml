@@ -1,5 +1,6 @@
 language: python
 dist: trusty
+sudo: true
 
 python:
         - "2.7"
@@ -10,6 +11,7 @@ virtualenv:
       system_site_packages: true
 
 before_install:
+        - sudo apt-get -qq -y update
         - psql -c 'create database mydb;' -U postgres
         - psql -U postgres -c "create extension postgis"
 
