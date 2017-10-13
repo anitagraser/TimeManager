@@ -49,7 +49,7 @@ class WMSTRasterLayer(TimeRasterLayer):
                 # concatting a & behind ? is messing up QGIS wms parseUri: do NOT add anything behind it
                 return ""
             else:
-                return "&"
+                return "%26" # equals &
         else:
             return "?"
 
@@ -60,12 +60,15 @@ class WMSTRasterLayer(TimeRasterLayer):
             return
         startTime = timePosition + timedelta(seconds=self.offset)
         endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
-        self.layer.dataProvider().setDataSourceUri(self.IGNORE_PREFIX + \
-                                                   self.originalUri + self.addUrlMark() + "TIME={}/{}" \
-                                                   .format(
+        timeString = "TIME={}/{}".format(
             time_util.datetime_to_str(startTime, self.timeFormat),
-            time_util.datetime_to_str(endTime, self.timeFormat)))
+            time_util.datetime_to_str(endTime, self.timeFormat))
+        dataUrl = self.IGNORE_PREFIX + self.originalUri + self.addUrlMark() + timeString
+        #print "original URL: " + self.originalUri
+        #print "final URL: " + dataUrl
+        self.layer.dataProvider().setDataSourceUri(dataUrl)
         self.layer.dataProvider().reloadData()
+
 
     def deleteTimeRestriction(self):
         """The layer is removed from Time Manager and is therefore always shown"""
