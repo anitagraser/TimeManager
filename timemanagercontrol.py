@@ -211,10 +211,22 @@ class TimeManagerControl(QObject):
             self.guiControl.repaintJoined()
             self.guiControl.repaintVectors()
             self.guiControl.refreshMapCanvas()
+            self.updateLegendCount()
         except Exception, e:
             error(e)
         finally:
             self.setPropagateGuiChanges(True)
+
+    def updateLegendCount(self):
+        """
+        This method is actually a hack/fix for http://hub.qgis.org/issues/14756.
+        Untill this is fixed via some signal/action in the legend(tree), below is needed.
+        :return:
+        """
+        root = QgsProject.instance().layerTreeRoot()
+        model = self.iface.layerTreeView().model()
+        for l in self.getTimeLayerManager().getActiveVectors():
+            model.refreshLayerLegend(root.findLayer(l.getLayer().id()))
 
     def disableAnimationExport(self):
         """disable the animation export button"""
