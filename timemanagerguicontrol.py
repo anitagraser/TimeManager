@@ -14,8 +14,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from timevectorlayer import *
-from time_util import QDateTime_to_datetime, \
-    datetime_to_str, DEFAULT_FORMAT
+from time_util import QDateTime_to_datetime, datetime_to_str, DEFAULT_FORMAT
 import time_util
 from bcdate_util import BCDate
 import conf
@@ -89,7 +88,7 @@ class TimeManagerGuiControl(QObject):
     signalArchCancelled = pyqtSignal()
 
     def __init__(self, iface, model):
-        """initialize the GUI control"""
+        """Initialize the GUI control"""
         QObject.__init__(self)
         self.iface = iface
         self.model = model
@@ -100,8 +99,7 @@ class TimeManagerGuiControl(QObject):
         self.dock = uic.loadUi(os.path.join(self.path, DOCK_WIDGET_FILE))
         self.iface.addDockWidget(Qt.BottomDockWidgetArea, self.dock)
 
-        self.dock.pushButtonExportVideo.setEnabled(
-            False)  # only enabled if there are managed layers
+        self.dock.pushButtonExportVideo.setEnabled(False)  # only enabled if there are managed layers
         self.dock.pushButtonOptions.clicked.connect(self.optionsClicked)
         self.dock.pushButtonExportVideo.clicked.connect(self.exportVideoClicked)
         self.dock.pushButtonToggleTime.clicked.connect(self.toggleTimeClicked)
@@ -111,8 +109,7 @@ class TimeManagerGuiControl(QObject):
         self.dock.pushButtonPlay.clicked.connect(self.playClicked)
         self.dock.dateTimeEditCurrentTime.dateTimeChanged.connect(self.currentTimeChangedDateText)
         self.dock.horizontalTimeSlider.valueChanged.connect(self.currentTimeChangedSlider)
-        self.dock.comboBoxTimeExtent.currentIndexChanged[str].connect(
-            self.currentTimeFrameTypeChanged)
+        self.dock.comboBoxTimeExtent.currentIndexChanged[str].connect(self.currentTimeFrameTypeChanged)
         self.dock.spinBoxTimeExtent.valueChanged.connect(self.currentTimeFrameSizeChanged)
 
         # this signal is responsible for rendering the label
@@ -120,8 +117,7 @@ class TimeManagerGuiControl(QObject):
 
         # create shortcuts
         self.focusSC = QShortcut(QKeySequence("Ctrl+Space"), self.dock)
-        self.connect(self.focusSC, QtCore.SIGNAL('activated()'),
-                     self.dock.horizontalTimeSlider.setFocus)
+        self.connect(self.focusSC, QtCore.SIGNAL('activated()'), self.dock.horizontalTimeSlider.setFocus)
 
         # put default values
         self.dock.horizontalTimeSlider.setMinimum(conf.MIN_TIMESLIDER_DEFAULT)
@@ -234,8 +230,7 @@ class TimeManagerGuiControl(QObject):
         self.labelOptionsDialog.time_format.setText(self.labelOptions.fmt)
         self.labelOptionsDialog.font.setCurrentFont(QFont(self.labelOptions.font))
         self.labelOptionsDialog.placement.addItems(TimestampLabelConfig.PLACEMENTS)
-        self.labelOptionsDialog.placement.setCurrentIndex(TimestampLabelConfig.PLACEMENTS.index(
-            self.labelOptions.placement))
+        self.labelOptionsDialog.placement.setCurrentIndex(TimestampLabelConfig.PLACEMENTS.index(self.labelOptions.placement))
         self.labelOptionsDialog.text_color.setColor(QColor(self.labelOptions.color))
         self.labelOptionsDialog.bg_color.setColor(QColor(self.labelOptions.bgcolor))
         self.labelOptionsDialog.buttonBox.accepted.connect(self.saveLabelOptions)
@@ -261,8 +256,7 @@ class TimeManagerGuiControl(QObject):
         if self.bcdateSpinBox is None:
             self.bcdateSpinBox = self.createBCWidget(self.dock)
             self.bcdateSpinBox.editingFinished.connect(self.currentBCYearChanged)
-        self.replaceWidget(self.dock.horizontalLayout, self.dock.dateTimeEditCurrentTime,
-                           self.bcdateSpinBox, 5)
+        self.replaceWidget(self.dock.horizontalLayout, self.dock.dateTimeEditCurrentTime, self.bcdateSpinBox, 5)
 
     def getTimeWidget(self):
         if time_util.is_archaelogical():
@@ -282,8 +276,7 @@ class TimeManagerGuiControl(QObject):
     def disableArchaeologyTextBox(self):
         if self.bcdateSpinBox is None:
             return
-        self.replaceWidget(self.dock.horizontalLayout, self.bcdateSpinBox,
-                           self.dock.dateTimeEditCurrentTime, 5)
+        self.replaceWidget(self.dock.horizontalLayout, self.bcdateSpinBox, self.dock.dateTimeEditCurrentTime, 5)
 
     def createBCWidget(self, mainWidget):
         newWidget = QtGui.QLineEdit(mainWidget)  # QtGui.QSpinBox(mainWidget)
@@ -349,8 +342,7 @@ class TimeManagerGuiControl(QObject):
             # slider is not properly initialized yet
             return
         if self.model.getActiveDelimitedText() and qgs.getVersion() < conf.MIN_DTEXT_FIXED:
-            time.sleep(
-                0.1)  # hack to fix issue in qgis core with delimited text which was fixed in 2.9
+            time.sleep(0.1)  # hack to fix issue in qgis core with delimited text which was fixed in 2.9
         self.signalSliderTimeChanged.emit(pct)
 
     def currentTimeChangedDateText(self, qdate):
@@ -367,16 +359,15 @@ class TimeManagerGuiControl(QObject):
         self.signalTimeFrameSize.emit(frameSize)
 
     def unload(self):
-        """unload the plugin"""
+        """Unload the plugin"""
         self.iface.removeDockWidget(self.dock)
         self.iface.removePluginMenu("TimeManager", self.action)
 
     def setWindowTitle(self, title):
         self.dock.setWindowTitle(title)
 
-    def showOptionsDialog(self, layerList, animationFrameLength, playBackwards=False,
-                          loopAnimation=False):
-        """show the optionsDialog and populate it with settings from timeLayerManager"""
+    def showOptionsDialog(self, layerList, animationFrameLength, playBackwards=False, loopAnimation=False):
+        """Show the optionsDialog and populate it with settings from timeLayerManager"""
 
         # load the form
         self.optionsDialog = uic.loadUi(os.path.join(self.path, OPTIONS_WIDGET_FILE))
@@ -418,7 +409,7 @@ class TimeManagerGuiControl(QObject):
             self.optionsDialog.checkBoxLabel.isChecked())
 
     def showHelp(self):
-        """show the help dialog"""
+        """Show help dialog"""
         self.helpDialog = uic.loadUi(os.path.join(self.path, "help.ui"))
         helpPath = QUrl(
             'file:///' + replace(os.path.join(self.path, "help.htm"), '\\', '/'))  # windows
@@ -428,11 +419,11 @@ class TimeManagerGuiControl(QObject):
         self.helpDialog.show()
 
     def saveOptions(self):
-        """save the options from optionsDialog to timeLayerManager"""
+        """Save the options from optionsDialog to timeLayerManager"""
         self.signalSaveOptions.emit()
 
     def removeLayer(self):
-        """removes the currently selected layer (= row) from options"""
+        """Remove currently selected layer (= row) from options"""
         currentRow = self.optionsDialog.tableWidget.currentRow()
         try:
             layerName = self.optionsDialog.tableWidget.item(currentRow, 0).text()
@@ -444,46 +435,46 @@ class TimeManagerGuiControl(QObject):
             self.optionsDialog.tableWidget.removeRow(self.optionsDialog.tableWidget.currentRow())
 
     def disableAnimationExport(self):
-        """disable the animation export button"""
+        """Disable the animation export button"""
         self.dock.pushButtonExportVideo.setEnabled(False)
 
     def enableAnimationExport(self):
-        """enable the animation export button"""
+        """Enable animation export button"""
         self.dock.pushButtonExportVideo.setEnabled(True)
 
     def refreshMapCanvas(self, sender=None):
-        """refresh the map canvas"""
+        """Refresh the map canvas"""
         # QMessageBox.information(self.iface.mainWindow(),'Test Output','Refresh!\n'+str(sender))
         self.iface.mapCanvas().refresh()
 
     def setTimeFrameSize(self, frameSize):
-        """set spinBoxTimeExtent to given frameSize"""
+        """Set spinBoxTimeExtent to given frameSize"""
         self.dock.spinBoxTimeExtent.setValue(frameSize)
 
     def setTimeFrameType(self, frameType):
-        """set comboBoxTimeExtent to given frameType"""
+        """Set comboBoxTimeExtent to given frameType"""
         i = self.dock.comboBoxTimeExtent.findText(frameType)
         self.dock.comboBoxTimeExtent.setCurrentIndex(i)
 
     def setActive(self, isActive):
-        """set pushButtonToggleTime active/inactive"""
+        """Toggle pushButtonToggleTime"""
         self.dock.pushButtonToggleTime.setChecked(isActive)
 
     def setArchaeologyPressed(self, isActive):
-        """set pushButtonArchaeology active/inactive"""
+        """Toggle pushButtonArchaeology"""
         self.dock.pushButtonArchaeology.setChecked(isActive)
 
     def addActionShowSettings(self, action):
-        """add action to pushButttonOptions"""
+        """Add action to pushButttonOptions"""
         self.dock.pushButtonOptions.addAction(action)
 
     def turnPlayButtonOff(self):
-        """turn pushButtonPlay off"""
+        """Turn pushButtonPlay off"""
         if self.dock.pushButtonPlay.isChecked():
             self.dock.pushButtonPlay.toggle()
 
     def renderLabel(self, painter):
-        """render the current timestamp on the map canvas"""
+        """Render the current timestamp on the map canvas"""
         if not self.showLabel or not self.model.hasLayers() or not self.dock.pushButtonToggleTime.isChecked():
             return
 
@@ -495,8 +486,7 @@ class TimeManagerGuiControl(QObject):
 
         # Determine placement of label given cardinal directions
         flags = 0
-        for direction, flag in ('N', Qt.AlignTop), ('S', Qt.AlignBottom),\
-                ('E', Qt.AlignRight), ('W', Qt.AlignLeft):
+        for direction, flag in ('N', Qt.AlignTop), ('S', Qt.AlignBottom), ('E', Qt.AlignRight), ('W', Qt.AlignLeft):
             if direction in self.labelOptions.placement:
                 flags |= flag
 
@@ -507,8 +497,7 @@ class TimeManagerGuiControl(QObject):
         painter.setRenderHint(painter.Antialiasing, True)
         txt = QTextDocument()
         html = '<span style="background-color:%s; padding: 5px;"><font face="%s" size="%s" color="%s">%s</font></span>'\
-            % (self.labelOptions.bgcolor, self.labelOptions.font, self.labelOptions.size,
-                self.labelOptions.color, labelString)
+            % (self.labelOptions.bgcolor, self.labelOptions.font, self.labelOptions.size, self.labelOptions.color, labelString)
         txt.setHtml(html)
         layout = txt.documentLayout()
         size = layout.documentSize()
@@ -539,8 +528,7 @@ class TimeManagerGuiControl(QObject):
         map(lambda x: x.layer.triggerRepaint(), self.model.getActiveVectors())
 
     def repaintJoined(self):
-        layerIdsToRefresh = qgs.getAllJoinedLayers(
-            set(map(lambda x: x.layer.id(), self.model.getActiveVectors())))
+        layerIdsToRefresh = qgs.getAllJoinedLayers(set(map(lambda x: x.layer.id(), self.model.getActiveVectors())))
         # info("to refresh {}".format(layerIdsToRefresh))
         layersToRefresh = map(lambda x: qgs.getLayerFromId(x), layerIdsToRefresh)
         map(lambda x: x.triggerRepaint(), layersToRefresh)

@@ -11,8 +11,7 @@ from datetime import timedelta
 from PyQt4.QtGui import QMessageBox
 
 from timelayer import *
-from time_util import timeval_to_datetime, \
-    datetime_to_str, QDateTime_to_datetime, str_to_datetime, DateTypes
+from time_util import timeval_to_datetime, datetime_to_str, QDateTime_to_datetime, str_to_datetime, DateTypes
 import time_util
 from query_builder import QueryIdioms
 import query_builder
@@ -32,35 +31,10 @@ class SubstringException(Exception):
 
 def isNull(val):
     """Determine null values from providers"""
-    return val is None or val == "NULL" or str(
-        val) == "NULL"  # yes it's possible the string "NULL" is returned (!)
+    return val is None or val == "NULL" or str(val) == "NULL"  # yes it's possible the string "NULL" is returned (!)
 
 
 class TimeVectorLayer(TimeLayer):
-    def getOriginalSubsetString(self):
-        return self.originalSubsetString
-
-    def geometriesCountForExport(self):
-        return self.geometriesCount
-
-    def accumulateFeatures(self):
-        return self.accumulate
-
-    def findValidValues(self, fieldName, fmt):
-        uniques = self.getUniques(fieldName)
-        at_least_one_valid = False
-        last_exc = None
-        for v in uniques:
-            try:
-                str_to_datetime(v, fmt)
-                at_least_one_valid = True
-                break
-            except Exception, e:
-                last_exc = e
-                continue
-        if not at_least_one_valid:
-            raise Exception(last_exc)
-
     def __init__(self, settings, iface=None):
         TimeLayer.__init__(self, settings.layer, settings.isEnabled)
 
@@ -69,8 +43,7 @@ class TimeVectorLayer(TimeLayer):
             self.iface = iface
             self.minValue, self.maxValue = None, None
             self.fromTimeAttribute = settings.startTimeAttribute
-            self.toTimeAttribute = settings.endTimeAttribute if settings.endTimeAttribute != ""\
-                else self.fromTimeAttribute
+            self.toTimeAttribute = settings.endTimeAttribute if settings.endTimeAttribute != "" else self.fromTimeAttribute
             self.accumulate = settings.accumulate
             self.originalSubsetString = settings.subsetStr
             self.currSubsetString = self.originalSubsetString
@@ -102,23 +75,23 @@ class TimeVectorLayer(TimeLayer):
             error(traceback.format_exc(e))
             raise InvalidTimeLayerError(e)
 
-    def hasSubsetStr(self):
-        return True
+    def getOriginalSubsetString(self):
+        return self.originalSubsetString
 
     def getDateType(self):
-        """return the type of dates this layer has stored"""
+        """Return the type of dates this layer has stored"""
         return self.type
 
     def getTimeAttributes(self):
-        """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""
+        """Return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""
         return (self.fromTimeAttribute, self.toTimeAttribute)
 
     def getTimeFormat(self):
-        """returns the layer's time format"""
+        """Return the layer's time format"""
         return self.timeFormat
 
     def getOffset(self):
-        """returns the layer's offset, integer in seconds"""
+        """Return the layer's offset, integer in seconds"""
         return self.offset
 
     def getProvider(self):
@@ -126,44 +99,44 @@ class TimeVectorLayer(TimeLayer):
         # which means that it can now about joined fields
 
     def getRawMinValue(self):
-        """returns the raw minimum value. May not be the expected minimum value semantically if we
+        """Return the raw minimum value. May not be the expected minimum value semantically if we
         have dates that are saved as strings because of lexicographic comparisons"""
         fromTimeAttributeIndex = self.getProvider().fieldNameIndex(self.fromTimeAttribute)
         minValue = self.getProvider().minimumValue(fromTimeAttributeIndex)
-        if isNull(
-                minValue):  # if we are unlucky and have some null data we need to sort through the values
-            minValue = min(filter(lambda x: not isNull(x),
-                                  self.getProvider().uniqueValues(fromTimeAttributeIndex)))
+        # if we are unlucky and have some null data we need to sort through the values
+        if isNull(minValue):  
+            values = self.getProvider().uniqueValues(fromTimeAttributeIndex)
+            minValue = min(filter(lambda x: not isNull(x), values ))
         # info("Min value:"+str(minValue)+str(isNull(minValue)))
         return minValue
 
     def getRawMaxValue(self):
-        """returns the raw maximum value. May not be the expected minimum value semantically if we
+        """Return the raw maximum value. May not be the expected minimum value semantically if we
         have dates that are saved as strings because of lexicographic comparisons"""
         toTimeAttributeIndex = self.getProvider().fieldNameIndex(self.toTimeAttribute)
         maxValue = self.getProvider().maximumValue(toTimeAttributeIndex)
         if isNull(maxValue):
-            maxValue = max(filter(lambda x: not isNull(x),
-                                  self.getProvider().uniqueValues(toTimeAttributeIndex)))
+            values = self.getProvider().uniqueValues(toTimeAttributeIndex)
+            maxValue = max(filter(lambda x: not isNull(x), values ))
         return maxValue
 
     def getUniques(self, fieldName):
+        """Return unique values in given field"""
         provider = self.getProvider()
         idx = provider.fieldNameIndex(fieldName)
         return provider.uniqueValues(idx)
 
     def getMinMaxValues(self):
-        """Returns str"""
+        """Return min and max value strings"""
         if self.minValue is None or self.maxValue is None:  # if not already computed
             fmt = self.getTimeFormat()
             if self.getDateType() == DateTypes.IntegerTimestamps:
                 self.minValue = self.getRawMinValue()
                 self.maxValue = self.getRawMaxValue()
-            else:
+            else: # strings or qdate(time) values
                 # need to find min max by looking at all the unique values
-                # QGIS doesn't get sorting right
+                # because QGIS doesn't get sorting right
                 uniques = self.getUniques(self.fromTimeAttribute)
-                # those can be either strings or qdate(time) values
 
                 def vals_to_dt(vals, fmt):
                     res = []
@@ -173,9 +146,7 @@ class TimeVectorLayer(TimeLayer):
                             res.append(dt)
                             # info("{} converted to {}".format(val, dt))
                         except Exception, e:
-                            warn("Unparseable value {} in layer {} ignored. Cause {}".format(val,
-                                                                                             self.layer.name(),
-                                                                                             e))
+                            warn("Unparseable value {} in layer {} ignored. Cause {}".format(val,self.layer.name(),e))
                             pass
                     return res
 
@@ -193,16 +164,14 @@ class TimeVectorLayer(TimeLayer):
                     maxValue = datetime_to_str(max(unique_vals), fmt)
 
                 if type(minValue) in [QtCore.QDate, QtCore.QDateTime]:
-                    minValue = datetime_to_str(QDateTime_to_datetime(minValue),
-                                               self.getTimeFormat())
-                    maxValue = datetime_to_str(QDateTime_to_datetime(maxValue),
-                                               self.getTimeFormat())
+                    minValue = datetime_to_str(QDateTime_to_datetime(minValue), self.getTimeFormat())
+                    maxValue = datetime_to_str(QDateTime_to_datetime(maxValue), self.getTimeFormat())
                 self.minValue = minValue
                 self.maxValue = maxValue
         return self.minValue, self.maxValue
 
     def getTimeExtents(self):
-        """Get layer's temporal extent in datetime format
+        """Return temporal extent in datetime format
          using the fields and the format defined in the layer"""
         start_str, end_str = self.getMinMaxValues()
         startTime = str_to_datetime(start_str, self.getTimeFormat())
@@ -218,8 +187,32 @@ class TimeVectorLayer(TimeLayer):
     def getEndTime(self, timePosition, timeFrame):
         return timePosition + timeFrame + timedelta(seconds=self.offset)
 
+    def getGeometriesCountForExport(self):
+        return self.geometriesCount
+
+    def accumulateFeatures(self):
+        return self.accumulate
+
+    def findValidValues(self, fieldName, fmt):
+        uniques = self.getUniques(fieldName)
+        at_least_one_valid = False
+        last_exc = None
+        for v in uniques:
+            try:
+                str_to_datetime(v, fmt)
+                at_least_one_valid = True
+                break
+            except Exception, e:
+                last_exc = e
+                continue
+        if not at_least_one_valid:
+            raise Exception(last_exc)
+
+    def hasSubsetStr(self):
+        return True
+
     def setTimeRestriction(self, timePosition, timeFrame):
-        """Constructs the query, including the original subset"""
+        """Construct the query, including the original subset"""
         if not self.isEnabled():
             self.deleteTimeRestriction()
             return
@@ -255,11 +248,9 @@ class TimeVectorLayer(TimeLayer):
             return
 
         raise SubstringException(
-            "Could not update subset string for layer {}. Tried: {}".format(self.layer.name(),
-                                                                            tried))
+            "Could not update subset string for layer {}. Tried: {}".format(self.layer.name(), tried))
 
     def setSubsetString(self, subsetString):
-
         if self.originalSubsetString != '':
             subsetString = "{} AND {}".format(self.originalSubsetString, subsetString)
         success = self.layer.setSubsetString(subsetString)
@@ -276,11 +267,11 @@ class TimeVectorLayer(TimeLayer):
         self.setSubsetString(self.originalSubsetString)
 
     def hasTimeRestriction(self):
-        """returns true if current layer.subsetString is not equal to originalSubsetString"""
+        """Return true if current layer.subsetString is not equal to originalSubsetString"""
         return self.layer.subsetString() != self.originalSubsetString
 
     def getSaveString(self):
-        """get string to save in project file"""
+        """Get string to save in project file"""
         settings = ls.getSettingsFromLayer(self)
         res = SAVE_DELIMITER.join([settings.layerId, settings.subsetStr,
                                    settings.startTimeAttribute, settings.endTimeAttribute,
