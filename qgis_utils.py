@@ -1,4 +1,4 @@
-from qgis.core import QgsRasterLayer
+from qgis.core import QgsRasterLayer, QgsVectorLayer
 from qgis.utils import QGis
 
 from PyQt4.QtGui import QColor
@@ -84,6 +84,13 @@ def getLayerFromId(layerId):
 
 def isRaster(layer):
     return type(layer) == QgsRasterLayer
+
+
+def isWFS(layer):
+    if type(layer) == QgsVectorLayer:
+        return layer.dataProvider().description() == u'WFS data provider'
+    else:
+        return False
 
 
 def doesLayerNameExist(name):

@@ -203,7 +203,6 @@ class TimeManagerGuiControl(QObject):
         self.animationDialog.show()
 
     def selectAnimationFolder(self):
-
         prev_directory = TimeManagerProjectHandler.plugin_setting(conf.LAST_ANIMATION_PATH_TAG)
         if prev_directory:
             self.animationDialog.lineEdit.setText(QtGui.QFileDialog.getExistingDirectory(directory=prev_directory))
@@ -234,7 +233,6 @@ class TimeManagerGuiControl(QObject):
         self.labelOptionsDialog.text_color.setColor(QColor(self.labelOptions.color))
         self.labelOptionsDialog.bg_color.setColor(QColor(self.labelOptions.bgcolor))
         self.labelOptionsDialog.buttonBox.accepted.connect(self.saveLabelOptions)
-
         self.dialog.show()
 
     def saveLabelOptions(self):
@@ -286,9 +284,10 @@ class TimeManagerGuiControl(QObject):
         return newWidget
 
     def replaceWidget(self, layout, oldWidget, newWidget, idx):
-        """Replaces oldWidget with newWidget at layout at index idx
-        The way it is done, the widget is not destroyed
-        and the connections to it remain"""
+        """
+        Replaces oldWidget with newWidget at layout at index idx
+        The way it is done, the widget is not destroyed and the connections to it remain
+        """
 
         layout.removeWidget(oldWidget)
         oldWidget.close()  # I wonder if this has any memory leaks? </philosoraptor>
@@ -332,7 +331,6 @@ class TimeManagerGuiControl(QObject):
         else:
             self.dock.pushButtonPlay.setIcon(QIcon(":/images/play.png"))
         self.play.emit()
-
 
     def currentTimeChangedSlider(self, sliderVal):
         try:

@@ -19,7 +19,7 @@ class AddLayerDialog:
         self.tempLayerIndexToId = {}
         self.dialog = uic.loadUi(ui_path)
         self.out_table = out_table
-        self.add_connections()
+        self.addConnections()
         # TODO assert it has a buttonbox and comboBoxLayers
 
     def getDialog(self):
@@ -37,8 +37,8 @@ class AddLayerDialog:
         layerId = self.tempLayerIndexToId[idx]
         return qgs.getLayerFromId(layerId)
 
-    def get_ids_already_in_out_table(self):
-        """get list of layer ids listed in the tableWidget"""
+    def getIdsAlreadyInOutTable(self):
+        """Get list of layer ids listed in the tableWidget"""
         layerList = []
         if self.out_table is None:
             return layerList
@@ -47,10 +47,11 @@ class AddLayerDialog:
             layerList.append(layerId)
         return layerList
 
-    def add_layer_to_select(self, name):
+    def addLayerToSelect(self, name):
+        """Add layer name to layer combo box"""
         self.dialog.comboBoxLayers.addItem(name)
 
-    def layer_count(self):
+    def getLayerCount(self):
         return self.dialog.comboBoxLayers.count()
 
     def populate(self, layerIds):
@@ -59,52 +60,51 @@ class AddLayerDialog:
         self.populateFromLayers(selected_idlayers)
 
     def populateFromLayers(self, idlayers):
+        """Populate layer combo box"""
         i = 0
         for (id, layer) in idlayers:
             unicode_name = unicode(layer.name())
-            self.add_layer_to_select(unicode_name)
+            self.addLayerToSelect(unicode_name)
             self.tempLayerIndexToId[i] = id
             i += 1
-
-        if self.layer_count() == 0:
-            msg = 'There are no unmanaged layers of requested type in the project!'
+        if self.getLayerCount() == 0:
+            msg = 'All suitable project layers have already been added to TimeManager!'
             QMessageBox.information(self.dialog, 'Error', msg)
             raise Exception(msg)
-
         # add the attributes of the first layer in the select for gui initialization
-        self.add_layer_attributes(0)
+        self.addLayerAttributes(0)
 
     @abc.abstractmethod
-    def add_layer_attributes(self, id):
+    def addLayerAttributes(self, id):
         pass
 
-    def add_layer_to_table(self):
+    def addLayerToTable(self):
         """Add selected layer attributes to table"""
-        settings = self.extract_settings()
+        settings = self.extractSettings()
         ls.addSettingsToRow(settings, self.out_table)
 
     @abc.abstractmethod
-    def extract_settings(self):
+    def extractSettings(self):
         pass
 
     @abc.abstractmethod
     def show(self):
         pass
 
-    def add_connections(self):
-        self.dialog.comboBoxLayers.currentIndexChanged.connect(self.add_layer_attributes)
-        self.dialog.buttonBox.accepted.connect(self.add_layer_to_table)
+    def addConnections(self):
+        self.dialog.comboBoxLayers.currentIndexChanged.connect(self.addLayerAttributes)
+        self.dialog.buttonBox.accepted.connect(self.addLayerToTable)
 
 
 class VectorLayerDialog(AddLayerDialog):
     def __init__(self, *args):
         super(VectorLayerDialog, self).__init__(*args)
 
-    def extract_settings(self):
+    def extractSettings(self):
         return ls.getSettingsFromAddVectorLayersUI(self.dialog, self.tempLayerIndexToId)
 
-    def add_layer_attributes(self, idx):
-        """get list layer attributes, fill the combo boxes"""
+    def addLayerAttributes(self, idx):
+        """Get layer attributes and fill the combo boxes"""
         if not self.tempLayerIndexToId:
             return
         layerId = self.tempLayerIndexToId[self.dialog.comboBoxLayers.currentIndex()]
@@ -122,23 +122,28 @@ class VectorLayerDialog(AddLayerDialog):
             self.dialog.comboBoxEnd.addItem(attr.name())
             self.dialog.comboBoxID.addItem(attr.name())
 
-    def add_connections(self):
-        super(VectorLayerDialog, self).add_connections()
+    def addConnections(self):
+        super(VectorLayerDialog, self).addConnections()
         QObject.connect(self.dialog.comboBoxInterpolation,
                         SIGNAL("currentIndexChanged(const QString &)"),
                         self.maybeEnableIDBox)
         self.dialog.exportEmptyCheckbox.setChecked(Qt.Unchecked)
 
     def show(self):
+        """Update GUI elements and show the dialog"""
         self.clear()
-        idsToIgnore = set(self.get_ids_already_in_out_table())
+        # determine which layers are vector and can be time controlled
+        idsToIgnore = set(self.getIdsAlreadyInOutTable())
         allVectorIds = set(qgs.getAllLayerIds(lambda x: not qgs.isRaster(x)))
+        unsupportedVectorIds = set(qgs.getAllLayerIds(lambda x: qgs.isWFS(x)))
+        # todo: plugin layers, e.g. from QuickMapServices should also be excluded
         try:
-            self.populate(allVectorIds - idsToIgnore)
+            self.populate(allVectorIds - idsToIgnore - unsupportedVectorIds)
         except Exception, e:
             warn(e)
             return
-        self.add_interpolation_modes(self.dialog.comboBoxInterpolation)
+        # finalize and show dialog
+        self.addInterpolationModes(self.dialog.comboBoxInterpolation)
         self.dialog.show()
 
     def maybeEnableIDBox(self, interpolation_mode):
@@ -146,15 +151,14 @@ class VectorLayerDialog(AddLayerDialog):
             self.dialog.comboBoxID.setEnabled(True)
             self.dialog.labelID1.setEnabled(True)
             self.dialog.labelID2.setEnabled(True)
-            self.dialog.comboBoxEnd.setEnabled(False)  # end field not yet supported when
-            # interpolating
+            self.dialog.comboBoxEnd.setEnabled(False)  # end field not yet supported when interpolating
         else:
             self.dialog.comboBoxID.setEnabled(False)
             self.dialog.labelID1.setEnabled(False)
             self.dialog.labelID2.setEnabled(False)
             self.dialog.comboBoxEnd.setEnabled(True)
 
-    def add_interpolation_modes(self, comboBox):
+    def addInterpolationModes(self, comboBox):
         comboBox.clear()
         comboBox.addItem(conf.NO_INTERPOLATION)
         for mode in conf.INTERPOLATION_MODE_TO_CLASS.keys():

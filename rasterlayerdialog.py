@@ -24,11 +24,11 @@ class RasterLayerDialog(AddLayerDialog):
         self.dialog.textStart.setText(self.textStart)
         self.dialog.textEnd.setText(self.textEnd)
 
-    def extract_settings(self):
+    def extractSettings(self):
         return ls.getSettingsFromAddRasterLayersUI(self.dialog, self.tempLayerIndexToId)
 
-    def add_connections(self):
-        super(RasterLayerDialog, self).add_connections()
+    def addConnections(self):
+        super(RasterLayerDialog, self).addConnections()
         self.dialog.checkBoxStart.setChecked(
             Qt.Checked if RasterLayerDialog.startChecked else Qt.Unchecked)
         self.dialog.checkBoxEnd.setChecked(
@@ -76,7 +76,7 @@ class RasterLayerDialog(AddLayerDialog):
         self.dialog.textEnd.setEnabled(enable)
 
     def show(self):
-        idsToIgnore = set(self.get_ids_already_in_out_table())
+        idsToIgnore = set(self.getIdsAlreadyInOutTable())
         allRasterIds = set(qgs.getAllLayerIds(lambda x: qgs.isRaster(x)))
         self.clear()
         try:
@@ -87,7 +87,7 @@ class RasterLayerDialog(AddLayerDialog):
         self.dialog.show()
 
     @classmethod
-    def guess_time_position_in_str(cls, str_with_time):
+    def guessTimePositionInStr(cls, str_with_time):
         try:
             m = re.match(cls.TIME_REGEX, str_with_time)
             return m.start(2), m.end(2)
@@ -113,9 +113,9 @@ class RasterLayerDialog(AddLayerDialog):
         else:
             RasterLayerDialog.endChecked = False
 
-    def add_layer_attributes(self, idx):
+    def addLayerAttributes(self, idx):
         """get list layer attributes, fill the combo boxes"""
         name = self.getSelectedLayerName()
-        start, end = self.guess_time_position_in_str(name)
+        start, end = self.guessTimePositionInStr(name)
         self.dialog.spinBoxStart1.setValue(start)
         self.dialog.spinBoxStart2.setValue(end)
