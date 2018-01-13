@@ -26,7 +26,6 @@ from rasterlayerdialog import RasterLayerDialog
 from datetime import datetime
 from timemanagerprojecthandler import TimeManagerProjectHandler
 
-
 # The QTSlider only supports integers as the min and max, therefore the maximum maximum value
 # is whatever can be stored in an int. Making it a signed int to be sure.
 # (http://qt-project.org/doc/qt-4.8/qabstractslider.html)
@@ -46,7 +45,7 @@ ANIMATION_WIDGET_FILE = "animate.ui"
 class TimestampLabelConfig(object):
     """Object that has the settings for rendering timestamp labels. Can be customized via the UI"""
     PLACEMENTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
-    DEFAULT_FONT_SIZE = 4
+    DEFAULT_FONT_SIZE = 15
     font = "Arial"  # Font names or family, comma-separated CSS style
     size = DEFAULT_FONT_SIZE  # Relative values between 1-7
     fmt = DEFAULT_FORMAT  # Pythonic format (same as in the layers)
@@ -494,8 +493,8 @@ class TimeManagerGuiControl(QObject):
 
         painter.setRenderHint(painter.Antialiasing, True)
         txt = QTextDocument()
-        html = '<span style="background-color:%s; padding: 5px;"><font face="%s" size="%s" color="%s">%s</font></span>'\
-            % (self.labelOptions.bgcolor, self.labelOptions.font, self.labelOptions.size, self.labelOptions.color, labelString)
+        html = '<span style="background-color:%s; padding: 5px; font-size: %spx;"><font face="%s" color="%s">%s</font></span>'\
+            % (self.labelOptions.bgcolor, self.labelOptions.size, self.labelOptions.font,  self.labelOptions.color, labelString)
         txt.setHtml(html)
         layout = txt.documentLayout()
         size = layout.documentSize()
