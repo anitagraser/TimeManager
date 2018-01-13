@@ -257,6 +257,7 @@ class TimeManagerControl(QObject):
         if clearFrames:
             animate.clear_frames(path)
             animate.clear_frames(path, '*PNGw')
+            animate.clear_frames(path, '*pgw') # from 2.18, QGIS creates .pgw files
         self.exportFramesAtPath(path)
         if exportGif:
             self.showMessage("Creating animated gif at {}".format(self.saveAnimationPath))
