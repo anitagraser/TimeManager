@@ -64,12 +64,6 @@ class timemanager:
         """Initialize the gui"""
         control.load()
 
-    def unload(self):
-        """Unload the plugin"""
-        control.unload()
-        QgsExpression.unregisterFunction("$animation_datetime")
-        QgsExpression.unregisterFunction("animation_datetime")
-
     def changeI18n(self, new_lang):
         """
         Change internationalisation for the plugin.
@@ -99,8 +93,44 @@ class timemanager:
             if new_lang != "en":
                 warn("Translation failed for lang {}, falling back to English".format(new_lang))
 
+    def unload(self):
+        """Unload the plugin"""
+        control.unload()
+        QgsExpression.unregisterFunction("$animation_datetime")
+        QgsExpression.unregisterFunction("animation_datetime")
+        QgsExpression.unregisterFunction("$animation_time_frame_size")
+        QgsExpression.unregisterFunction("animation_time_frame_size")
+        QgsExpression.unregisterFunction("$animation_time_frame_type")
+        QgsExpression.unregisterFunction("animation_time_frame_type")   
+        QgsExpression.unregisterFunction("$animation_start_datetime")
+        QgsExpression.unregisterFunction("animation_start_datetime")       
+        QgsExpression.unregisterFunction("$animation_end_datetime")
+        QgsExpression.unregisterFunction("animation_end_datetime")       
+
     @qgsfunction(0, "TimeManager")
     def animation_datetime(values, feature, parent):
-        """Called by QGIS to determine the current animation time"""
+        """Current animation time"""
         return time_util.datetime_to_str(control.getTimeLayerManager().getCurrentTimePosition(),
                                          time_util.DEFAULT_FORMAT)
+        
+    @qgsfunction(0, "TimeManager")
+    def animation_time_frame_size(values, feature, parent):
+        """Animation time frame size"""
+        return control.getTimeLayerManager().getTimeFrameSize()
+
+    @qgsfunction(0, "TimeManager")
+    def animation_time_frame_type(values, feature, parent):
+        """Unit of time frame, i.e. days, hours, minutes, seconds, ..."""
+        return control.getTimeLayerManager().getTimeFrameType()
+
+    @qgsfunction(0, "TimeManager")
+    def animation_start_datetime(values, feature, parent):
+        """Earliest time stamp"""
+        return time_util.datetime_to_str(control.getTimeLayerManager().getProjectTimeExtents()[0],
+                                         time_util.DEFAULT_FORMAT)
+        
+    @qgsfunction(0, "TimeManager")
+    def animation_end_datetime(values, feature, parent):
+        """Last time stamp"""
+        return time_util.datetime_to_str(control.getTimeLayerManager().getProjectTimeExtents()[1],
+                                         time_util.DEFAULT_FORMAT)        
