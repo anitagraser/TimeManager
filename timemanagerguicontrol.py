@@ -474,6 +474,7 @@ class TimeManagerGuiControl(QObject):
         """Turn pushButtonPlay off"""
         if self.dock.pushButtonPlay.isChecked():
             self.dock.pushButtonPlay.toggle()
+            self.dock.pushButtonPlay.setIcon(QIcon(":/images/play.png"))
 
     def renderLabel(self, painter):
         """Render the current timestamp on the map canvas"""
