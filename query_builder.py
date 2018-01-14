@@ -149,9 +149,11 @@ def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, qu
     start_str = time_util.datetime_to_str(start_dt, date_format)
     end_str = time_util.datetime_to_str(end_dt, date_format)
     
-    comparison = "<" # simplified because of: https://github.com/anitagraser/TimeManager/issues/235 (original: # comparison = "<" if to_attr == from_attr else "<=")    
+    comparison = "<" # simplified because of: https://github.com/anitagraser/TimeManager/issues/235 
+    #                  (original: # comparison = "<" if to_attr == from_attr else "<=")    
     if date_type == time_util.DateTypes.DatesAsStringsArchaelogical:
-        comparison = "<" if to_attr == from_attr else "<=" # kept <= option here since I'm not sure about implications in archaelogical mode 
+        # kept <= option here since I'm not sure about implications in archaelogical mode 
+        comparison = "<" if to_attr == from_attr else "<=" 
         return build_query_archaelogical(start_str, end_str, from_attr, to_attr, comparison, query_idiom)
     
     if date_type == time_util.DateTypes.IntegerTimestamps:

@@ -36,7 +36,8 @@ class TimeManagerControl(QObject):
         """Initialize the plugin control. Function gets called even when plugin is inactive"""
         QObject.__init__(self)
         self.iface = iface
-        self.setPropagateGuiChanges(True) # set this to False to be able to update the time in the gui without signals getting emitted
+        # set the following to False to be able to update the time in the GUI without signals getting emitted
+        self.setPropagateGuiChanges(True) 
 
     def load(self):
         """Load the plugin"""
@@ -144,8 +145,10 @@ class TimeManagerControl(QObject):
         """
         self.setPropagateGuiChanges(False)
         if timeExtents[1] is not None:  # timeExtents[0] is set in different places, so only check timeExtents[1]
-            self.guiControl.dock.labelStartTime.setText(time_util.datetime_to_str(timeExtents[0], time_util.DEFAULT_FORMAT))
-            self.guiControl.dock.labelEndTime.setText(time_util.datetime_to_str(timeExtents[1], time_util.DEFAULT_FORMAT))
+            startText = time_util.datetime_to_str(timeExtents[0], time_util.DEFAULT_FORMAT)
+            endText = time_util.datetime_to_str(timeExtents[1], time_util.DEFAULT_FORMAT)
+            self.guiControl.dock.labelStartTime.setText(startText)
+            self.guiControl.dock.labelEndTime.setText(endText)
 
             timeLength = time_util.datetime_to_epoch(timeExtents[1]) - time_util.datetime_to_epoch(timeExtents[0])
 

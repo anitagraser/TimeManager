@@ -41,14 +41,16 @@ class TimeVectorLayer(TimeLayer):
             self.iface = iface
             self.minValue, self.maxValue = None, None
             self.fromTimeAttribute = settings.startTimeAttribute
-            self.toTimeAttribute = settings.endTimeAttribute if settings.endTimeAttribute != "" else self.fromTimeAttribute
+            self.toTimeAttribute = settings.endTimeAttribute if settings.endTimeAttribute != "" \
+                                                             else self.fromTimeAttribute
             self.accumulate = settings.accumulate
             self.originalSubsetString = settings.subsetStr
             self.currSubsetString = self.originalSubsetString
             self.setSubsetString(self.originalSubsetString)
             self.geometriesCount = settings.geometriesCount
             self.type = time_util.DateTypes.determine_type(self.getRawMinValue())
-            if self.type not in time_util.DateTypes.QDateTypes:  # call to throw an exception early if no format can be found
+            if self.type not in time_util.DateTypes.QDateTypes:  
+                # call to throw an exception early if no format can be found
                 self.findValidValues(self.fromTimeAttribute, settings.timeFormat)
                 if self.fromTimeAttribute != self.toTimeAttribute:
                     self.findValidValues(self.toTimeAttribute, settings.timeFormat)
@@ -166,8 +168,8 @@ class TimeVectorLayer(TimeLayer):
                     maxValue = time_util.datetime_to_str(max(unique_vals), fmt)
 
                 if type(minValue) in [QtCore.QDate, QtCore.QDateTime]:
-                    minValue = time_util.datetime_to_str(time_util.QDateTime_to_datetime(minValue), self.getTimeFormat())
-                    maxValue = time_util.datetime_to_str(time_util.QDateTime_to_datetime(maxValue), self.getTimeFormat())
+                    minValue = time_util.datetime_to_str(time_util.QDateTime_to_datetime(minValue), fmt)
+                    maxValue = time_util.datetime_to_str(time_util.QDateTime_to_datetime(maxValue), fmt)
                 self.minValue = minValue
                 self.maxValue = maxValue
         return self.minValue, self.maxValue
@@ -222,24 +224,24 @@ class TimeVectorLayer(TimeLayer):
             return
         startTime = self.getStartTime(timePosition, timeFrame)
         endTime = self.getEndTime(timePosition, timeFrame)
-
+        dateType = self.getDateType()
+        # determine which idioms should be tried
+        # SQL
         idioms_to_try = [query_builder.QueryIdioms.SQL, query_builder.QueryIdioms.OGR]
-
-        if self.getDateType() in time_util.DateTypes.QDateTypes:
+        # OGR
+        if dateType in time_util.DateTypes.QDateTypes:
             idioms_to_try = [query_builder.QueryIdioms.OGR]
-
+        # Postgres 
         # use optimized query format for postgres + (timestamp|date) columns
-        if self.layer.dataProvider().storageType()==POSTGRES_TYPE and self.getDateType() in time_util.DateTypes.QDateTypes:
+        if self.layer.dataProvider().storageType()==POSTGRES_TYPE and dateType in time_util.DateTypes.QDateTypes:
             idioms_to_try = [query_builder.QueryIdioms.SQL]
 
         tried = []
+        # now try them
         for idiom in idioms_to_try:
-
             subsetString = query_builder.build_query(
-                startTime, endTime, self.fromTimeAttribute,
-                self.toTimeAttribute, date_type=self.getDateType(),
-                date_format=self.getTimeFormat(), query_idiom=idiom,
-                acc=self.accumulateFeatures()
+                startTime, endTime, self.fromTimeAttribute, self.toTimeAttribute, date_type=dateType,
+                date_format=self.getTimeFormat(), query_idiom=idiom, acc=self.accumulateFeatures()
                 )
             try:
                 self.setSubsetString(subsetString)

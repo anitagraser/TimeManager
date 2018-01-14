@@ -225,17 +225,17 @@ class TimeManagerGuiControl(QObject):
         self.signalExportVideo.emit(path, delay_millis, export_gif, export_video, do_clear)
 
     def showLabelOptions(self):
-        # TODO maybe more clearly
+        options = self.labelOptions
         self.dialog = QDialog()
         self.labelOptionsDialog = label_options.Ui_labelOptions()
         self.labelOptionsDialog.setupUi(self.dialog)
-        self.labelOptionsDialog.fontsize.setValue(self.labelOptions.size)
-        self.labelOptionsDialog.time_format.setText(self.labelOptions.fmt)
-        self.labelOptionsDialog.font.setCurrentFont(QFont(self.labelOptions.font))
+        self.labelOptionsDialog.fontsize.setValue(options.size)
+        self.labelOptionsDialog.time_format.setText(options.fmt)
+        self.labelOptionsDialog.font.setCurrentFont(QFont(options.font))
         self.labelOptionsDialog.placement.addItems(TimestampLabelConfig.PLACEMENTS)
-        self.labelOptionsDialog.placement.setCurrentIndex(TimestampLabelConfig.PLACEMENTS.index(self.labelOptions.placement))
-        self.labelOptionsDialog.text_color.setColor(QColor(self.labelOptions.color))
-        self.labelOptionsDialog.bg_color.setColor(QColor(self.labelOptions.bgcolor))
+        self.labelOptionsDialog.placement.setCurrentIndex(TimestampLabelConfig.PLACEMENTS.index(options.placement))
+        self.labelOptionsDialog.text_color.setColor(QColor(options.color))
+        self.labelOptionsDialog.bg_color.setColor(QColor(options.bgcolor))
         self.labelOptionsDialog.buttonBox.accepted.connect(self.saveLabelOptions)
         self.dialog.show()
 
@@ -499,8 +499,11 @@ class TimeManagerGuiControl(QObject):
 
         painter.setRenderHint(painter.Antialiasing, True)
         txt = QTextDocument()
-        html = '<span style="background-color:%s; padding: 5px; font-size: %spx;"><font face="%s" color="%s">%s</font></span>'\
-            % (self.labelOptions.bgcolor, self.labelOptions.size, self.labelOptions.font,  self.labelOptions.color, labelString)
+        html = """<span style="background-color:%s; padding: 5px; font-size: %spx;">
+                    <font face="%s" color="%s">%s</font>
+                  </span> """\
+               % (self.labelOptions.bgcolor, self.labelOptions.size, self.labelOptions.font,  
+                  self.labelOptions.color, labelString)
         txt.setHtml(html)
         layout = txt.documentLayout()
         size = layout.documentSize()
