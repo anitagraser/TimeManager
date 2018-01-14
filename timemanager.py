@@ -14,22 +14,25 @@
 # *                                                                         *
 # ***************************************************************************
 
-
-from qgis.utils import qgsfunction, QgsExpression
+import os
 from PyQt4.QtCore import QTranslator, QCoreApplication, qVersion, QSettings, QLocale
+
+from qgis.core import qgsfunction, QgsExpression
+
 from timemanagercontrol import TimeManagerControl
+from tmlogging import info, warn, error, log_exceptions
+
 import time_util
 import resources  # loads the icons
-import os
-import locale
-import conf
-from tmlogging import info, warn, error
+import locale # for localization
+import conf # loads the configuration
+
 
 I18N_FOLDER = "i18n"
 
 
 class timemanager:
-    """ plugin information """
+    """Plugin information"""
     name = "timemanager"
     longName = "TimeManager Plugin for QGIS >= 2.3"
     description = "Working with temporal vector data"
@@ -37,7 +40,7 @@ class timemanager:
     pluginUrl = "https://github.com/anitagraser/TimeManager"
 
     def __init__(self, iface):
-        """initialize the plugin"""
+        """Initialize the plugin"""
         global control
         try:
             control
@@ -51,14 +54,14 @@ class timemanager:
             except:
                 lang = "en"  # could not get locale, OSX may have this bug
             info("Plugin language loaded: {}".format(lang))
-            self.change_i18n(lang)
+            self.changeI18n(lang)
             control = TimeManagerControl(iface)
 
     def getController(self):
         return control
 
     def initGui(self):
-        """initialize the gui"""
+        """Initialize the gui"""
         control.load()
 
     def unload(self):
@@ -67,12 +70,11 @@ class timemanager:
         QgsExpression.unregisterFunction("$animation_datetime")
         QgsExpression.unregisterFunction("animation_datetime")
 
-    def change_i18n(self, new_lang):
-        """Change internationalisation for the plugin.
-
+    def changeI18n(self, new_lang):
+        """
+        Change internationalisation for the plugin.
         Override the system locale  and then see if we can get a valid
         translation file for whatever locale is effectively being used.
-
         """
         #os.environ["LANG"] = str(new_lang)
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -99,6 +101,6 @@ class timemanager:
 
     @qgsfunction(0, "TimeManager")
     def animation_datetime(values, feature, parent):
-        """called by QGIS to determine the current animation time"""
+        """Called by QGIS to determine the current animation time"""
         return time_util.datetime_to_str(control.getTimeLayerManager().getCurrentTimePosition(),
                                          time_util.DEFAULT_FORMAT)

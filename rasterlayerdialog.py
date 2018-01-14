@@ -1,14 +1,18 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 import re
 
-from PyQt4.QtCore import *
+from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QMessageBox
 
-import qgis_utils as qgs
-import layer_settings as ls
-import conf
 from vectorlayerdialog import AddLayerDialog
-from tmlogging import info, warn
 from raster.cdflayer import CDFRasterLayer
+from tmlogging import info, warn
+
+import conf
+import qgis_utils as qgs
+import layer_settings 
 
 
 class RasterLayerDialog(AddLayerDialog):
@@ -25,7 +29,7 @@ class RasterLayerDialog(AddLayerDialog):
         self.dialog.textEnd.setText(self.textEnd)
 
     def extractSettings(self):
-        return ls.getSettingsFromAddRasterLayersUI(self.dialog, self.tempLayerIndexToId)
+        return layer_settings.getSettingsFromAddRasterLayersUI(self.dialog, self.tempLayerIndexToId)
 
     def addConnections(self):
         super(RasterLayerDialog, self).addConnections()

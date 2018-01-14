@@ -1,11 +1,16 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
+"""
+Logging utilities to log messages in QGIS with
+a separate tab just for Time Manager
+"""
+
+__author__ = 'carolinux'
+
 from qgis._core import QgsMessageLog
 
 import conf
-
-
-"""Logging utilities to log messages in qgis with
-a separate tab just for Time Manager"""
-
 
 def info(msg):  # pragma: no cover
     QgsMessageLog.logMessage(str(msg), conf.LOG_TAG, QgsMessageLog.INFO)

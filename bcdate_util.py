@@ -1,24 +1,27 @@
-import re
-from datetime import datetime, timedelta
-
-from PyQt4.QtCore import QDateTime
-import PyQt4.QtCore as QtCore
-
-from tmlogging import warn
-import conf
-
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
 
 """ A module to support dates of BC/AD form"""
 
 __author__ = "Karolina Alexiou"
 __email__ = "karolina.alexiou@teralytics.ch"
 
+import re
+from datetime import datetime, timedelta
 
-class CustomDate(object):
-    pass
+from tmlogging import info, warn, error, log_exceptions
+
+import conf
+import time_util
 
 
 _DIGITS = conf.DEFAULT_DIGITS  # default digits for archaeology mode
+BC_FORMAT = "Y with BC/AD"
+SECONDS_IN_YEAR = 60 * 60 * 24 * 365
+
+
+class CustomDate(object):
+    pass
 
 
 def getGlobalDigitSetting():
@@ -169,10 +172,6 @@ class BCDate(CustomDate):
         return (self.y << 10) + (self.m << 4) + self.d
 
 
-BC_FORMAT = "Y with BC/AD"
-SECONDS_IN_YEAR = 60 * 60 * 24 * 365
-
-
 def _year(fdate):
     return int(fdate.y)
 
@@ -223,4 +222,4 @@ def str_to_bcdate(datetimeString):
 
 
 def epoch_to_str(seconds_from_epoch):
-    return datetime_to_str(epoch_to_datetime(seconds_from_epoch))
+    return time_util.datetime_to_str(time_util.epoch_to_datetime(seconds_from_epoch))

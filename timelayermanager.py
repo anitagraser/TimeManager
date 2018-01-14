@@ -2,17 +2,14 @@
 # -*- coding: UTF-8 -*-
 
 from datetime import datetime, timedelta
-from qgis.core import *
-
 from dateutil.relativedelta import relativedelta
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import QObject, pyqtSignal
 
 from timelayer import NotATimeAttributeError
-from time_util import *
+from tmlogging import info, warn, error, log_exceptions
+
 import time_util
 import conf
-from tmlogging import info, log_exceptions
 import qgis_utils as qgs
 
 
@@ -23,7 +20,7 @@ class TimeLayerManager(QObject):
     timeRestrictionsRefreshed = pyqtSignal(object)
     # the signal when the start and end time are changed
     projectTimeExtentsChanged = pyqtSignal(object)
-    # the signal for when we dont have any layers left managed by TimeManager
+    # the signal for when we don't have any layers left managed by TimeManager
     lastLayerRemoved = pyqtSignal()
 
     def __init__(self, iface):
@@ -231,18 +228,18 @@ class TimeLayerManager(QObject):
 
     def getSaveString(self):
         """create a save string that can be put into project file"""
-        tdfmt = SAVE_STRING_FORMAT
+        tdfmt = time_util.SAVE_STRING_FORMAT
         saveListLayers = []
 
         try:  # test if projectTimeExtens are populated with datetimes
-            datetime_to_str(self.getProjectTimeExtents()[0], tdfmt)
+            time_util.datetime_to_str(self.getProjectTimeExtents()[0], tdfmt)
         except:
             return (None, None)
 
         saveString = conf.SAVE_DELIMITER.join(
-            [datetime_to_str(self.getProjectTimeExtents()[0], tdfmt),
-             datetime_to_str(self.getProjectTimeExtents()[1], tdfmt),
-             datetime_to_str(self.getCurrentTimePosition(), tdfmt)])
+            [time_util.datetime_to_str(self.getProjectTimeExtents()[0], tdfmt),
+             time_util.datetime_to_str(self.getProjectTimeExtents()[1], tdfmt),
+             time_util.datetime_to_str(self.getCurrentTimePosition(), tdfmt)])
         for timeLayer in self.getTimeLayerList():
             saveListLayers.append(timeLayer.getSaveString())
 
@@ -250,25 +247,25 @@ class TimeLayerManager(QObject):
 
     def restoreFromSaveString(self, saveString):
         """restore settings from loaded project file"""
-        tdfmt = SAVE_STRING_FORMAT
+        tdfmt = time_util.SAVE_STRING_FORMAT
         if saveString:
             saveString = str(saveString).split(conf.SAVE_DELIMITER)
             try:
-                timeExtents = (str_to_datetime(saveString[0], tdfmt),
-                               str_to_datetime(saveString[1], tdfmt))
+                timeExtents = (time_util.str_to_datetime(saveString[0], tdfmt),
+                               time_util.str_to_datetime(saveString[1], tdfmt))
             except:
                 try:
                     # Try converting without the fractional seconds for
                     # backward compatibility.
-                    tdfmt = DEFAULT_FORMAT
-                    timeExtents = (str_to_datetime(saveString[0], tdfmt),
-                                   str_to_datetime(saveString[1], tdfmt))
+                    tdfmt = time_util.DEFAULT_FORMAT
+                    timeExtents = (time_util.str_to_datetime(saveString[0], tdfmt),
+                                   time_util.str_to_datetime(saveString[1], tdfmt))
                 except:
                     # avoid error message for projects without
                     # time-managed layers
                     return
             self.setProjectTimeExtents(timeExtents)
-            pos = str_to_datetime(saveString[2], tdfmt)
+            pos = time_util.str_to_datetime(saveString[2], tdfmt)
             self.setCurrentTimePosition(pos)
 
     def haveVisibleFeatures(self):

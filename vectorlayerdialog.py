@@ -1,14 +1,17 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 import abc
 from PyQt4 import uic
+from PyQt4.QtCore import QObject, SIGNAL, Qt
+from PyQt4.QtGui import QMessageBox
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 from qgis._core import QgsMapLayerRegistry
+from tmlogging import warn
 
 import qgis_utils as qgs
-import layer_settings as ls
+import layer_settings 
 import conf
-from tmlogging import warn
 
 
 class AddLayerDialog:
@@ -81,7 +84,7 @@ class AddLayerDialog:
     def addLayerToTable(self):
         """Add selected layer attributes to table"""
         settings = self.extractSettings()
-        ls.addSettingsToRow(settings, self.out_table)
+        layer_settings.addSettingsToRow(settings, self.out_table)
 
     @abc.abstractmethod
     def extractSettings(self):
@@ -101,7 +104,7 @@ class VectorLayerDialog(AddLayerDialog):
         super(VectorLayerDialog, self).__init__(*args)
 
     def extractSettings(self):
-        return ls.getSettingsFromAddVectorLayersUI(self.dialog, self.tempLayerIndexToId)
+        return layer_settings.getSettingsFromAddVectorLayersUI(self.dialog, self.tempLayerIndexToId)
 
     def addLayerAttributes(self, idx):
         """Get layer attributes and fill the combo boxes"""

@@ -1,19 +1,19 @@
-import time
-import re  # for hacking strftime
-import abc
-from datetime import datetime, timedelta
-
-from dateutil.relativedelta import relativedelta
-from PyQt4.QtCore import QDateTime
-import PyQt4.QtCore as QtCore
-
-import bcdate_util
-
+# -*- coding: utf-8 -*-
 
 """ A module to have time related functionality """
 
 __author__ = "Karolina Alexiou"
 __email__ = "karolina.alexiou@teralytics.ch"
+
+import time
+import re  # for hacking strftime
+import abc
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+from PyQt4.QtCore import QDateTime
+import PyQt4.QtCore as QtCore
+
+import bcdate_util
 
 OGR_DATE_FORMAT = "%Y/%m/%d"
 OGR_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
@@ -25,7 +25,6 @@ DEFAULT_LABEL_SIZE = 10
 DEFAULT_LABEL_COLOR = "#000000"
 DEFAULT_LABEL_BGCOLOR = "#ffffff"
 DEFAULT_LABEL_PLACEMENT = "SE"
-
 
 SAVE_STRING_FORMAT = DEFAULT_FORMAT  # Used to be: "%Y-%m-%d %H:%M:%S.%f",
 # but this format is not portable in Windows because of the %f directive

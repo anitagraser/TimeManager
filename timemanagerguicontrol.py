@@ -1,37 +1,42 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
 """
 Created on Fri Oct 29 10:13:39 2010
 
 @author: agraser
 """
 import os
-from string import replace
 import time
-from PyQt4 import uic
-from PyQt4 import QtGui as QtGui
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-
-from timevectorlayer import *
-from time_util import QDateTime_to_datetime, datetime_to_str, DEFAULT_FORMAT
-import time_util
-from bcdate_util import BCDate
-import conf
-import qgis_utils as qgs
-from ui import label_options
-import layer_settings as ls
-from vectorlayerdialog import VectorLayerDialog, AddLayerDialog
-from rasterlayerdialog import RasterLayerDialog
 from datetime import datetime
-from timemanagerprojecthandler import TimeManagerProjectHandler
+from string import replace
+from ui import label_options
+from PyQt4 import uic
+from PyQt4.QtCore import QObject, QDate, SIGNAL, pyqtSignal, Qt, QUrl
+from PyQt4.QtGui import QDialog, QFileDialog, QShortcut, QKeySequence, QAction, QFont, \
+ QColor, QLineEdit, QIcon, QTextDocument, QAbstractTextDocumentLayout, QMessageBox
 
-# The QTSlider only supports integers as the min and max, therefore the maximum maximum value
-# is whatever can be stored in an int. Making it a signed int to be sure.
-# (http://qt-project.org/doc/qt-4.8/qabstractslider.html)
+import qgis_utils as qgs
+
+from vectorlayerdialog import VectorLayerDialog #, AddLayerDialog
+from rasterlayerdialog import RasterLayerDialog
+from timemanagerprojecthandler import TimeManagerProjectHandler
+from tmlogging import info, warn, error, log_exceptions
+
+import time_util
+import bcdate_util
+import conf
+import layer_settings
+
+"""
+The QTSlider only supports integers as the min and max, therefore the maximum maximum value
+is whatever can be stored in an int. Making it a signed int to be sure.
+(http://qt-project.org/doc/qt-4.8/qabstractslider.html)
+"""
 MAX_TIME_LENGTH_SECONDS_SLIDER = 2 ** 31 - 1
-# according to the docs of QDateTime, the minimum date supported is the first day of
-# year 100  (http://qt-project.org/doc/qt-4.8/qdatetimeedit.html#minimumDate-prop)
+"""
+according to the docs of QDateTime, the minimum date supported is the first day of
+year 100  (http://qt-project.org/doc/qt-4.8/qdatetimeedit.html#minimumDate-prop)
+"""
 MIN_QDATE = QDate(100, 1, 1)
 
 DOCK_WIDGET_FILE = "dockwidget2.ui"
@@ -45,10 +50,10 @@ ANIMATION_WIDGET_FILE = "animate.ui"
 class TimestampLabelConfig(object):
     """Object that has the settings for rendering timestamp labels. Can be customized via the UI"""
     PLACEMENTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
-    DEFAULT_FONT_SIZE = 15
+    DEFAULT_FONT_SIZE = 25
     font = "Arial"  # Font names or family, comma-separated CSS style
     size = DEFAULT_FONT_SIZE  # Relative values between 1-7
-    fmt = DEFAULT_FORMAT  # Pythonic format (same as in the layers)
+    fmt = time_util.DEFAULT_FORMAT  # Pythonic format (same as in the layers)
     placement = 'SE'  # Choose from
     color = 'black'  # Text color as name, rgb(RR,GG,BB), or #XXXXXX
     bgcolor = 'white'  # Background color as name, rgb(RR,GG,BB), or #XXXXXX
@@ -59,7 +64,7 @@ class TimestampLabelConfig(object):
 
     def getLabel(self, dt):
         if self.type=="dt":
-            return datetime_to_str(dt, self.fmt)
+            return time_util.datetime_to_str(dt, self.fmt)
         if self.type=="epoch":
             return "Seconds elapsed: {}".format((dt - datetime(1970,1,1,0,0)).total_seconds())
         if self.type=="beginning":
@@ -116,7 +121,7 @@ class TimeManagerGuiControl(QObject):
 
         # create shortcuts
         self.focusSC = QShortcut(QKeySequence("Ctrl+Space"), self.dock)
-        self.connect(self.focusSC, QtCore.SIGNAL('activated()'), self.dock.horizontalTimeSlider.setFocus)
+        self.connect(self.focusSC, SIGNAL('activated()'), self.dock.horizontalTimeSlider.setFocus)
 
         # put default values
         self.dock.horizontalTimeSlider.setMinimum(conf.MIN_TIMESLIDER_DEFAULT)
@@ -204,9 +209,9 @@ class TimeManagerGuiControl(QObject):
     def selectAnimationFolder(self):
         prev_directory = TimeManagerProjectHandler.plugin_setting(conf.LAST_ANIMATION_PATH_TAG)
         if prev_directory:
-            self.animationDialog.lineEdit.setText(QtGui.QFileDialog.getExistingDirectory(directory=prev_directory))
+            self.animationDialog.lineEdit.setText(QFileDialog.getExistingDirectory(directory=prev_directory))
         else:
-            self.animationDialog.lineEdit.setText(QtGui.QFileDialog.getExistingDirectory())
+            self.animationDialog.lineEdit.setText(QFileDialog.getExistingDirectory())
 
     def sendAnimationOptions(self):
         path = self.animationDialog.lineEdit.text()
@@ -221,7 +226,7 @@ class TimeManagerGuiControl(QObject):
 
     def showLabelOptions(self):
         # TODO maybe more clearly
-        self.dialog = QtGui.QDialog()
+        self.dialog = QDialog()
         self.labelOptionsDialog = label_options.Ui_labelOptions()
         self.labelOptionsDialog.setupUi(self.dialog)
         self.labelOptionsDialog.fontsize.setValue(self.labelOptions.size)
@@ -264,7 +269,7 @@ class TimeManagerGuiControl(QObject):
     def currentBCYearChanged(self):
         val = self.bcdateSpinBox.text()
         try:
-            bcdate = BCDate.from_str(val, strict_zeros=False)
+            bcdate = bcdate_util.BCDate.from_str(val, strict_zeros=False)
             self.signalCurrentTimeUpdated.emit(val)
         except:
             warn("Invalid bc date: {}".format(val))  # how to mark as such?
@@ -276,7 +281,7 @@ class TimeManagerGuiControl(QObject):
         self.replaceWidget(self.dock.horizontalLayout, self.bcdateSpinBox, self.dock.dateTimeEditCurrentTime, 5)
 
     def createBCWidget(self, mainWidget):
-        newWidget = QtGui.QLineEdit(mainWidget)  # QtGui.QSpinBox(mainWidget)
+        newWidget = QLineEdit(mainWidget)  # QtGui.QSpinBox(mainWidget)
         # newWidget.setMinimum(-1000000)
         #newWidget.setValue(-1)
         newWidget.setText("0001 BC")
@@ -371,8 +376,8 @@ class TimeManagerGuiControl(QObject):
 
         # restore settings from layerList:
         for layer in layerList:
-            settings = ls.getSettingsFromLayer(layer)
-            ls.addSettingsToRow(settings, self.optionsDialog.tableWidget)
+            settings = layer_settings.getSettingsFromLayer(layer)
+            layer_settings.addSettingsToRow(settings, self.optionsDialog.tableWidget)
 
         # restore animation options
         self.optionsDialog.spinBoxFrameLength.setValue(animationFrameLength)

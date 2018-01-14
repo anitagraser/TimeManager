@@ -1,11 +1,17 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 __author__ = 'carolinux'
 
-"""Helper functions that manage getting layer settings from a variety of sources - the timelayer
-layer, the addLayerOptions gui, the widget table and the save string"""
-from qgis.core import *
+"""
+Helper functions that manage getting layer settings from a variety of sources - the timelayer
+layer, the addLayerOptions gui, the widget table and the save string
+"""
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.core import QgsMapLayerRegistry
+
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QTableWidgetItem
 
 from time_util import PENDING
 import conf

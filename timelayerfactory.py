@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 __author__ = 'carolinux'
 
 from qgis.core import QgsVectorLayer, QgsRasterLayer
@@ -7,6 +10,7 @@ from timerasterlayer import TimeRasterLayer
 from timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
 from raster.cdflayer import CDFRasterLayer
 from raster.wmstlayer import WMSTRasterLayer
+
 import time_util
 
 

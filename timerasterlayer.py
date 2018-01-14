@@ -7,8 +7,9 @@ Created on Thu Mar 22 18:33:13 2012
 
 from datetime import timedelta
 
-from timelayer import *
-from time_util import str_to_datetime
+from timelayer import TimeLayer, InvalidTimeLayerError, NotATimeAttributeError
+
+import time_util 
 import conf
 
 
@@ -48,8 +49,8 @@ class TimeRasterLayer(TimeLayer):
         """Get layer's temporal extent using the fields and the format defined somewhere else!"""
         startStr = self.fromTimeAttribute
         endStr = self.toTimeAttribute
-        startTime = str_to_datetime(startStr, self.getTimeFormat())
-        endTime = str_to_datetime(endStr, self.getTimeFormat())
+        startTime = time_util.str_to_datetime(startStr, self.getTimeFormat())
+        endTime = time_util.str_to_datetime(endStr, self.getTimeFormat())
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
@@ -63,8 +64,8 @@ class TimeRasterLayer(TimeLayer):
 
         startTime = timePosition + timedelta(seconds=self.offset)
         endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
-        layerStartTime = str_to_datetime(self.fromTimeAttribute, self.getTimeFormat())
-        layerEndTime = str_to_datetime(self.toTimeAttribute, self.getTimeFormat())
+        layerStartTime = time_util.str_to_datetime(self.fromTimeAttribute, self.getTimeFormat())
+        layerEndTime = time_util.str_to_datetime(self.toTimeAttribute, self.getTimeFormat())
         self.hideOrShowLayer(startTime, endTime, layerStartTime, layerEndTime)
 
     def hideOrShowLayer(self, startTime, endTime, layerStartTime, layerEndTime):

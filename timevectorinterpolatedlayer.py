@@ -1,15 +1,22 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 __author__ = 'carolinux'
 
-from qgis.core import *
 import traceback
 
-from timelayer import *
+from qgis.core import QgsVectorLayer, QGis, QgsMapLayerRegistry, QgsFeatureRequest, \
+    QgsPoint, QgsFeature, QgsGeometry
+
+from timelayer import InvalidTimeLayerError
 from timevectorlayer import TimeVectorLayer
-from time_util import datetime_to_epoch
-from conf import DEFAULT_ID
 from interpolation import interpolator_factory as ifactory
-import qgis_utils as qgs
 from tmlogging import info
+
+import time_util 
+import conf
+import qgis_utils as qgs
+
 
 
 # Ideas for extending
@@ -67,7 +74,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
                 self.idAttributeIndex = provider.fieldNameIndex(self.idAttribute)
                 self.uniqueIdValues = set(provider.uniqueValues(self.idAttributeIndex))
             else:
-                self.uniqueIdValues = set([DEFAULT_ID])
+                self.uniqueIdValues = set([conf.DEFAULT_ID])
 
             self.mode = settings.interpolationMode
             self.fromInterpolator = ifactory.get_interpolator_from_text(self.mode)
@@ -96,7 +103,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
         idsInFrame = set()
         features = self.layer.getFeatures(QgsFeatureRequest())
         for feat in features:
-            id = DEFAULT_ID if not self.hasIdAttribute() else feat[self.idAttributeIndex]
+            id = conf.DEFAULT_ID if not self.hasIdAttribute() else feat[self.idAttributeIndex]
             idsInFrame.add(id)
 
         idsNotInFrame = self.uniqueIdValues - idsInFrame
@@ -123,8 +130,8 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
     def setTimeRestriction(self, timePosition, timeFrame):
         TimeVectorLayer.setTimeRestriction(self, timePosition, timeFrame)
 
-        start_epoch = datetime_to_epoch(self.getStartTime(timePosition, timeFrame))
-        end_epoch = datetime_to_epoch(self.getEndTime(timePosition, timeFrame))
+        start_epoch = time_util.datetime_to_epoch(self.getStartTime(timePosition, timeFrame))
+        end_epoch = time_util.datetime_to_epoch(self.getEndTime(timePosition, timeFrame))
 
         #info("setTimeRestriction Called {} times".format(self.n))
         #info("size of layer at {}:{}".format(start_epoch,self.memLayer.featureCount(),))

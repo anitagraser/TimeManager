@@ -1,14 +1,14 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
 """
 Created on Fri Oct 29 17:22:52 2010
 
 @author: Anita
 """
 
-from qgis.core import *
+from PyQt4.QtCore import QObject, QSettings, QPyNullVariant
 
-from PyQt4.QtCore import *
-
+from qgis.core import QgsProject
 
 class TimeManagerProjectHandler(QObject):
     """This class manages reading from and writing to the QgsProject instance.
@@ -65,10 +65,10 @@ class TimeManagerProjectHandler(QObject):
         }
 
         settings = {}
-        for (setting_name, type) in metasettings.items():
+        for (setting_name, setting_type) in metasettings.items():
 
             try:
-                setting_value = cls.readSetting(type_to_read_function_mapping[type], setting_name)
+                setting_value = cls.readSetting(type_to_read_function_mapping[setting_type], setting_name)
                 if setting_value is None:
                     raise Exception
                 settings[setting_name] = setting_value

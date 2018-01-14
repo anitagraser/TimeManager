@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 __author__ = 'carolinux'
 
 ## UI settings
@@ -32,13 +35,11 @@ NO_ID_TEXT = "None - every geometry is a position of the same moving object in t
 SAVE_DELIMITER = ';'
 
 ## logging settings
-
 LOG_TAG = "TimeManager"
 
 ## ARCH settings
 DEFAULT_DIGITS = 4
 
 ## version thresholds
-
 MIN_DTEXT_FIXED = 20900
 MIN_RASTER_MULTIBAND = 21000

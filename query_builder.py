@@ -1,8 +1,10 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 __author__ = 'carolinux'
 
 from PyQt4 import QtCore
 
-from time_util import DateTypes
 import time_util
 
 
@@ -148,11 +150,11 @@ def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, qu
     end_str = time_util.datetime_to_str(end_dt, date_format)
     
     comparison = "<" # simplified because of: https://github.com/anitagraser/TimeManager/issues/235 (original: # comparison = "<" if to_attr == from_attr else "<=")    
-    if date_type == DateTypes.DatesAsStringsArchaelogical:
+    if date_type == time_util.DateTypes.DatesAsStringsArchaelogical:
         comparison = "<" if to_attr == from_attr else "<=" # kept <= option here since I'm not sure about implications in archaelogical mode 
         return build_query_archaelogical(start_str, end_str, from_attr, to_attr, comparison, query_idiom)
     
-    if date_type == DateTypes.IntegerTimestamps:
+    if date_type == time_util.DateTypes.IntegerTimestamps:
         start_epoch = time_util.datetime_to_epoch(start_dt)
         end_epoch = time_util.datetime_to_epoch(end_dt)
         return INT_FORMAT.format(from_attr, comparison, end_epoch, to_attr, start_epoch)
@@ -164,7 +166,7 @@ def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, qu
             return STRING_FORMAT.format(from_attr, comparison, end_str, to_attr, start_str)
     else:
         # thankfully, SQL & OGR syntax agree on substr and concat
-        if date_type != DateTypes.DatesAsStrings:
+        if date_type != time_util.DateTypes.DatesAsStrings:
             raise QueryBuildingException()
         ioy = date_format.find("%Y")
         iom = date_format.find("%m")

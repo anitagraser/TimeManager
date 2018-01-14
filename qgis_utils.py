@@ -1,16 +1,17 @@
-from qgis.core import QgsRasterLayer, QgsVectorLayer
-from qgis.utils import QGis
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
 
-from PyQt4.QtGui import QColor
-from PyQt4.QtCore import QVariant
-from qgis._core import QgsMapLayerRegistry
-
-from tmlogging import warn
-
+"""Helper functions that interface with the QGIS API"""
 
 __author__ = 'carolinux'
 
-"""File that has most helper functions that interface with the QGIS API"""
+from PyQt4.QtGui import QColor
+from PyQt4.QtCore import QVariant
+
+from qgis.core import QgsRasterLayer, QgsVectorLayer, QgsMapLayerRegistry
+from qgis.utils import QGis
+
+from tmlogging import info, warn, error, log_exceptions
 
 
 def getAllJoinIdsOfLayer(layer):
@@ -36,7 +37,7 @@ def getVersion():
 
 
 def getAllJoinedLayers(layerIds):
-    """get the ids of the layers that are joined on the given layerIds"""
+    """Get the ids of the layers that are joined on the given layerIds"""
     allJoined = set()
     allLayers = QgsMapLayerRegistry.instance().mapLayers()
     for (id, layer) in allLayers.iteritems():

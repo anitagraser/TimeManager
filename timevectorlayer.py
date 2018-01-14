@@ -4,21 +4,19 @@ Created on Thu Mar 22 17:28:19 2012
 
 @author: Anita
 """
+
 import traceback
-from PyQt4 import QtCore
 from datetime import timedelta
+from PyQt4 import QtCore
+#from PyQt4.QtGui import QMessageBox
 
-from PyQt4.QtGui import QMessageBox
+from timelayer import TimeLayer, InvalidTimeLayerError
+from tmlogging import info, warn, error, log_exceptions
 
-from timelayer import *
-from time_util import timeval_to_datetime, datetime_to_str, QDateTime_to_datetime, str_to_datetime, DateTypes
+import conf
 import time_util
-from query_builder import QueryIdioms
+import layer_settings 
 import query_builder
-from conf import SAVE_DELIMITER
-import layer_settings as ls
-from tmlogging import info, warn, error
-
 
 POSTGRES_TYPE = 'PostgreSQL database with PostGIS extension'
 DELIMITED_TEXT_TYPE = 'Delimited text file'
@@ -49,15 +47,15 @@ class TimeVectorLayer(TimeLayer):
             self.currSubsetString = self.originalSubsetString
             self.setSubsetString(self.originalSubsetString)
             self.geometriesCount = settings.geometriesCount
-            self.type = DateTypes.determine_type(self.getRawMinValue())
-            if self.type not in DateTypes.QDateTypes:  # call to throw an exception early if no format can be found
+            self.type = time_util.DateTypes.determine_type(self.getRawMinValue())
+            if self.type not in time_util.DateTypes.QDateTypes:  # call to throw an exception early if no format can be found
                 self.findValidValues(self.fromTimeAttribute, settings.timeFormat)
                 if self.fromTimeAttribute != self.toTimeAttribute:
                     self.findValidValues(self.toTimeAttribute, settings.timeFormat)
 
             self.timeFormat = self.determine_format(self.getRawMinValue(), settings.timeFormat)
             if self.toTimeAttribute != self.fromTimeAttribute:
-                type2 = DateTypes.determine_type(self.getRawMaxValue())
+                type2 = time_util.DateTypes.determine_type(self.getRawMaxValue())
                 tf2 = self.determine_format(self.getRawMaxValue(), settings.timeFormat)
                 if self.type != type2 or self.timeFormat != tf2:
                     raise InvalidTimeLayerError(
@@ -99,8 +97,10 @@ class TimeVectorLayer(TimeLayer):
         # which means that it can now about joined fields
 
     def getRawMinValue(self):
-        """Return the raw minimum value. May not be the expected minimum value semantically if we
-        have dates that are saved as strings because of lexicographic comparisons"""
+        """
+        Return the raw minimum value. May not be the expected minimum value semantically if we
+        have dates that are saved as strings because of lexicographic comparisons
+        """
         fromTimeAttributeIndex = self.getProvider().fieldNameIndex(self.fromTimeAttribute)
         minValue = self.getProvider().minimumValue(fromTimeAttributeIndex)
         # if we are unlucky and have some null data we need to sort through the values
@@ -111,8 +111,10 @@ class TimeVectorLayer(TimeLayer):
         return minValue
 
     def getRawMaxValue(self):
-        """Return the raw maximum value. May not be the expected minimum value semantically if we
-        have dates that are saved as strings because of lexicographic comparisons"""
+        """
+        Return the raw maximum value. May not be the expected minimum value semantically if we
+        have dates that are saved as strings because of lexicographic comparisons
+        """
         toTimeAttributeIndex = self.getProvider().fieldNameIndex(self.toTimeAttribute)
         maxValue = self.getProvider().maximumValue(toTimeAttributeIndex)
         if isNull(maxValue):
@@ -130,7 +132,7 @@ class TimeVectorLayer(TimeLayer):
         """Return min and max value strings"""
         if self.minValue is None or self.maxValue is None:  # if not already computed
             fmt = self.getTimeFormat()
-            if self.getDateType() == DateTypes.IntegerTimestamps:
+            if self.getDateType() == time_util.DateTypes.IntegerTimestamps:
                 self.minValue = self.getRawMinValue()
                 self.maxValue = self.getRawMaxValue()
             else: # strings or qdate(time) values
@@ -142,7 +144,7 @@ class TimeVectorLayer(TimeLayer):
                     res = []
                     for val in vals:
                         try:
-                            dt = timeval_to_datetime(val, fmt)
+                            dt = time_util.timeval_to_datetime(val, fmt)
                             res.append(dt)
                             # info("{} converted to {}".format(val, dt))
                         except Exception, e:
@@ -155,27 +157,29 @@ class TimeVectorLayer(TimeLayer):
                     raise Exception("Could not parse any dates while trying to get time extents." +
                                     "None of the values (for example {}) matches the format {}"
                                     .format(uniques[-1], fmt))
-                minValue = datetime_to_str(min(unique_vals), fmt)
+                minValue = time_util.datetime_to_str(min(unique_vals), fmt)
                 if self.fromTimeAttribute == self.toTimeAttribute:
-                    maxValue = datetime_to_str(max(unique_vals), fmt)
+                    maxValue = time_util.datetime_to_str(max(unique_vals), fmt)
                 else:
                     unique_vals = self.getUniques(self.toTimeAttribute)
                     unique_vals = vals_to_dt(unique_vals, fmt)
-                    maxValue = datetime_to_str(max(unique_vals), fmt)
+                    maxValue = time_util.datetime_to_str(max(unique_vals), fmt)
 
                 if type(minValue) in [QtCore.QDate, QtCore.QDateTime]:
-                    minValue = datetime_to_str(QDateTime_to_datetime(minValue), self.getTimeFormat())
-                    maxValue = datetime_to_str(QDateTime_to_datetime(maxValue), self.getTimeFormat())
+                    minValue = time_util.datetime_to_str(time_util.QDateTime_to_datetime(minValue), self.getTimeFormat())
+                    maxValue = time_util.datetime_to_str(time_util.QDateTime_to_datetime(maxValue), self.getTimeFormat())
                 self.minValue = minValue
                 self.maxValue = maxValue
         return self.minValue, self.maxValue
 
     def getTimeExtents(self):
-        """Return temporal extent in datetime format
-         using the fields and the format defined in the layer"""
+        """
+        Return temporal extent in datetime format
+        using the fields and the format defined in the layer
+        """
         start_str, end_str = self.getMinMaxValues()
-        startTime = str_to_datetime(start_str, self.getTimeFormat())
-        endTime = str_to_datetime(end_str, self.getTimeFormat())
+        startTime = time_util.str_to_datetime(start_str, self.getTimeFormat())
+        endTime = time_util.str_to_datetime(end_str, self.getTimeFormat())
         # apply offset
         startTime += timedelta(seconds=self.offset)
         endTime += timedelta(seconds=self.offset)
@@ -199,7 +203,7 @@ class TimeVectorLayer(TimeLayer):
         last_exc = None
         for v in uniques:
             try:
-                str_to_datetime(v, fmt)
+                time_util.str_to_datetime(v, fmt)
                 at_least_one_valid = True
                 break
             except Exception, e:
@@ -219,14 +223,14 @@ class TimeVectorLayer(TimeLayer):
         startTime = self.getStartTime(timePosition, timeFrame)
         endTime = self.getEndTime(timePosition, timeFrame)
 
-        idioms_to_try = [QueryIdioms.SQL, QueryIdioms.OGR]
+        idioms_to_try = [query_builder.QueryIdioms.SQL, query_builder.QueryIdioms.OGR]
 
-        if self.getDateType() in DateTypes.QDateTypes:
-            idioms_to_try = [QueryIdioms.OGR]
+        if self.getDateType() in time_util.DateTypes.QDateTypes:
+            idioms_to_try = [query_builder.QueryIdioms.OGR]
 
         # use optimized query format for postgres + (timestamp|date) columns
-        if self.layer.dataProvider().storageType()==POSTGRES_TYPE and self.getDateType() in DateTypes.QDateTypes:
-            idioms_to_try = [QueryIdioms.SQL]
+        if self.layer.dataProvider().storageType()==POSTGRES_TYPE and self.getDateType() in time_util.DateTypes.QDateTypes:
+            idioms_to_try = [query_builder.QueryIdioms.SQL]
 
         tried = []
         for idiom in idioms_to_try:
@@ -272,8 +276,8 @@ class TimeVectorLayer(TimeLayer):
 
     def getSaveString(self):
         """Get string to save in project file"""
-        settings = ls.getSettingsFromLayer(self)
-        res = SAVE_DELIMITER.join([settings.layerId, settings.subsetStr,
+        settings = layer_settings.getSettingsFromLayer(self)
+        res = conf.SAVE_DELIMITER.join([settings.layerId, settings.subsetStr,
                                    settings.startTimeAttribute, settings.endTimeAttribute,
                                    str(settings.isEnabled), settings.timeFormat,
                                    str(settings.offset), settings.idAttribute,
