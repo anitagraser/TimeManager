@@ -36,7 +36,10 @@ class TimeManagerProjectHandler(QObject):
     @classmethod
     def writeSetting(cls, attribute, value):
         """write plugin settings to QgsProject instance"""
-        QgsProject.instance().writeEntry("TimeManager", attribute, value)
+        try:
+            QgsProject.instance().writeEntry("TimeManager", attribute, value)
+        except:
+            pass
 
     @classmethod
     def readSetting(cls, func, attribute):
