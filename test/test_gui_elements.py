@@ -58,9 +58,9 @@ class testGuiControl(unittest.TestCase):
 
     def test_vector_dialog_populate(self):
         self.assertIsNotNone(self.vector)
-        self.assertEqual(self.vector.layer_count(), 0)
+        self.assertEqual(self.vector.getLayerCount(), 0)
         self.vector.populateFromLayers([("greatlayer4242", self.vectorLayer)])
-        self.assertEqual(self.vector.layer_count(), 1)
+        self.assertEqual(self.vector.getLayerCount(), 1)
 
     def test_vector_dialog_idbox(self):
         self.vector.maybeEnableIDBox(conf.NO_INTERPOLATION)
@@ -70,9 +70,9 @@ class testGuiControl(unittest.TestCase):
 
     def test_raster_dialog_populate(self):
         self.assertIsNotNone(self.raster)
-        self.assertEqual(self.raster.layer_count(), 0)
+        self.assertEqual(self.raster.getLayerCount(), 0)
         self.raster.populateFromLayers([("lookatalltheseclouds4242", self.rasterLayer)])
-        self.assertEqual(self.raster.layer_count(), 1)
+        self.assertEqual(self.raster.getLayerCount(), 1)
 
     def test_options_dialog(self):
         # TODO more testing if the options dialog was created correctly
