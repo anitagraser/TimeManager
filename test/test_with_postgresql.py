@@ -125,8 +125,8 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
         #                 CUSTOM_FORMAT_DMY)
 
     def test_date(self): # postgresql timestamp format
-                                               # FIXME: shouldn't this get read as DateTypes.DatesAsQDateTimes ??
-        self._test_layer(self.layer, DATE_COL, time_util.DateTypes.DatesAsStrings,
+        self._test_layer(self.layer, DATE_COL, 
+                         time_util.DateTypes.DatesAsQDateTimes,
                          time_util.DEFAULT_FORMAT)
         self.assertNotIn("character", self.layer.subsetString()) # assert that it uses the optimized format
 
