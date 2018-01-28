@@ -127,7 +127,7 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
     def test_date(self): # postgresql timestamp format
         self._test_layer(self.layer, DATE_COL, 
                          time_util.DateTypes.DatesAsQDateTimes,
-                         time_util.DEFAULT_FORMAT)
+                         time_util.OGR_DATETIME_FORMAT)
         self.assertNotIn("character", self.layer.subsetString()) # assert that it uses the optimized format
 
     @raises(Exception)
