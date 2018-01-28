@@ -13,7 +13,7 @@ from mock import Mock
 from datetime import datetime, timedelta
 from PyQt4 import QtCore, QtGui, QtTest
 import TimeManager.timemanagercontrol as timemanagercontrol
-from TimeManager.timemanagercontrol import FRAME_FILENAME_PREFIX
+from TimeManager.conf import FRAME_FILENAME_PREFIX
 import TimeManager.timevectorlayer as timevectorlayer
 from TimeManager.timelayermanager import TimeLayerManager
 import testcfg
