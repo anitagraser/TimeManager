@@ -99,8 +99,8 @@ class TestLayers(unittest.TestCase):
 
         assert (vector.getTimeFormat() == UTC)
         td = timedelta(minutes=5)
-        currTime = datetime(1970, 1, 1, 0, 3, 0)
-        vector.setTimeRestriction(datetime_to_epoch(currTime), td)
+        currTime = datetime(1970, 1, 1, 0, 0, 2)
+        vector.setTimeRestriction(currTime, td)
         layer.setSubsetString.assert_called_with(
             INT_FORMAT.format(self.from_attr,
                               self.comparison_op,
@@ -109,7 +109,7 @@ class TestLayers(unittest.TestCase):
                               datetime_to_epoch(currTime)))
 
         currTime = datetime(1980, 1, 1, 0, 0, 2)
-        vector.setTimeRestriction(datetime_to_epoch(currTime), td)
+        vector.setTimeRestriction(currTime, td)
         layer.setSubsetString.assert_called_with(
             INT_FORMAT.format(self.from_attr,
                               self.comparison_op,

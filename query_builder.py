@@ -145,22 +145,23 @@ def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, qu
     """Build subset query"""
     if acc: # features never die
         start_dt = time_util.get_min_dt()
-
-    start_str = time_util.datetime_to_str(start_dt, date_format)
-    end_str = time_util.datetime_to_str(end_dt, date_format)
     
     comparison = "<" # simplified because of: https://github.com/anitagraser/TimeManager/issues/235 
     #                  (original: # comparison = "<" if to_attr == from_attr else "<=")    
+
+    if date_type == time_util.DateTypes.IntegerTimestamps:
+        start_epoch = time_util.datetime_to_epoch(start_dt)
+        end_epoch = time_util.datetime_to_epoch(end_dt)
+        return INT_FORMAT.format(from_attr, comparison, end_epoch, to_attr, start_epoch)
+    
+    start_str = time_util.datetime_to_str(start_dt, date_format)
+    end_str = time_util.datetime_to_str(end_dt, date_format)    
+    
     if date_type == time_util.DateTypes.DatesAsStringsArchaelogical:
         # kept <= option here since I'm not sure about implications in archaelogical mode 
         comparison = "<" if to_attr == from_attr else "<=" 
         return build_query_archaelogical(start_str, end_str, from_attr, to_attr, comparison, query_idiom)
     
-    if date_type == time_util.DateTypes.IntegerTimestamps:
-        start_epoch = time_util.datetime_to_epoch(start_dt)
-        end_epoch = time_util.datetime_to_epoch(end_dt)
-        return INT_FORMAT.format(from_attr, comparison, end_epoch, to_attr, start_epoch)
-
     if can_compare_lexicographically(date_format):
         if query_idiom == QueryIdioms.OGR:
             return STRINGCAST_FORMAT.format(from_attr, comparison, end_str, to_attr, start_str)
