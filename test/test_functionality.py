@@ -301,7 +301,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         screenshots_generated = glob.glob(os.path.join(tmpdir, FRAME_FILENAME_PREFIX + "*"))
         self.assertEqual(len(screenshots_generated), math.ceil(layer_duration_in_hours + 1))
         for i in range(int(math.ceil(layer_duration_in_hours + 1))):
-            fn = self.ctrl.generate_frame_filename(tmpdir, i, start_time + timedelta(hours=i))
+            fn = self.ctrl.generateFrameFilename(tmpdir, i, start_time + timedelta(hours=i))
             self.assertIn(fn, screenshots_generated)
         shutil.rmtree(tmpdir)
 

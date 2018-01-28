@@ -62,7 +62,7 @@ class TestDelimitedText(TestForLayersWithOnePointPerSecond):
 
 
     def test_date_str(self):
-        self._test_layer(self.layer, DATE_COL, timevectorlayer.DateTypes.DatesAsStrings,
+        self._test_layer(self.layer, DATE_COL, time_util.DateTypes.DatesAsStrings,
                          DFT)
         self.assertEquals(len(self.tlm.getActiveDelimitedText()), 1)
 
