@@ -81,7 +81,7 @@ class TestDelimitedText(TestForLayersWithOnePointPerSecond):
         self.ctrl.exportVideo(tmpdir, 100, False)
         screenshots_generated = glob.glob(os.path.join(tmpdir, FRAME_FILENAME_PREFIX + "*"))
         # import ipdb; ipdb.set_trace()
-        last_fn = self.ctrl.generate_frame_filename(tmpdir, len(screenshots_generated) - 1,
+        last_fn = self.ctrl.generateFrameFilename(tmpdir, len(screenshots_generated) - 1,
                                                     end_time)
         self.assertEquals(6, len(screenshots_generated))
         self.assertIn(last_fn, screenshots_generated)
