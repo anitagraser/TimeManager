@@ -105,12 +105,12 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
 
     def test_integers(self):
         self.assertTrue(qgis_utils.isNumericField(self.layer, EPOCH_COL))
-        self._test_layer(self.layer, EPOCH_COL, timevectorlayer.DateTypes.IntegerTimestamps,
+        self._test_layer(self.layer, EPOCH_COL, time_util.DateTypes.IntegerTimestamps,
                          time_util.UTC)
 
     def test_date_str(self):
         self.assertTrue(not qgis_utils.isNumericField(self.layer, DATE_STR_COL))
-        self._test_layer(self.layer, DATE_STR_COL, timevectorlayer.DateTypes.DatesAsStrings,
+        self._test_layer(self.layer, DATE_STR_COL, time_util.DateTypes.DatesAsStrings,
                          CUSTOM_FORMAT)
         self.assertNotIn("character", self.layer.subsetString())
 
@@ -121,24 +121,24 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
         self.assertTrue(
             start_dt < end_dt and time_util.datetime_to_str(start_dt, CUSTOM_FORMAT_DMY) >
             time_util.datetime_to_str(end_dt, CUSTOM_FORMAT_DMY))
-        # self._test_layer(self.layer, DATE_STR_COL_DMY,timevectorlayer.DateTypes.DatesAsStrings,
+        # self._test_layer(self.layer, DATE_STR_COL_DMY,time_util.DateTypes.DatesAsStrings,
         #                 CUSTOM_FORMAT_DMY)
 
     def test_date(self): # postgresql timestamp format
                                                # FIXME: shouldn't this get read as DateTypes.DatesAsQDateTimes ??
-        self._test_layer(self.layer, DATE_COL, timevectorlayer.DateTypes.DatesAsStrings,
+        self._test_layer(self.layer, DATE_COL, time_util.DateTypes.DatesAsStrings,
                          time_util.DEFAULT_FORMAT)
         self.assertNotIn("character", self.layer.subsetString()) # assert that it uses the optimized format
 
     @raises(Exception)
     def test_to_from_are_different_types(self):
         # currently not supported, verify that exception is thrown
-        self._test_layer(self.layer, DATE_COL, timevectorlayer.DateTypes.DatesAsStrings,
+        self._test_layer(self.layer, DATE_COL, time_util.DateTypes.DatesAsStrings,
                          time_util.DEFAULT_FORMAT, attr2=DATE_STR_COL_DMY)
 
     @unittest.skip
     def test_date_with_timezone(self):
-        self._test_layer(self.layer, DATE_TZ_COL, timevectorlayer.DateTypes.DatesAsStrings, None)
+        self._test_layer(self.layer, DATE_TZ_COL, time_util.DateTypes.DatesAsStrings, None)
 
 
 if __name__ == "__main__":
