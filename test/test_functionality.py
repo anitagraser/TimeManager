@@ -50,9 +50,10 @@ class RiggedTimeManagerControl(timemanagercontrol.TimeManagerControl):
         # order matters
         self.timeLayerManager = TimeLayerManager(self.iface)
         self.guiControl = Mock()
-        self.initViewConnections(test=True)
-        self.initModelConnections()
+        self.initGuiConnections(test=True)
+        self.initLayerManagerConnections()
         self.initQGISConnections()
+
         self.restoreDefaults()
 
     def playAnimation(self, painter=None):

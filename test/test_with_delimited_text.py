@@ -9,7 +9,7 @@ from mock import Mock
 import unittest
 from test_functionality import TestForLayersWithOnePointPerSecond
 import TimeManager.time_util as time_util
-from TimeManager.timemanagercontrol import FRAME_FILENAME_PREFIX
+from TimeManager.conf import FRAME_FILENAME_PREFIX
 import TimeManager.timevectorlayer as timevectorlayer
 import TimeManager.layer_settings as ls
 
