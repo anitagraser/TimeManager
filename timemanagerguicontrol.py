@@ -387,6 +387,12 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.checkBoxLoop.setChecked(loopAnimation)
         self.optionsDialog.show_label_options_button.clicked.connect(self.showLabelOptions)
         self.optionsDialog.checkBoxLabel.stateChanged.connect(self.showOrHideLabelOptions)
+        
+        # show help
+        helpPath = QUrl(
+            'file:///' + replace(os.path.join(self.path, "help.htm"), '\\', '/'))  # windows
+        # hack: Qt expects / instead of \
+        self.optionsDialog.textBrowser.setSource(helpPath)
 
         # show dialog
         self.showOrHideLabelOptions()
@@ -404,21 +410,21 @@ class TimeManagerGuiControl(QObject):
         self.optionsDialog.pushButtonAddRaster.clicked.connect(self.rasterDialog.show)
         self.optionsDialog.pushButtonRemove.clicked.connect(self.removeLayer)
         self.optionsDialog.buttonBox.accepted.connect(self.saveOptions)
-        self.optionsDialog.buttonBox.helpRequested.connect(self.showHelp)
+        #self.optionsDialog.buttonBox.helpRequested.connect(self.showHelp)
 
     def showOrHideLabelOptions(self):
         self.optionsDialog.show_label_options_button.setEnabled(
             self.optionsDialog.checkBoxLabel.isChecked())
 
-    def showHelp(self):
-        """Show help dialog"""
-        self.helpDialog = uic.loadUi(os.path.join(self.path, "help.ui"))
-        helpPath = QUrl(
-            'file:///' + replace(os.path.join(self.path, "help.htm"), '\\', '/'))  # windows
-        # hack: Qt expects / instead of \
-        # QMessageBox.information(self.iface.mainWindow(),'Error',str(helpPath))
-        self.helpDialog.textBrowser.setSource(helpPath)
-        self.helpDialog.show()
+    #def showHelp(self):
+    #    """Show help dialog"""
+    #    self.helpDialog = uic.loadUi(os.path.join(self.path, "help.ui"))
+    #    helpPath = QUrl(
+    #        'file:///' + replace(os.path.join(self.path, "help.htm"), '\\', '/'))  # windows
+    #    # hack: Qt expects / instead of \
+    #    # QMessageBox.information(self.iface.mainWindow(),'Error',str(helpPath))
+    #    self.helpDialog.textBrowser.setSource(helpPath)
+    #    self.helpDialog.show()
 
     def saveOptions(self):
         """Save the options from optionsDialog to timeLayerManager"""

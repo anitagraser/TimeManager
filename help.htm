@@ -2,65 +2,89 @@
 <html>
 <head>
     <meta name="qrichtext" content="1"/>
-    <style type="text/css">
-        * {
-        font-family: sans-serif;
-        }
-        p, li {
-        white-space: pre-wrap;
-        }
-        p.tip {
-        color: #666;
-        font-style: italic;
-        font-size: 80%;
-        }
 
-    </style>
 </head>
 <body>
+
 <h1>Time Manager</h1>
 
-<p>The aim of Time Manager plugin for QGIS is to provide comfortable browsing through temporal
-    geodata. A dock widget provides a time slider and a configuration dialog for your layers to
-    manage.</p>
+<p>Time Manager filters your layers and displays only layers and features that match the specified time frame. Time Manager supports vector layers and raster layers (including WMS-T).</p>
 
-<p>Time Manager filters your vector datasets and displays only features with timestamps in the user
-    specified time frame. Timestamps have to be in one of the following formats:</p>
+<p>Timestamps have to be in one of the following formats:</p>
+
 <ul>
-    <li>YYYY-MM-DD HH:MM:SS.ssssss</li>
-    <li>YYYY-MM-DD HH:MM:SS</li>
-    <li>YYYY-MM-DD HH:MM</li>
-    <li>YYYY-MM-DD</li>
-    <li>YYYY/MM/DD HH:MM:SS.ssssss</li>
-    <li>YYYY/MM/DD HH:MM:SS</li>
-    <li>YYYY/MM/DD HH:MM</li>
-    <li>YYYY/MM/DD</li>
-    <li>DD.MM.YYYY HH:MM:SS.ssssss</li>
-    <li>DD.MM.YYYY HH:MM:SS</li>
-    <li>DD.MM.YYYY HH:MM</li>
-    <li>DD.MM.YYYY</li>
-    <li>DD-MM-YYYY HH:MM:SS.ssssss</li>
-    <li>DD-MM-YYYY HH:MM:SS</li>
-    <li>DD-MM-YYYY HH:MM</li>
-    <li>DD-MM-YYYY</li>
-    <li>DD/MM/YYYY HH:MM:SS.ssssss</li>
-    <li>DD/MM/YYYY HH:MM:SS</li>
-    <li>DD/MM/YYYY HH:MM</li>
-    <li>DD/MM/YYYY</li>
+<li>%Y-%m-%d %H:%M:%S.%f</li>
+<li>%Y-%m-%d %H:%M:%S</li>
+<li>%Y-%m-%d %H:%M</li>
+<li>%Y-%m-%dT%H:%M:%S</li>
+<li>%Y-%m-%dT%H:%M:%SZ</li>
+<li>%Y-%m-%dT%H:%M</li>
+<li>%Y-%m-%dT%H:%MZ</li>
+<li>%Y-%m-%d</li>
+<li>%Y/%m/%d %H:%M:%S.%f</li>
+<li>%Y/%m/%d %H:%M:%S</li>
+<li>%Y/%m/%d %H:%M</li>
+<li>%Y/%m/%d</li>
+<li>%H:%M:%S</li>
+<li>%H:%M:%S.%f</li>
+<li>%Y.%m.%d %H:%M:%S.%f</li>
+<li>%Y.%m.%d %H:%M:%S</li>
+<li>%Y.%m.%d %H:%M</li>
+<li>%Y.%m.%d</li>
+<li>%Y%m%d%H%M%SED</li>
+<li>Integer timestamp in seconds after or before the epoch (1970-1-1)</li>
 </ul>
 
-<p>Time Manager plugin requires at least QGIS 1.7.</p>
 
-<h2>How to use this plugin</h2>
+<p>The layer list contains all layers managed by Time Manager. 
+To add a vector layer, press [Add layer].
+To add a raster layer, press [Add raster]  
+If you want to remove a layer from the list, select it and press [Remove layer].</p>
 
-<p>Go to the <a href="userguide.htm">user guide</a>.</p>
 
-<h2>Where to report bugs</h2>
+<p>Below the layer list, you'll find the following <b>animation options</b>:</p>
 
-<p>Please use our <a href="https://github.com/anitagraser/TimeManager">bug tracker</a>.</p>
+<p><b>Show frame for x milliseconds</b> ... 
+allows you to adjust for how long a frame will be visible during the animation</p>
 
-<h2>How to contact the developers</h2>
+<p><b>Play animation backwards</b> ... 
+if checked, the animation will run in reverse direction</p>
 
-<p>Anita Graser - <a href="mailto:anitagraser@gmx.at">anitagraser@gmx.at</a></p>
+<p><b>Display frame start time on map</b> ... 
+if checked, displays the start time of the visible frame in the lower right corner of the map</p>
+
+
+
+
+<h2>Add Layer dialog</h2>
+
+<p>Here, you are asked to select the layer that should be added and specify the columns containing
+start and (optionally) end time.</p>
+
+<p>The <b>offset</b> option allows you to further time the appearance of features. If you specify
+an offset of -1, the features will appear one second later than they would by default. </p>
+
+
+
+<h2>Dock widget</h2>
+
+<p>The dock was designed to attach to the bottom of the QGIS main window. It offers the following tools:</p>
+
+<ul>
+<li><img src="images/power_on.png" alt="power"/> ... On/Off switch, allows you to turn Time Manager's functionality on/off with the click of only one button</li>
+<li><span class="hidden">[Settings]</span><input type="button" value="Settings"/> ... opens the Settings dialog where you can manage your spatio-temporal layers</li>
+<li><span class="hidden">[Export Video]</span><input type="button" value="Export Video"/> ... exports an image series based on current settings (This button is only enabled if there are layers registered in Time Manager "Settings")</li>
+<li><b>Time frame start: <span class="hidden">[2000-01-01 00:00:00]</span></b><input type="text" value="2000-01-01 00:00:00"/> ... shows the start time of the currently active frame. Allows you to precisely specify your desired analysis time.</li>
+<li><b>Time frame size: </b><input type="text" value="1"/><span class="hidden">[x]</span><select><option value="days">days</option></select> ... allow you to choose the size of the time frame</li>
+<li><img src="images/back.png" alt="back"/> ... go to the previous time frame</li>
+<li><img src="images/forward.png" alt="forward"/> ... go to the next time frame</li>
+<li><b>Slider</b> ... shows the position of current frame relative to the whole dataset and allows you to seamlessly scroll through the dataset</li>
+<li><img src="images/play.png" alt="play"/> ... start an automatic animation based on your current settings</li>
+</ul>
+
+
+
+
+
 </body>
 </html>
