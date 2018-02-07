@@ -1,12 +1,17 @@
 [general]
 name=TimeManager
 description=Create animations visualizing spatio-temporal data
-version=2.4.1
+version=2.5
 about=TimeManager adds time controls to QGIS. Using these time controls, you can animate vector features based on a time attribute. There is also an experimental raster layer support and support for interpolation beween point geometries. You can create animations directly in the map window and export image series. 
 qgisMinimumVersion=2.3
 author=Anita Graser, Karolina Alexiou (aka carolinux)
 email=anitagraser@gmx.at, carolinegr@gmail.com
-changelog=2.4.1
+changelog=2.5
+    - Fixed #245: updated help.htm
+    - Fixed #240: now hiding unmanageable WFS layers
+    - Fixed #220: issues with label size
+    - Fixed #194: now exposing additional functions: animation_time_frame_size, animation_time_frame_type, animation_start_datetime, animation_end_datetime
+    2.4.1
     - Fixed #156: remaining issue with copying styles 
     2.4
     - Fixed #222: hide label if TimeManager is turned off
@@ -15,18 +20,6 @@ changelog=2.4.1
     - Fixed window resizing issues in label options gui
     - Fixed window resizing issues in video export gui
     - Fixed HiDPI issues with arch gui
-    2.3.2
-    - Sponsored fix for #187 and #211
-    - Contributions to testing by @rduivenvoorde
-    2.3.1
-    - Temporarily fixed #198 sorting of frames wrong for animation?
-    - Fixed #197 Export video skips frames by reverting "possible fix for #188, also implements #167? (#189)"
-    2.3
-    - Fixed #157: Now last animation path is saved in QSettings
-    - Made archeology dialog resizable and more readable
-    - Added play/pause toggle images 
-    - Fixed #172: remove *.PNGw files with "Clear previous frame files in directory"
-    - Improvements for WMTS support
 tags=spatio-temporal,time,animation
 icon=icon.png
 experimental=False
