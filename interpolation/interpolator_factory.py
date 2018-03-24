@@ -1,4 +1,5 @@
-from linearpointinterpolator import LinearPointInterpolatorWithQuery, LinearPointInterpolatorWithMemory # add all new interpolator classes here
+from __future__ import absolute_import
+from .linearpointinterpolator import LinearPointInterpolatorWithQuery, LinearPointInterpolatorWithMemory # add all new interpolator classes here
 from .. import conf as conf
 
 

@@ -4,16 +4,19 @@ Created on Thu Mar 22 18:33:13 2012
 
 @author: Anita
 """
+from __future__ import absolute_import
+from builtins import str
 
 from datetime import timedelta
 
-from timelayer import TimeLayer, InvalidTimeLayerError, NotATimeAttributeError
+from .timelayer import TimeLayer, InvalidTimeLayerError, NotATimeAttributeError
 
-import time_util 
-import conf
+from . import time_util
+from . import conf
 
 
 class TimeRasterLayer(TimeLayer):
+
     def __init__(self, settings, iface=None):
         TimeLayer.__init__(self, settings.layer, settings.isEnabled)
         self.layer = settings.layer
@@ -24,8 +27,8 @@ class TimeRasterLayer(TimeLayer):
 
         try:
             self.getTimeExtents()
-        except NotATimeAttributeError, e:
-            raise InvalidTimeLayerError(e)
+        except NotATimeAttributeError as e:
+            raise InvalidTimeLayerError(str(e))
 
     def hasSubsetStr(self):
         return False

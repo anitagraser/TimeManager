@@ -1,3 +1,4 @@
+from builtins import range
 # -*- coding: utf-8 -*-
 
 from datetime import timedelta
@@ -43,8 +44,8 @@ class CDFRasterLayer(TimeRasterLayer):
         self.calendar = self.get_calendar()
         try:
             self.getTimeExtents()
-        except NotATimeAttributeError, e:
-            raise InvalidTimeLayerError(e)
+        except NotATimeAttributeError as e:
+            raise InvalidTimeLayerError(str(e))
 
     @classmethod
     def isSupportedRaster(cls, layer):

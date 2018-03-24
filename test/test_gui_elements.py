@@ -1,21 +1,22 @@
+from __future__ import absolute_import
+from builtins import zip
 import unittest
 from qgis.core import QgsVectorLayer, QgsRasterLayer
-from PyQt4 import QtGui, QtCore
+from qgis.PyQt import QtGui
 import os
 from datetime import datetime, timedelta
 from unittest import skip
 
-from mock import Mock, patch
-from PyQt4.QtGui import QApplication
-from PyQt4.QtTest import QTest
-from PyQt4.QtCore import Qt, QDate, QDateTime, QCoreApplication, QTranslator
+from mock import Mock
+from qgis.PyQt.QtWidgets import QApplication
+from qgis.PyQt.QtCore import QDateTime, QTranslator
 
 import TimeManager.timemanagerguicontrol as guicontrol
 import TimeManager.rasterlayerdialog as rl
 import TimeManager.vectorlayerdialog as vl
 import TimeManager.time_util as time_util
 import TimeManager.conf as conf
-import testcfg
+from . import testcfg
 
 
 __author__ = "Karolina Alexiou"
@@ -25,7 +26,7 @@ __email__ = "karolina.alexiou@teralytics.ch"
 class testGuiControl(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.app = QtGui.QApplication([])
+        self.app = QApplication([])
 
     @classmethod
     def tearDownClass(self):
@@ -38,10 +39,9 @@ class testGuiControl(unittest.TestCase):
         for lang, expected_translation in zip(["de", "pl"], ["Einrichten", "Ustawienia"]):
             path = os.path.join("i18n", "timemanager_{}.qm".format(lang))
             translator = QTranslator()
-            result = translator.load(path)
+            translator.load(path)
             translation = translator.translate(gui.dock.objectName(), settingsText)
             self.assertEqual(translation, expected_translation)
-
 
     def setUp(self):
         self.window = TestApp()
@@ -116,7 +116,7 @@ class testGuiControl(unittest.TestCase):
         # both the slider and the text box should have changed
         self.assertEqual(time_util.QDateTime_to_datetime(
             gui.dock.dateTimeEditCurrentTime.dateTime()),
-                         start + time_offset)
+            start + time_offset)
         # the slider has as value the offset between current time and start
         self.assertEqual(gui.dock.horizontalTimeSlider.value(), time_offset.total_seconds())
 

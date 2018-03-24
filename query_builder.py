@@ -1,19 +1,18 @@
+from __future__ import absolute_import
+from builtins import object
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
 __author__ = 'carolinux'
 
-from PyQt4 import QtCore
-
-import time_util
-
-
 STRINGCAST_FORMAT = 'cast("{}" as character) {} \'{}\' AND cast("{}" as character) >= \'{}\' '
 INT_FORMAT = "{} {} {} AND {} >= {} "
 STRING_FORMAT = "\"{}\" {} '{}' AND \"{}\" >= '{}' "
 
+from . import time_util
 
-class QueryIdioms:
+
+class QueryIdioms(object):
     OGR = "OGR"
     SQL = "SQL"
 
@@ -46,7 +45,7 @@ def create_ymd_substring(ioy, iom, iod, ioh, col, quote_type):
     ior = max_index + (2 if max_index != ioy else 4)  # find where the rest of the string is
     reststr = "SUBSTR({}{}{},{},{})".format(q, col, q, ior + 1,
                                             ior + 1 + 8 + 1 + 6) if ioh >= 0 else None
-    string_components = filter(lambda x: x is not None, [ystr, mstr, dstr, reststr])
+    string_components = [x for x in [ystr, mstr, dstr, reststr] if x is not None]
     return ",".join(string_components)
 
 
@@ -113,55 +112,55 @@ def build_query_archaelogical(start_str, end_str, start_attr, end_attr, comparis
             likeBC(end_attr, cast=cast) + AND + isAfter(col=end_attr, val=start_str, equals=True,
                                                         bc=True, cast=cast)) + OR + likeAD(
             end_attr, cast=cast)) \
-                + AND \
-                + paren(likeBC(start_attr, cast=cast) + AND + isBefore(col=start_attr, val=end_str,
-                                                                      equals=('=' in comparison),
-                                                                      bc=True, cast=cast))
+            + AND \
+            + paren(likeBC(start_attr, cast=cast) + AND + isBefore(col=start_attr, val=end_str,
+                                                                   equals=('=' in comparison),
+                                                                   bc=True, cast=cast))
 
     if "AD" in start_str and "AD" in end_str:
         return paren(
             likeAD(end_attr, cast=cast) + AND + isAfter(col=end_attr, val=start_str, equals=True,
                                                         bc=False, cast=cast)) \
-               + AND \
-               + paren(likeBC(start_attr, cast=cast) + OR + paren(
-            isBefore(col=start_attr, val=end_str, equals=('=' in comparison), bc=False, cast=cast) \
-            + AND + likeAD(start_attr, cast=cast)))
+            + AND \
+            + paren(likeBC(start_attr, cast=cast) + OR + paren(
+                isBefore(col=start_attr, val=end_str, equals=('=' in comparison), bc=False, cast=cast)
+                + AND + likeAD(start_attr, cast=cast)))
 
     # can only be start_attr = BC and end_attr = AD
     return paren(
-        NOT(likeAD(start_attr, cast=cast)) + OR + paren(likeAD(start_attr, cast=cast) + AND \
+        NOT(likeAD(start_attr, cast=cast)) + OR + paren(likeAD(start_attr, cast=cast) + AND
                                                         + greaterThan(val=end_str, col=start_attr,
                                                                       equals=('=' in comparison),
                                                                       cast=cast))) \
-           + AND \
-           + paren(NOT(likeBC(end_attr, cast=cast)) + OR + paren(likeBC(end_attr, cast=cast) + AND \
-                                                                 + greaterThan(val=start_str,
-                                                                               col=end_attr,
-                                                                               equals=True,
-                                                                               cast=cast)))
+        + AND \
+        + paren(NOT(likeBC(end_attr, cast=cast)) + OR + paren(likeBC(end_attr, cast=cast) + AND
+                                                          + greaterThan(val=start_str,
+                                                                        col=end_attr,
+                                                                        equals=True,
+                                                                        cast=cast)))
 
 
 def build_query(start_dt, end_dt, from_attr, to_attr, date_type, date_format, query_idiom, acc):
     """Build subset query"""
     if acc: # features never die
         start_dt = time_util.get_min_dt()
-    
-    comparison = "<" # simplified because of: https://github.com/anitagraser/TimeManager/issues/235 
-    #                  (original: # comparison = "<" if to_attr == from_attr else "<=")    
+
+    comparison = "<" # simplified because of: https://github.com/anitagraser/TimeManager/issues/235
+    #                  (original: # comparison = "<" if to_attr == from_attr else "<=")
 
     if date_type == time_util.DateTypes.IntegerTimestamps:
         start_epoch = time_util.datetime_to_epoch(start_dt)
         end_epoch = time_util.datetime_to_epoch(end_dt)
         return INT_FORMAT.format(from_attr, comparison, end_epoch, to_attr, start_epoch)
-    
+
     start_str = time_util.datetime_to_str(start_dt, date_format)
-    end_str = time_util.datetime_to_str(end_dt, date_format)    
-    
+    end_str = time_util.datetime_to_str(end_dt, date_format)
+
     if date_type == time_util.DateTypes.DatesAsStringsArchaelogical:
-        # kept <= option here since I'm not sure about implications in archaelogical mode 
-        comparison = "<" if to_attr == from_attr else "<=" 
+        # kept <= option here since I'm not sure about implications in archaelogical mode
+        comparison = "<" if to_attr == from_attr else "<="
         return build_query_archaelogical(start_str, end_str, from_attr, to_attr, comparison, query_idiom)
-    
+
     if can_compare_lexicographically(date_format):
         if query_idiom == QueryIdioms.OGR:
             return STRINGCAST_FORMAT.format(from_attr, comparison, end_str, to_attr, start_str)

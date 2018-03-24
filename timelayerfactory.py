@@ -1,20 +1,23 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from builtins import object
+
 __author__ = 'carolinux'
 
 from qgis.core import QgsVectorLayer, QgsRasterLayer
 
-from timevectorlayer import TimeVectorLayer
-from timerasterlayer import TimeRasterLayer
-from timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
-from raster.cdflayer import CDFRasterLayer
-from raster.wmstlayer import WMSTRasterLayer
+from .timevectorlayer import TimeVectorLayer
+from .timerasterlayer import TimeRasterLayer
+from .timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
+from .raster.cdflayer import CDFRasterLayer
+from .raster.wmstlayer import WMSTRasterLayer
 
-import time_util
+from . import time_util
 
 
-class TimeLayerFactory:
+class TimeLayerFactory(object):
     """Helper class to determine the class of the time layer to create"""
 
     @classmethod

@@ -1,5 +1,5 @@
 #!/bin/bash
-find -name '*.pyc' |xargs rm # assure that the build is clean
+find -name '*.pyc' -delete
 if [ "$1" == "local" ]; then
    mv test/spatialite_experiments.py  test/test_with_spatialite.py # only run spatialite tests in local build, Travis has problems
 fi

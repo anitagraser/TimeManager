@@ -43,31 +43,13 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="minimumSize">
-         <size>
-          <width>18</width>
-          <height>18</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>23</width>
-          <height>23</height>
-         </size>
-        </property>
         <property name="text">
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/images/power_off.png</normaloff>
-          <normalon>:/images/power_on.png</normalon>:/images/power_off.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>18</width>
-          <height>18</height>
-         </size>
+         <iconset>
+          <normaloff>images/power_off.png</normaloff>
+          <normalon>images/power_on.png</normalon>images/power_off.png</iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -88,31 +70,13 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="minimumSize">
-         <size>
-          <width>18</width>
-          <height>18</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>23</width>
-          <height>23</height>
-         </size>
-        </property>
         <property name="text">
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/images/arch_off.png</normaloff>
-          <normalon>:/images/arch.png</normalon>:/images/arch_off.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>18</width>
-          <height>18</height>
-         </size>
+         <iconset>
+          <normaloff>images/arch_off.png</normaloff>
+          <normalon>images/arch.png</normalon>images/arch_off.png</iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -262,24 +226,12 @@
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
        <widget class="QPushButton" name="pushButtonBack">
-        <property name="minimumSize">
-         <size>
-          <width>12</width>
-          <height>12</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>12</width>
-          <height>12</height>
-         </size>
-        </property>
         <property name="text">
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/images/back.png</normaloff>:/images/back.png</iconset>
+         <iconset>
+          <normaloff>images/back.png</normaloff>images/back.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -313,18 +265,12 @@
       </item>
       <item row="0" column="4">
        <widget class="QPushButton" name="pushButtonForward">
-        <property name="maximumSize">
-         <size>
-          <width>12</width>
-          <height>12</height>
-         </size>
-        </property>
         <property name="text">
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/images/forward.png</normaloff>:/images/forward.png</iconset>
+         <iconset>
+          <normaloff>images/forward.png</normaloff>images/forward.png</iconset>
         </property>
         <property name="flat">
          <bool>true</bool>
@@ -342,18 +288,12 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>18</width>
-          <height>18</height>
-         </size>
-        </property>
         <property name="text">
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/images/play.png</normaloff>:/images/play.png</iconset>
+         <iconset>
+          <normaloff>images/play.png</normaloff>images/play.png</iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -373,20 +313,14 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
-          <height>10</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
        </spacer>
       </item>
       <item row="1" column="1">
        <widget class="QLabel" name="labelStartTime">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>18</height>
-         </size>
-        </property>
         <property name="text">
          <string>not set</string>
         </property>
@@ -394,12 +328,6 @@
       </item>
       <item row="1" column="3">
        <widget class="QLabel" name="labelEndTime">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>18</height>
-         </size>
-        </property>
         <property name="text">
          <string>not set</string>
         </property>
@@ -410,8 +338,6 @@
    </layout>
   </widget>
  </widget>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

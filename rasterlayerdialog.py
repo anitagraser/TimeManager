@@ -1,18 +1,19 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 import re
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QMessageBox
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import QMessageBox
 
-from vectorlayerdialog import AddLayerDialog
-from raster.cdflayer import CDFRasterLayer
-from tmlogging import info, warn
+from .vectorlayerdialog import AddLayerDialog
+from .raster.cdflayer import CDFRasterLayer
+from .tmlogging import info, warn
 
-import conf
-import qgis_utils as qgs
-import layer_settings 
+from . import conf
+from . import qgis_utils as qgs
+from . import layer_settings
 
 
 class RasterLayerDialog(AddLayerDialog):
@@ -48,10 +49,10 @@ class RasterLayerDialog(AddLayerDialog):
 
     def haveNetCDF(self):
         try:
-            import netCDF4
-            import netcdftime
+            import netCDF4  # NOQA
+            import netcdftime  # NOQA
             return True
-        except:
+        except Exception:
             return False
 
     def handleCDF(self, checkState):
@@ -85,7 +86,7 @@ class RasterLayerDialog(AddLayerDialog):
         self.clear()
         try:
             self.populate(allRasterIds - idsToIgnore)
-        except Exception, e:
+        except Exception as e:
             warn(e)
             return
         self.dialog.show()
@@ -95,7 +96,7 @@ class RasterLayerDialog(AddLayerDialog):
         try:
             m = re.match(cls.TIME_REGEX, str_with_time)
             return m.start(2), m.end(2)
-        except Exception, e:
+        except Exception as e:
             info("Could not guess timestamp in raster filename. Cause {}".format(e))
             return (0, 0)
 

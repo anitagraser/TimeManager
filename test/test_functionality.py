@@ -1,22 +1,25 @@
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
 import sip
+from future.utils import with_metaclass
 
 sip.setapi('QString', 2)  # strange things happen without this. Must import before PyQt imports
 # if using ipython: do this on bash before
 # export QT_API=pyqt
-from qgis.core import *
-from qgis.gui import *
+from qgis.core import QgsApplication, QgsVectorLayer, QgsProject
 import sys
 
 sys.path.insert(0, '../..')
 import os
 from mock import Mock
-from datetime import datetime, timedelta
-from PyQt4 import QtCore, QtGui, QtTest
+from datetime import timedelta
+from qgis.PyQt import QtCore
 import TimeManager.timemanagercontrol as timemanagercontrol
 from TimeManager.conf import FRAME_FILENAME_PREFIX
 import TimeManager.timevectorlayer as timevectorlayer
 from TimeManager.timelayermanager import TimeLayerManager
-import testcfg
+from . import testcfg
 import TimeManager.time_util as time_util
 import TimeManager.bcdate_util as bcdate_util
 import TimeManager.os_util as os_util
@@ -114,12 +117,10 @@ class TestWithQGISLauncher(unittest.TestCase):
         self.tlm = self.ctrl.getTimeLayerManager()
 
 
-class TestForLayersWithOnePointPerSecond(TestWithQGISLauncher):
+class TestForLayersWithOnePointPerSecond(with_metaclass(ABCMeta, TestWithQGISLauncher)):
     """This class tests the functionality of layers for data that contains one point per second
     (our own convention to not have to write similar test code a lot of times). See the
     postgresql and delimited text tests for examples"""
-
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def get_start_time(self):
@@ -182,7 +183,6 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
     def test_go_back_and_forth_1165(self):
         self.go_back_and_forth("T1165", "T1165")
 
-
     def test_disable_and_reenable(self):
         self.go_back_and_forth("T1765", "T1765")
         initial_time = self.tlm.getCurrentTimePosition()
@@ -215,15 +215,14 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.ctrl.guiControl.getLabelSize.return_value = 10
         self.ctrl.guiControl.getLabelColor.return_value = "#000000"
         self.ctrl.guiControl.getLabelBgColor.return_value = "#ffffff"
-        self.ctrl.guiControl.getLabelPlacement.return_value = "SE"        
+        self.ctrl.guiControl.getLabelPlacement.return_value = "SE"
         self.ctrl.writeSettings()
         QgsProject.instance().write(QtCore.QFileInfo(test_file))
 
         # change settings
         self.tlm.stepForward()
         self.assertEqual(self.tlm.getTimeFrameType(), "seconds")
-        self.assertEquals(self.tlm.getCurrentTimePosition(), initial_time + timedelta(seconds=
-                                                                                      self.tlm.getTimeFrameSize()))
+        self.assertEquals(self.tlm.getCurrentTimePosition(), initial_time + timedelta(seconds=self.tlm.getTimeFrameSize()))
         self.tlm.setTimeFrameType('minutes')
         self.ctrl.setLoopAnimation(False)
         # restore previous settings
@@ -236,13 +235,12 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.ctrl.guiControl.setTimeFrameSize.assert_called_with(1)
         self.ctrl.guiControl.setLabelFormat.assert_called_with(label_fmt)
 
-
     @skip
     def test_write_and_read_settings_when_disabled(self):
         self.go_back_and_forth("T1165", "T1165")
-        self.assertTrue(self.tlm.isEnabled() == True)
+        self.assertTrue(self.tlm.isEnabled())
         self.ctrl.toggleTimeManagement()
-        self.assertTrue(self.tlm.isEnabled() == False)
+        self.assertTrue(not self.tlm.isEnabled())
         test_file = os.path.join(testcfg.TEST_DATA_DIR, "sample_project_disabled.qgs")
         if os.path.exists(test_file):
             os.remove(test_file)
@@ -254,24 +252,22 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         # check that the settings were restored properly
         self.assertEquals(self.tlm.isEnabled(), False)
 
-
     def go_back_and_forth(self, fromAttr, toAttr):
 
         self.registerTweetsTimeLayer(fromAttr, toAttr)
         # The currentTimePosition should now be the first date in the shapefile
         start_time = time_util.str_to_datetime(self.timeLayer.getMinMaxValues()[0])
-        assert ( start_time == self.tlm.getCurrentTimePosition())
+        assert(start_time == self.tlm.getCurrentTimePosition())
         self.tlm.setTimeFrameType("hours")
         self.tlm.stepForward()
-        assert ( start_time + timedelta(hours=1) == self.tlm.getCurrentTimePosition())
+        assert(start_time + timedelta(hours=1) == self.tlm.getCurrentTimePosition())
         self.tlm.stepForward()
-        assert ( start_time + timedelta(hours=2) == self.tlm.getCurrentTimePosition())
+        assert(start_time + timedelta(hours=2) == self.tlm.getCurrentTimePosition())
         self.tlm.stepBackward()
-        assert ( start_time + timedelta(hours=1) == self.tlm.getCurrentTimePosition())
+        assert(start_time + timedelta(hours=1) == self.tlm.getCurrentTimePosition())
         self.tlm.setTimeFrameType("seconds")
         self.tlm.stepForward()
-        assert ( start_time + timedelta(hours=1, seconds=1) == self.tlm.getCurrentTimePosition())
-
+        assert(start_time + timedelta(hours=1, seconds=1) == self.tlm.getCurrentTimePosition())
 
     def test_export_with_empty(self):
         """The tweets layer doesn't have tweets for every second. Test that when exporting part
@@ -280,7 +276,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         tmpdir = tempfile.mkdtemp()
         self.tlm.setTimeFrameType("seconds")
         self.ctrl.exportEmpty = lambda: False
-        assert (self.ctrl.exportEmpty() == False)
+        assert(not self.ctrl.exportEmpty())
         end_time = time_util.str_to_datetime(self.timeLayer.getMinMaxValues()[1])
         start_time = end_time - timedelta(seconds=100)
         self.tlm.setCurrentTimePosition(start_time)
@@ -380,15 +376,13 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
             self.assertEquals(layer.featureCount(), 5)
 
             # expected_datetime = time_util.epoch_to_datetime(self.get_start_time())
-            #self.assertEquals(self.tlm.getCurrentTimePosition(),expected_datetime)
-            #self.assertEquals(layer.featureCount(),1)
-            #self.tlm.stepForward()
-            #self.tlm.setTimeFrameSize(2)
+            # self.assertEquals(self.tlm.getCurrentTimePosition(),expected_datetime)
+            # self.assertEquals(layer.featureCount(),1)
+            # self.tlm.stepForward()
+            # self.tlm.setTimeFrameSize(2)
             self.tlm.clearTimeLayerList()
             self.ctrl.setArchaeology(0)
-        except Exception, e:
+        except Exception as e:
             self.tlm.clearTimeLayerList()
             self.ctrl.setArchaeology(0)
             raise e
-
-

@@ -1,26 +1,25 @@
+from builtins import range
+from builtins import object
 import abc
 from collections import defaultdict
-from qgis.core import *
+from qgis.core import QgsFeatureRequest
 
 from .. import time_util as time_util
 from .. import conf as conf
-from  ..tmlogging import info, warn, error
+from ..tmlogging import warn
+from future.utils import with_metaclass
 
 
 try:
     import numpy as np
-except:
+except Exception:
     pass
 __author__ = 'carolinux'
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 
 STEP = 0.0000001
 
 
-class Interpolator:
-    __metaclass__ = abc.ABCMeta
+class Interpolator(with_metaclass(abc.ABCMeta, object)):
     """ Interpolation is done for a function/mapping f(I,T) -> G
     where T = time and I is an ID and G is a geometry type that corresponds
     to this timestamp and id (for instance a point). Given an id and some timestamps
@@ -91,7 +90,7 @@ class Interpolator:
             return None
         before.reverse()
         Tvalues = before + after
-        Gvalues = map(lambda x: self.get_Gvalue(id, x), Tvalues)
+        Gvalues = [self.get_Gvalue(id, x) for x in Tvalues]
 
         return self.interpolate(t1, Tvalues, Gvalues)
 
@@ -110,7 +109,6 @@ class Interpolator:
             else:
                 res.append(lastt)
         return res
-
 
     def get_Tvalues_after(self, id, t):
         """ Get a sequence of T values >= t"""
@@ -139,7 +137,7 @@ class Interpolator:
 
 class MemoryLoadInterpolator(Interpolator):
     """Interpolator that loads all the data it needs and stores it in
-    internal data structures. Will be less than ideal when dealing with 
+    internal data structures. Will be less than ideal when dealing with
     Big Data"""
 
     def __init__(self):
@@ -177,7 +175,7 @@ class MemoryLoadInterpolator(Interpolator):
         return self.id_time_to_geom[(id, epoch)]
 
     def ids(self):
-        return self.id_to_time.keys()
+        return list(self.id_to_time.keys())
 
     def minmax(self):
         """ return min and max epoch stored"""
@@ -188,7 +186,7 @@ class MemoryLoadInterpolator(Interpolator):
         self.id_to_time[id].append(epoch)
 
     def _sort(self):
-        for id in self.id_to_time.keys():
+        for id in list(self.id_to_time.keys()):
             self.id_to_time[id].sort()  # in place sorting
 
     def get_Tvalue_before(self, id, epoch):
@@ -198,8 +196,7 @@ class MemoryLoadInterpolator(Interpolator):
         idx = np.searchsorted(self.id_to_time[id], epoch)
         if idx == len(self.id_to_time[id]):
             return self.id_to_time[id][-1]
-        if idx > 0 and self.id_to_time[id][
-            idx] > epoch:  # need to find a value smaller than current
+        if idx > 0 and self.id_to_time[id][idx] > epoch:  # need to find a value smaller than current
             idx = idx - 1
         return self.id_to_time[id][idx]
 
@@ -211,4 +208,3 @@ class MemoryLoadInterpolator(Interpolator):
         if idx == len(self.id_to_time[id]):
             return self.id_to_time[id][-1]
         return self.id_to_time[id][idx]
-

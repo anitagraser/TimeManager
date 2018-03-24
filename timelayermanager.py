@@ -1,16 +1,20 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from PyQt4.QtCore import QObject, pyqtSignal
+from qgis.PyQt.QtCore import QObject, pyqtSignal
 
-from timelayer import NotATimeAttributeError
-from tmlogging import info, warn, error, log_exceptions
+from .timelayer import NotATimeAttributeError
+from .tmlogging import info, warn, error, log_exceptions
 
-import time_util
-import conf
-import qgis_utils as qgs
+from . import time_util
+from . import conf
+from . import qgis_utils as qgs
 
 
 class TimeLayerManager(QObject):
@@ -71,7 +75,7 @@ class TimeLayerManager(QObject):
 
     def hasActiveLayers(self):
         """returns true if the manager has at least one active layer registered"""
-        return len(filter(lambda x: x.isEnabled(), self.getTimeLayerList())) > 0
+        return len([x for x in self.getTimeLayerList() if x.isEnabled()]) > 0
 
     def clearTimeLayerList(self):
         """clear the timeLayerList"""
@@ -154,7 +158,7 @@ class TimeLayerManager(QObject):
                 if i == 0:
                     self.setProjectTimeExtents(timeLayer.getTimeExtents())
                     continue
-            except NotATimeAttributeError, e:
+            except NotATimeAttributeError as e:
                 raise Exception(str(e))
             start = min(self.getProjectTimeExtents()[0], extents[0])
             end = max(self.getProjectTimeExtents()[1], extents[1])
@@ -233,7 +237,7 @@ class TimeLayerManager(QObject):
 
         try:  # test if projectTimeExtens are populated with datetimes
             time_util.datetime_to_str(self.getProjectTimeExtents()[0], tdfmt)
-        except:
+        except Exception:
             return (None, None)
 
         saveString = conf.SAVE_DELIMITER.join(
@@ -253,14 +257,14 @@ class TimeLayerManager(QObject):
             try:
                 timeExtents = (time_util.str_to_datetime(saveString[0], tdfmt),
                                time_util.str_to_datetime(saveString[1], tdfmt))
-            except:
+            except Exception:
                 try:
                     # Try converting without the fractional seconds for
                     # backward compatibility.
                     tdfmt = time_util.DEFAULT_FORMAT
                     timeExtents = (time_util.str_to_datetime(saveString[0], tdfmt),
                                    time_util.str_to_datetime(saveString[1], tdfmt))
-                except:
+                except Exception:
                     # avoid error message for projects without
                     # time-managed layers
                     return
@@ -272,18 +276,14 @@ class TimeLayerManager(QObject):
         """Return true if at least one of the time managed layers
         which are not ignored for emptiness detection in the project has
         featureCount>0 (or if we have active raster layers)"""
-        all_layers = map(
-            lambda x: x.layer,
-            filter(
-                lambda x: x.isEnabled() and (not qgs.isRaster(x.layer)) and x.geometriesCountForExport(),
-                self.getTimeLayerList()))
+        all_layers = [x.layer for x in [x for x in self.getTimeLayerList() if x.isEnabled() and (not qgs.isRaster(x.layer)) and x.geometriesCountForExport()]]
         total_features = 0
         for layer in all_layers:
             total_features += layer.featureCount()
         return total_features > 0 or self.getActiveRasters()
 
     def getActive(self, func=lambda x: True):
-        return filter(lambda x: func(x) and x.isEnabled(), self.getTimeLayerList())
+        return [x for x in self.getTimeLayerList() if func(x) and x.isEnabled()]
 
     def getActiveRasters(self):
         return self.getActive(func=lambda x: qgs.isRaster(x.layer))

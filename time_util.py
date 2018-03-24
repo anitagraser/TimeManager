@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 
 """ A module to have time related functionality """
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+from builtins import object
+from builtins import unicode
+from builtins import basestring
 
 __author__ = "Karolina Alexiou"
 __email__ = "karolina.alexiou@teralytics.ch"
 
 import time
 import re  # for hacking strftime
-import abc
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from PyQt4.QtCore import QDateTime
-import PyQt4.QtCore as QtCore
+from qgis.PyQt.QtCore import QDate, QDateTime
 
-import bcdate_util
+from . import bcdate_util
 
 OGR_DATE_FORMAT = "%Y/%m/%d"
 OGR_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
@@ -64,7 +68,7 @@ class UnsupportedFormatException(Exception):
     pass
 
 
-class DateTypes:
+class DateTypes(object):
     IntegerTimestamps = "IntegerTimestamps"
     DatesAsStrings = "DatesAsStrings"
     DatesAsStringsArchaelogical = "DatesAsStringsArchaelogical"
@@ -80,15 +84,15 @@ class DateTypes:
         try:
             float(val)
             return cls.IntegerTimestamps
-        except:
+        except Exception:
             pass
         try:
             int(val)
             return cls.IntegerTimestamps
-        except:
-            if type(val) is QtCore.QDate:
+        except Exception:
+            if type(val) is QDate:
                 return cls.DatesAsQDates
-            if type(val) is QtCore.QDateTime:
+            if type(val) is QDateTime:
                 return cls.DatesAsQDateTimes
             return cls.DatesAsStrings
 
@@ -126,10 +130,10 @@ def _str_switch(str, substr1, substr2):
 
 
 def generate_all_timezones(fmt):
-    l = [fmt+" UTC"]
+    zones = [fmt + " UTC"]
     for i in range(-12, 15):
-        l.append(fmt + ("-" if i < 0 else "+") + str(abs(i)).zfill(2))
-    return l
+        zones.append(fmt + ("-" if i < 0 else "+") + str(abs(i)).zfill(2))
+    return zones
 
 
 BASIC_SUPPORTED_FORMATS = [
@@ -156,8 +160,8 @@ BASIC_SUPPORTED_FORMATS = [
 
 YMD_SUPPORTED_FORMATS = BASIC_SUPPORTED_FORMATS + generate_all_timezones("%Y-%m-%d %H:%M:%S")
 
-DMY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x, "%Y", "%d"), YMD_SUPPORTED_FORMATS)
-MDY_SUPPORTED_FORMATS = map(lambda x: _str_switch(x, "%m", "%d"), DMY_SUPPORTED_FORMATS)
+DMY_SUPPORTED_FORMATS = [_str_switch(x, "%Y", "%d") for x in YMD_SUPPORTED_FORMATS]
+MDY_SUPPORTED_FORMATS = [_str_switch(x, "%m", "%d") for x in DMY_SUPPORTED_FORMATS]
 
 OTHER_FORMATS = ["%Y-%m"]
 
@@ -195,13 +199,13 @@ def timeval_to_epoch(val, fmt):
         return bcdate_util.timeval_to_epoch(val)
     try:
         return int(val)
-    except:
+    except Exception:
         try:
             return float(val)
-        except:
-            if type(val) in [QtCore.QDate, QtCore.QDateTime]:
+        except Exception:
+            if type(val) in [QDate, QDateTime]:
                 val = QDateTime_to_datetime(val)
-            if type(val) in [str, basestring, unicode]:
+            if type(val) in [unicode, basestring, str]:
                 val = str_to_datetime(val, fmt)
             return datetime_to_epoch(val)
 
@@ -216,7 +220,7 @@ def timeval_to_datetime(val, fmt):
 def QDateTime_to_datetime(date):
     try:
         return date.toPyDateTime()
-    except:
+    except Exception:
         return datetime_at_start_of_day(date.toPyDate())
 
 
@@ -240,18 +244,6 @@ def epoch_to_datetime(seconds_from_epoch):
         return datetime(1970, 1, 1) + timedelta(seconds=seconds_from_epoch)
 
 
-def epoch_to_str(seconds_from_epoch, fmt):
-    return datetime_to_str(epoch_to_datetime(seconds_from_epoch), fmt)
-
-
-def datetime_to_epoch(dt):
-    """ convert a datetime to seconds after (or possibly before) 1970-1-1 """
-    if is_archaelogical():
-        return bcdate_util.bcdate_to_epoch(dt)
-    res = ((dt - datetime(1970, 1, 1)).total_seconds())
-    return _cast_to_int_or_float(res)
-
-
 def datetime_to_str(dt, fmt):
     """ strftime has a bug for years<1900, so fixing it as well as we can """
     if is_archaelogical():
@@ -263,6 +255,21 @@ def datetime_to_str(dt, fmt):
         return datetime.strftime(dt, fmt)
     else:
         return _fixed_strftime(dt, fmt)
+
+
+def epoch_to_str(seconds_from_epoch, fmt):
+    return datetime_to_str(epoch_to_datetime(seconds_from_epoch), fmt)
+
+
+def datetime_to_epoch(dt):
+    """ convert a datetime to seconds after (or possibly before) 1970-1-1 """
+    if not isinstance(dt, datetime):
+        raise TypeError("unexpected value '{}'".format(repr(dt)))
+    if is_archaelogical():
+        return bcdate_util.bcdate_to_epoch(dt)
+    res = ((dt - datetime(1970, 1, 1)).total_seconds())
+    return _cast_to_int_or_float(res)
+
 
 # Based on code submitted to comp.lang.python by Andrew Dalke and subsequently used on the django project
 # https://github.com/django/django/
@@ -324,20 +331,20 @@ def get_format_of_timeval(datetimeValue):
     try:
         seconds = int(datetimeValue)
         return UTC
-    except:
+    except Exception:
         pass
     # is it a float representing seconds and milliseconds after the floating point?
     try:
-        seconds = float(datetimeValue)
+        seconds = float(datetimeValue)  # NOQA
         return UTC_FLOAT
-    except:
+    except Exception:
         pass
 
     for format in SUPPORTED_FORMATS:
         try:
             datetime.strptime(datetimeValue, format)
             return format
-        except:
+        except Exception:
             pass
     # If all fail, raise an exception
     raise UnsupportedFormatException(
@@ -373,7 +380,7 @@ def str_to_datetime(datetimeString, fmt=PENDING):
         if fmt == UTC_FLOAT:
             return epoch_to_datetime(float(datetimeString))
         return datetime.strptime(datetimeString, fmt)
-    except Exception, e:
+    except Exception as e:
         raise UnsupportedFormatException(
             createNiceMessage(datetimeString, specified_fmt, is_archaelogical(), e))
 
@@ -382,7 +389,7 @@ def get_frame_count(start, end, td):
     if not is_archaelogical():
         try:
             td1 = end - start
-        except:  # hope this fixes #17 which I still cannot reproduce
+        except Exception:  # hope this fixes #17 which I still cannot reproduce
             return 0
 
         td2 = td

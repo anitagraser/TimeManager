@@ -1,16 +1,17 @@
-import sip
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import range
 
-sip.setapi('QString', 2)  # strange things happen without this. Must import before PyQt imports
 # if using ipython: do this on bash before
 # export QT_API=pyqt
+from qgis.core import QgsVectorLayer, QgsDataSourceURI, QgsApplication
 from pyspatialite import dbapi2 as db
-from qgis.core import *
 
 from datetime import datetime, timedelta
 import os
 import unittest
 from TimeManager.time_util import datetime_to_str, DEFAULT_FORMAT
-from test_functionality import TestWithQGISLauncher, RiggedTimeManagerControl
+from .test_functionality import TestWithQGISLauncher
 import TimeManager.time_util as time_util
 import TimeManager.timevectorlayer as timevectorlayer
 from TimeManager.query_builder import STRINGCAST_FORMAT, INT_FORMAT, STRING_FORMAT
@@ -97,21 +98,19 @@ class TestSpatialite(TestWithQGISLauncher):
         expectedSubsetString = STRINGCAST_FORMAT.format(attr, self.comparison_op,
                                                         time_util.datetime_to_str(
                                                             self.tlm.getCurrentTimePosition() + timedelta(
-                                                                minutes=1)
-                                                            , timeLayer.getTimeFormat()), attr,
+                                                                minutes=1),
+                                                            timeLayer.getTimeFormat()), attr,
                                                         time_util.datetime_to_str(
                                                             self.tlm.getCurrentTimePosition(),
                                                             timeLayer.getTimeFormat()))
         self.assertEqual(timeLayer.getTimeFormat(), time_util.OGR_DATETIME_FORMAT)
         self.assertEquals(subsetString, expectedSubsetString)
 
-
     # FIXME here the behavior is odd. Skipping for now
     @unittest.skip
     def test_add_same_layer_twice(self):
         self._test_spatialite_layer(STRING_TIMESTAMP, is_int=False)
         self._test_spatialite_layer(INTEGER_TIMESTAMP, is_int=True)
-
 
     def _test_spatialite_layer(self, attr, layer, is_int=False):
 
@@ -133,7 +132,7 @@ class TestSpatialite(TestWithQGISLauncher):
 
         self.tlm.setTimeFrameType("minutes")
         self.tlm.stepForward()
-        assert ( start_time + timedelta(minutes=1) == self.tlm.getCurrentTimePosition())
+        assert(start_time + timedelta(minutes=1) == self.tlm.getCurrentTimePosition())
         # only one feature is selected now, because there is one feature per minute
         self.assertEquals(layer.featureCount(), 1)
         FS = 5
@@ -160,8 +159,8 @@ class TestSpatialite(TestWithQGISLauncher):
             expectedSubsetString = STRING_FORMAT.format(attr, self.comparison_op,
                                                         time_util.datetime_to_str(
                                                             self.tlm.getCurrentTimePosition() + timedelta(
-                                                                minutes=FS)
-                                                            , timeLayer.getTimeFormat()), attr,
+                                                                minutes=FS),
+                                                            timeLayer.getTimeFormat()), attr,
                                                         time_util.datetime_to_str(
                                                             self.tlm.getCurrentTimePosition(),
                                                             timeLayer.getTimeFormat()))
@@ -210,15 +209,16 @@ def create_point_db(dest, dbname, starttime, num_items):
         geom += "%f " % (-10.0 - (i / 10.0))
         geom += "%f" % (+10.0 + (i / 10.0))
         geom += ")', 4326)"
-        print geom
+        # fix_print_with_import
+        print(geom)
         sql = "INSERT INTO {} ({}, name, geom, {}) ".format(dbname, INTEGER_TIMESTAMP,
                                                             STRING_TIMESTAMP)
         sql += "VALUES (%d, '%s', %s, '%s')" % (
-        curr_time_epoch, name, geom, datetime_to_str(curr_datetime, DEFAULT_FORMAT))
+            curr_time_epoch, name, geom, datetime_to_str(curr_datetime, DEFAULT_FORMAT))
         cur.execute(sql)
         conn.commit()
 
 
 if __name__ == "__main__":
     unittest.main()
-    QgsApplication.exitQgis()  #FIXME nosetests is brittle that way
+    QgsApplication.exitQgis()  # FIXME nosetests is brittle that way

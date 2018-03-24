@@ -1,6 +1,10 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
+
 __author__ = 'carolinux'
 
 """
@@ -8,14 +12,12 @@ Helper functions that manage getting layer settings from a variety of sources - 
 layer, the addLayerOptions gui, the widget table and the save string
 """
 
-from qgis.core import QgsMapLayerRegistry
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import QTableWidgetItem
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QTableWidgetItem
-
-from time_util import PENDING
-import conf
-import time_util
+from . import conf
+from . import time_util
+from .qgis_utils import getLayerFromId
 
 
 def textToBool(text):
@@ -26,7 +28,8 @@ def textToBool(text):
     raise Exception("Invalid boolean string {}".format(text))
 
 
-class LayerSettings:
+class LayerSettings(object):
+
     def __init__(self):
         self.layer = None
         self.layerName = ''
@@ -42,25 +45,27 @@ class LayerSettings:
         self.subsetStr = ''
         self.geometriesCount = True
         self.accumulate = False
+        self.resetSubsetString = False
 
 
 def getSettingsFromSaveStr(saveStr):
-    l = saveStr.split(conf.SAVE_DELIMITER)
+    line = saveStr.split(conf.SAVE_DELIMITER)
     result = LayerSettings()
-    result.layerId = l[0]
-    result.layer = QgsMapLayerRegistry.instance().mapLayer(result.layerId)  # get the layer
-    result.startTimeAttribute = l[2]
-    result.subsetStr = l[1]
-    result.endTimeAttribute = l[3]
-    result.isEnabled = textToBool(l[4])
-    result.timeFormat = l[5]
+    result.layerId = line[0]
+    result.layer = getLayerFromId(result.layerId)  # get the layer
+    result.startTimeAttribute = line[2]
+    result.subsetStr = line[1]
+    result.endTimeAttribute = line[3]
+    result.isEnabled = textToBool(line[4])
+    result.timeFormat = line[5]
     try:
-        result.offset = int(l[6])
-        result.idAttribute = l[7]
-        result.interpolationEnabled = textToBool(l[8])
-        result.interpolationMode = l[9]
-        result.geometriesCount = l[10]
-        result.accumulate = textToBool(l[11])
+        result.offset = int(line[6])
+        result.idAttribute = line[7]
+        result.interpolationEnabled = textToBool(line[8])
+        result.interpolationMode = line[9]
+        result.geometriesCount = line[10]
+        result.accumulate = textToBool(line[11])
+        result.resetSubsetString = textToBool(line[12])
     except IndexError:  # for backwards compatibility
         pass  # this will use default values
     return result
@@ -91,6 +96,7 @@ def getSettingsFromAddVectorLayersUI(ui, layerIndexToId):
     result.idAttribute = ui.comboBoxID.currentText() if result.interpolationEnabled else None
     result.idAttribute = "" if result.idAttribute == conf.NO_ID_TEXT else result.idAttribute
     result.geometriesCount = not ui.exportEmptyCheckbox.checkState() == Qt.Checked
+    result.resetSubsetString = ui.resetSubsetStringCheckbox.checkState() == Qt.Checked
     return result
 
 
@@ -116,7 +122,9 @@ def addSettingsToRow(settings, out_table):
                                s.isEnabled, s.layerId, s.timeFormat,
                                str(s.offset), s.interpolationEnabled, s.idAttribute,
                                s.interpolationMode,
-                               not s.geometriesCount, s.accumulate]):
+                               not s.geometriesCount,
+                               s.accumulate,
+                                s.resetSubsetString]):
         item = QTableWidgetItem()
         if type(value) != bool:
             item.setText(value)
@@ -124,14 +132,13 @@ def addSettingsToRow(settings, out_table):
             item.setCheckState(Qt.Checked if value else Qt.Unchecked)
         out_table.setItem(row, i, item)
 
-
 def getSettingsFromRow(table, rowNum):
     """Get settings from table widget rowNum"""
     result = LayerSettings()
-    result.layer = QgsMapLayerRegistry.instance().mapLayer(table.item(rowNum, 4).text())
+    result.layer = getLayerFromId(table.item(rowNum, 4).text())
     try:
         result.subsetStr = result.layer.subsetString()
-    except:
+    except Exception:
         # raster layers do not have subset strings
         pass
     result.isEnabled = (table.item(rowNum, 3).checkState() ==
@@ -148,6 +155,7 @@ def getSettingsFromRow(table, rowNum):
     result.interpolationMode = table.item(rowNum, 9).text()
     result.geometriesCount = not (table.item(rowNum, 10).checkState() == Qt.Checked)
     result.accumulate = (table.item(rowNum, 11).checkState() == Qt.Checked)
+    result.resetSubsetString = (table.item(rowNum, 12).checkState() == Qt.Checked)
 
     return result
 
@@ -173,4 +181,5 @@ def getSettingsFromLayer(layer):
         result.idAttribute = ""
     result.geometriesCount = layer.geometriesCountForExport()
     result.accumulate = layer.accumulateFeatures()
+    result.resetSubsetString = layer.resetSubsetString()
     return result

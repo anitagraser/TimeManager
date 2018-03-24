@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>476</width>
-    <height>288</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -145,6 +145,13 @@
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QCheckBox" name="resetSubsetStringCheckbox">
+       <property name="text">
+        <string>Reset subset string</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QCheckBox" name="exportEmptyCheckbox">
        <property name="text">

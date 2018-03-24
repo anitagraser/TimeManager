@@ -1,14 +1,15 @@
-from qgis.core import *
+from __future__ import absolute_import
+from qgis.core import QgsExpression, QgsFeatureRequest
 
 from .. import time_util as time_util
 from .. import qgis_utils as qgs
 from ..tmlogging import warn
-from interpolator import Interpolator
+from .interpolator import Interpolator
 
 
 try:
-    import numpy as np
-except:
+    import numpy as np  # NOQA
+except Exception:
     pass
 __author__ = 'carolinux'
 
@@ -71,11 +72,11 @@ class QueryInterpolator(Interpolator):
         self.timeLayer.setSubsetString("")
         featIt = self.timeLayer.layer.dataProvider().getFeatures(req)
         self.timeLayer.setSubsetString(s)
-        l = list(featIt)
+        feats = list(featIt)
         if get_first:
-            subList = l[:min(20, len(l))]
+            subList = feats[:min(20, len(feats))]
         else:
-            subList = l[-min(20, len(l)):]
+            subList = feats[-min(20, len(feats)):]
         feats = sorted(subList,
                        key=lambda feat: self.getStartEpochFromFeature(feat, self.timeLayer))
         if not feats:
@@ -92,5 +93,3 @@ class QueryInterpolator(Interpolator):
 
     def get_Tvalue_after(self, id, epoch):
         return self._get_tvalue(id, epoch, ">", True)
-
-

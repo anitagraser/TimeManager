@@ -32,7 +32,7 @@
         </size>
        </property>
        <property name="columnCount">
-        <number>12</number>
+        <number>13</number>
        </property>
        <column>
         <property name="text">
@@ -92,6 +92,11 @@
        <column>
         <property name="text">
          <string>Accumulate features</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Reset subset string</string>
         </property>
        </column>
       </widget>

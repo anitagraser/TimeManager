@@ -2,6 +2,9 @@
 # -*- coding: UTF-8 -*-
 
 """ A module to support dates of BC/AD form"""
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 
 __author__ = "Karolina Alexiou"
 __email__ = "karolina.alexiou@teralytics.ch"
@@ -9,13 +12,12 @@ __email__ = "karolina.alexiou@teralytics.ch"
 import re
 from datetime import datetime, timedelta
 
-from tmlogging import info, warn, error, log_exceptions
+from .tmlogging import warn
 
-import conf
-import time_util
+from .conf import DEFAULT_DIGITS
 
 
-_DIGITS = conf.DEFAULT_DIGITS  # default digits for archaeology mode
+_DIGITS = DEFAULT_DIGITS  # default digits for archaeology mode
 BC_FORMAT = "Y with BC/AD"
 SECONDS_IN_YEAR = 60 * 60 * 24 * 365
 
@@ -46,6 +48,7 @@ def get_min_dt():
 
 
 class BCDate(CustomDate):
+
     def __init__(self, y, m=1, d=1):
         self.digits = getGlobalDigitSetting()
         self.y = y
@@ -105,9 +108,9 @@ class BCDate(CustomDate):
             if bc not in ("BC", "AD") or y == 0:
                 raise Exception
             return BCDate(y)
-        except ZeroFormatException, z:
+        except ZeroFormatException as z:
             raise z
-        except Exception, e:
+        except Exception as e:
             raise Exception(
                 "{} is an invalid archaelogical date, should be 'number AD' or 'number BC'".format(
                     bc) +
@@ -123,7 +126,7 @@ class BCDate(CustomDate):
     def _get_years_from_timedelta(self, td):
         try:
             return td.years
-        except Exception, e:
+        except Exception as e:
             # FIXME v.1.7 what about offset?
             msg = "BC dates can only be used with year intervals, found {}".format(td)
             warn(msg)
@@ -177,7 +180,7 @@ def _year(fdate):
 
 
 def timeval_to_epoch(val):
-    if isinstance(val, str) or isinstance(val, unicode):
+    if isinstance(val, str) or isinstance(val, str):
         return bcdate_to_epoch(str_to_bcdate(val))
     if isinstance(val, BCDate):
         return bcdate_to_epoch(val)
@@ -222,4 +225,5 @@ def str_to_bcdate(datetimeString):
 
 
 def epoch_to_str(seconds_from_epoch):
-    return time_util.datetime_to_str(time_util.epoch_to_datetime(seconds_from_epoch))
+    from .time_util import datetime_to_str, epoch_to_datetime
+    return datetime_to_str(epoch_to_datetime(seconds_from_epoch))
