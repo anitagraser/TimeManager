@@ -78,6 +78,8 @@ class TimeVectorLayer(TimeLayer):
             assert (self.timeFormat != time_util.PENDING)
             extents = self.getTimeExtents()
             info("Layer extents" + str(extents))
+            if self.resetsss:
+                self.setSubsetString(self.originalSubsetString)
         except ValueError as e:
             # ValueErrors appear for virtual layers, see https://github.com/anitagraser/TimeManager/issues/219
             error(traceback.format_exc(e))
