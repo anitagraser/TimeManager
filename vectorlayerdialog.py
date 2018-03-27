@@ -4,13 +4,13 @@
 import abc
 from PyQt4 import uic
 from PyQt4.QtCore import QObject, SIGNAL, Qt
-from PyQt4.QtGui import QMessageBox
+from PyQt4.QtGui import QMessageBox, QApplication
 
 from qgis._core import QgsMapLayerRegistry
 from tmlogging import warn
 
 import qgis_utils as qgs
-import layer_settings 
+import layer_settings
 import conf
 
 
@@ -117,8 +117,10 @@ class VectorLayerDialog(AddLayerDialog):
         self.dialog.comboBoxStart.clear()
         self.dialog.comboBoxEnd.clear()
         self.dialog.comboBoxID.clear()
-        self.dialog.comboBoxEnd.addItem('Same as start')
-        self.dialog.comboBoxEnd.addItem('No end time - accumulate features')
+        self.dialog.comboBoxEnd.addItem(QApplication.translate("dialogCombo", 'Same as start',
+            None, QApplication.UnicodeUTF8))
+        self.dialog.comboBoxEnd.addItem(QApplication.translate("dialogCombo", 'No end time - accumulate features',
+            None, QApplication.UnicodeUTF8))
         self.dialog.comboBoxID.addItem(conf.NO_ID_TEXT)
         for attr in fieldmap:
             self.dialog.comboBoxStart.addItem(attr.name())
