@@ -60,6 +60,7 @@ class AddLayerDialog:
     def populate(self, layerIds):
         idlayers_it = QgsMapLayerRegistry.instance().mapLayers().iteritems()
         selected_idlayers = filter(lambda idlayer: idlayer[0] in layerIds, idlayers_it)
+        selected_idlayers = sorted(selected_idlayers, key=lambda x: x[1].name())
         self.populateFromLayers(selected_idlayers)
 
     def populateFromLayers(self, idlayers):
