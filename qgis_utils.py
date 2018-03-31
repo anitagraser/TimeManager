@@ -191,7 +191,7 @@ def refreshSymbols(iface, layer):
 
 def addLayer(layer):
     if hasattr(QgsProject, "addMapLayer"):
-        QgsProject.instance().addLayer(layer)
+        QgsProject.instance().addMapLayer(layer)
     else:
         QgsMapLayerRegistry.instance().addLayer(layer)
 

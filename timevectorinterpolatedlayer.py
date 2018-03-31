@@ -61,13 +61,13 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             # adjust memLayer to have same crs and same color as original layer, only half transparent
             self.memLayer.setCrs(self.layer.crs())
             # copy the layer style to memLayer
-            renderer = self.layer.rendererV2()
+            renderer = self.layer.renderer()
             r2 = renderer.clone()
-            self.memLayer.setRendererV2(r2)
+            self.memLayer.setRenderer(r2)
             # qgs.setLayerTransparency(self.memLayer, 0.5)
             qgs.refreshSymbols(self.iface, self.memLayer)
 
-            qgs.addLayer(self.mapLayer)
+            qgs.addLayer(self.memLayer)
 
             provider = self.getProvider()
             self.fromTimeAttributeIndex = provider.fields().indexFromName(self.fromTimeAttribute)
@@ -145,7 +145,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
         features = []
         for i, geom in enumerate(geoms):
             feature = QgsFeature(id=start_epoch + i)
-            feature.setGeometry(QgsGeometry.fromPoint(geom))
+            feature.setGeometry(QgsGeometry.fromQPointF(geom.toQPointF()))
             # feature.setAttributes([start_epoch+i])
             features.append(feature)  # if no attributes, it will fail
             self.n = self.n + 1
