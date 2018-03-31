@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>720</width>
-    <height>121</height>
+    <width>764</width>
+    <height>128</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>720</width>
-    <height>121</height>
+    <width>764</width>
+    <height>128</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -121,7 +121,7 @@
       <item>
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Time frame start:</string>
+         <string>Time frame start</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -138,7 +138,7 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Time frame size:</string>
+         <string>Time frame size</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

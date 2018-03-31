@@ -4,19 +4,19 @@
 <context>
     <name>Dialog</name>
     <message>
-        <location filename="../options.ui" line="14"/>
+        <location filename="options.ui" line="14"/>
         <source>Time manager settings</source>
         <translation>Einstellungen für Time Manager</translation>
     </message>
     <message>
         <location filename="options.ui" line="133"/>
-        <source>Layers:</source>
-        <translation>Layer:</translation>
+        <source>Layers</source>
+        <translation>Layer</translation>
     </message>
     <message>
         <location filename="options.ui" line="146"/>
-        <source>Animation Options:</source>
-        <translation>Optionen für die Animation:</translation>
+        <source>Animation options</source>
+        <translation>Optionen für die Animation</translation>
     </message>
     <message>
         <location filename="options.ui" line="162"/>
@@ -96,7 +96,7 @@
     <message>
         <location filename="options.ui" line="94"/>
         <source>Accumulate features</source>
-        <translation>Objekte akkumulieren</translation>
+        <translation>Features akkumulieren</translation>
     </message>
     <message>
         <location filename="options.ui" line="99"/>
@@ -116,7 +116,7 @@
     <message>
         <location filename="options.ui" line="189"/>
         <source>Play animation backwards </source>
-        <translation>Spiele die Animation rückwärts ab</translation>
+        <translation>Spiele die Animation rückwärts ab </translation>
     </message>
     <message>
         <location filename="options.ui" line="209"/>
@@ -310,9 +310,6 @@ if checked, the animation will run in reverse direction&lt;/p&gt;
 &lt;p&gt;&lt;b&gt;Display frame start time on map&lt;/b&gt; ... 
 if checked, displays the start time of the visible frame in the lower right corner of the map&lt;/p&gt;
 
-
-
-
 &lt;h2&gt;Add Layer dialog&lt;/h2&gt;
 
 &lt;p&gt;Here, you are asked to select the layer that should be added and specify the columns containing
@@ -475,7 +472,7 @@ wenn aktiv, wird die Startzeit des aktuellen Zeitrahmens in der unteren rechten 
     <message>
         <location filename="animate.ui" line="34"/>
         <source>Frames only</source>
-        <translation>Nur Bilddateien</translation>
+        <translation>Bildserie (je ein Bild pro Zeitfenster)</translation>
     </message>
     <message>
         <location filename="animate.ui" line="44"/>
@@ -510,7 +507,7 @@ By doing so, regular datetimes won&apos;t work, and the program will expect valu
 Year 0 doesn&apos;t exist, replace it with either 0001 BC or 0001 AD
 
 You can vary the number of digits below if you require more for your project. All years in all layers need to have the same number of digits, even if that means adding extra zeroes in the front.</source>
-        <translation>Sie versuchen, den Archäologiemodus von TimeManager zu aktivieren.
+        <translation>Es wird versucht den Archeologiemodus zu aktivieren.
 
 Wenn Sie das tun, werden normale Datums- und Zeitstempel nicht funktionieren und das Programm wird Werte im Format 0003 BC (v. Chr.) oder 0012 AD (n. Chr.) erwarten (falls die Anzahl der Stellen auf 4 gesetzt ist). Das Jahr 0 gibt es nicht, es muss entweder mit 0001 BC oder 0001 AD ausgedrückt werden.
 
@@ -518,16 +515,16 @@ Sie können die Anzahl der Stellen unten verändern, falls Sie für Ihr Projekt 
     </message>
     <message>
         <location filename="arch.ui" line="49"/>
-        <source>Number of digits: </source>
-        <translation>Anzahl der Stellen:</translation>
+        <source>Number of digits</source>
+        <translation>Anzahl der Stellen</translation>
     </message>
 </context>
 <context>
-    <name>archDialog</name>
+    <name>dialog</name>
     <message>
         <location filename="addRasterLayer.ui" line="14"/>
         <source>Select layer and column(s)</source>
-        <translation>>Layer und Spalte/n auswählen</translation>
+        <translation>Layer und Spalte/n auswählen</translation>
     </message>
     <message>
         <location filename="addRasterLayer.ui" line="42"/>
@@ -552,7 +549,7 @@ Sie können die Anzahl der Stellen unten verändern, falls Sie für Ihr Projekt 
     <message>
         <location filename="addRasterLayer.ui" line="35"/>
         <source>Get end from name</source>
-        <translation>Ende aus dem Namen entnehmen</translation>
+        <translation>Ende aus Namen entnehmen</translation>
     </message>
     <message>
         <location filename="addRasterLayer.ui" line="55"/>
@@ -562,50 +559,40 @@ Sie können die Anzahl der Stellen unten verändern, falls Sie für Ihr Projekt 
     <message>
         <location filename="addRasterLayer.ui" line="94"/>
         <source>Get start from name</source>
-        <translation>Anfang aus dem Namen entnehmen</translation>
+        <translation>Anfang aus Namen entnehmen</translation>
     </message>
     <message>
         <location filename="addRasterLayer.ui" line="122"/>
         <source>Start of date in name</source>
-        <translation>Anfangsdatum in Namen</translation>
+        <translation>Anfangsdatum im Namen</translation>
     </message>
     <message>
         <location filename="addRasterLayer.ui" line="129"/>
         <source>End of date in name</source>
-        <translation>Enddatum in Namen</translation>
+        <translation>Enddatum im Namen</translation>
     </message>
     <message>
-        <location filename="../addRasterLayer.ui" line="122"/>
-        <source>Start of date in name</source>
-        <translation>Anfangsdatum im Name</translation>
-    </message>
-    <message>
-        <location filename="../addRasterLayer.ui" line="129"/>
-        <source>End of date in name</source>
-        <translation>Enddatum im Name</translation>
-    </message>
-    <message>
-        <location filename="../addLayer.ui" line="54"/>
+        <location filename="addLayer.ui" line="54"/>
         <source>Interpolate between frames</source>
-        <translation>Interpoliere zwischen den Zeitfenstern</translation>
+        <translation>Interpolation zwischen den Zeitfenstern</translation>
     </message>
     <message>
-        <location filename="../addLayer.ui" line="60"/>
+        <location filename="addLayer.ui" line="60"/>
         <source>Interpolation</source>
         <translation>Interpolation</translation>
     </message>
     <message>
-        <location filename="../addLayer.ui" line="112"/>
+        <location filename="addLayer.ui" line="112"/>
         <source>The attribute that uniquely identifies geometries</source>
         <translation>Attribut, das die Geometrien eindeutig identifiziert</translation>
     </message>
     <message>
-        <location filename="../addLayer.ui" line="118"/>
+        <location filename="addLayer.ui" line="118"/>
         <source>ID attribute</source>
         <translation>ID-Attribut</translation>
     </message>
     <message>
-        <location filename="../addLayer.ui" line="140"/>
+        <location filename="addLayer.ui" line="140"/>
         <source>(for interpolation)</source>
         <translation>(für die Interpolation)</translation>
     </message>
@@ -634,34 +621,33 @@ Sie können die Anzahl der Stellen unten verändern, falls Sie für Ihr Projekt 
     </message>
     <message>
         <location filename="label_options.ui" line="30"/>
-        <source>Font:</source>
-        <translation>Schriftart:</translation>
+        <source>Font</source>
+        <translation>Schriftart</translation>
     </message>
     <message>
         <location filename="label_options.ui" line="44"/>
-        <source>Font Size:</source>
-        <translation>Schriftgröße:</translation>
+        <source>Font Size</source>
+        <translation>Schriftgröße</translation>
     </message>
     <message>
         <location filename="label_options.ui" line="58"/>
-        <source>Time Format:</source>
-        <translation>Zeitformat:</translation>
+        <source>Time Format</source>
+        <translation>Zeitformat</translation>
     </message>
     <message>
-        <location filename="../ui/label_options.py" line="133"/>
         <location filename="label_options.ui" line="108"/>
-        <source>Placement Direction:</source>
-        <translation>Plazierungsrichtung:</translation>
+        <source>Placement direction</source>
+        <translation>Plazierungsrichtung</translation>
     </message>
     <message>
         <location filename="label_options.ui" line="122"/>
-        <source>Text Color:</source>
-        <translation>Textfarbe:</translation>
+        <source>Text color</source>
+        <translation>Textfarbe</translation>
     </message>
     <message>
         <location filename="label_options.ui" line="132"/>
-        <source>Bg Color:</source>
-        <translation>Hintergrundfarbe:</translation>
+        <source>Bg color</source>
+        <translation>Hintergrundfarbe</translation>
     </message>
     <message>
         <location filename="label_options.ui" line="69"/>
@@ -682,7 +668,7 @@ Sie können die Anzahl der Stellen unten verändern, falls Sie für Ihr Projekt 
 <context>
     <name>timeManager</name>
     <message>
-        <location filename="../dockwidget2.ui" line="26"/>
+        <location filename="dockwidget2.ui" line="26"/>
         <source>Time Manager</source>
         <translation>Time Manager</translation>
     </message>
@@ -698,8 +684,8 @@ Sie können die Anzahl der Stellen unten verändern, falls Sie für Ihr Projekt 
     </message>
     <message>
         <location filename="dockwidget2.ui" line="141"/>
-        <source>Time frame size:</source>
-        <translation>Zeitfenstergröße:</translation>
+        <source>Time frame size</source>
+        <translation>Zeitfenstergröße</translation>
     </message>
     <message>
         <location filename="dockwidget2.ui" line="165"/>
@@ -743,8 +729,8 @@ Sie können die Anzahl der Stellen unten verändern, falls Sie für Ihr Projekt 
     </message>
     <message>
         <location filename="dockwidget2.ui" line="124"/>
-        <source>Time frame start:</source>
-        <translation>Zeitfenster (Start):</translation>
+        <source>Time frame start</source>
+        <translation>Framestartzeit</translation>
     </message>
     <message>
         <location filename="dockwidget2.ui" line="134"/>
@@ -761,5 +747,18 @@ Sie können die Anzahl der Stellen unten verändern, falls Sie für Ihr Projekt 
         <source>years</source>
         <translation>Jahre</translation>
     </message>
+</context>
+<context>
+    <name>dialogCombo</name>
+    <message>
+        <location filename="../vectorlayerdialog.py" line="120"/>
+        <source>Same as start</source>
+        <translation>wie Startzeit</translation>
+    </message>
+    <message>
+        <location filename="../vectorlayerdialog.py" line="122"/>
+        <source>No end time - accumulate features</source>
+        <translation>Keine Endzeit - zeige alle Features an</translation>
+    </message>	    
 </context>
 </TS>

@@ -46,7 +46,7 @@ You can vary the number of digits below if you require more for your project. Al
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Number of digits: </string>
+        <string>Number of digits</string>
        </property>
       </widget>
      </item>

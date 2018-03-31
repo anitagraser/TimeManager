@@ -6,7 +6,7 @@ from builtins import object
 import abc
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QObject, Qt, QCoreApplication
-from qgis.PyQt.QtWidgets import QMessageBox
+from qgis.PyQt.QtWidgets import QMessageBox, QApplication
 
 from .tmlogging import warn
 
@@ -118,10 +118,8 @@ class VectorLayerDialog(AddLayerDialog):
         self.dialog.comboBoxStart.clear()
         self.dialog.comboBoxEnd.clear()
         self.dialog.comboBoxID.clear()
-        self.dialog.comboBoxEnd.addItem(QApplication.translate("dialogCombo", 'Same as start',
-            None, QApplication.UnicodeUTF8))
-        self.dialog.comboBoxEnd.addItem(QApplication.translate("dialogCombo", 'No end time - accumulate features',
-            None, QApplication.UnicodeUTF8))
+        self.dialog.comboBoxEnd.addItem(QApplication.translate("dialogCombo", 'Same as start', None))
+        self.dialog.comboBoxEnd.addItem(QApplication.translate("dialogCombo", 'No end time - accumulate features', None))
         self.dialog.comboBoxID.addItem(conf.NO_ID_TEXT)
         for attr in fieldmap:
             self.dialog.comboBoxStart.addItem(attr.name())
@@ -151,7 +149,7 @@ class VectorLayerDialog(AddLayerDialog):
         self.dialog.show()
 
     def maybeEnableIDBox(self, interpolation_mode):
-        if interpolation_mode > 0 #conf.INTERPOLATION_MODES.get(interpolation_mode, False):
+        if interpolation_mode > 0: #conf.INTERPOLATION_MODES.get(interpolation_mode, False):
             self.dialog.comboBoxID.setEnabled(True)
             self.dialog.labelID1.setEnabled(True)
             self.dialog.labelID2.setEnabled(True)
