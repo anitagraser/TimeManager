@@ -48,7 +48,7 @@ then
     echo "i18n/timemanager_"${LOCALE}".ts"
     # Note we don't use pylupdate with qt .pro file approach as it is flakey
     # about what is made available.
-    pylupdate4 -noobsolete ${PYTHON_FILES} -ts i18n/timemanager_${LOCALE}.ts
+    pylupdate4 ${PYTHON_FILES} -ts i18n/timemanager_${LOCALE}.ts
   done
 else
   echo "No need to edit any translation files (.ts) because no python files"

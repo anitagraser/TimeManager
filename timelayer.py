@@ -1,16 +1,20 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from builtins import object
+
+from qgis.PyQt.QtCore import QCoreApplication
+
 import abc
 
-import conf
-import time_util
+from . import conf
+from . import time_util
+from future.utils import with_metaclass
 
 
-class TimeLayer:
+class TimeLayer(with_metaclass(abc.ABCMeta, object)):
     """Manages the properties of a managed (managable) layer"""
-
-    __metaclass__ = abc.ABCMeta  # this class cannot be instantiated directly
 
     def __init__(self, layer, enabled=True):
         self.layer = layer
@@ -78,16 +82,19 @@ class TimeLayer:
 
 
 class NotATimeAttributeError(Exception):
+
     def __init__(self, value):
         self.value = value
 
     def __str__(self):
+        return QCoreApplication.translate('TimeManager', 'NotATimeAttributeError: invalid value {}').format(repr(self.value))
         return repr(self.value)
 
 
 class InvalidTimeLayerError(Exception):
+
     def __init__(self, value):
         self.value = value
 
     def __str__(self):
-        return repr(self.value)
+        return QCoreApplication.translate('TimeManager', 'InvalidTimeLayerError: invalid value {}').format(repr(self.value))

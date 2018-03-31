@@ -6,9 +6,15 @@ Created on Fri Oct 29 17:22:52 2010
 @author: Anita
 """
 
-from PyQt4.QtCore import QObject, QSettings, QPyNullVariant
+from qgis.PyQt.QtCore import QObject, QSettings
+
+try:
+    from qgis.PyQt.QtCore import QPyNullVariant
+except ImportError:
+    QPyNullVariant = None
 
 from qgis.core import QgsProject
+
 
 class TimeManagerProjectHandler(QObject):
     """This class manages reading from and writing to the QgsProject instance.
@@ -18,11 +24,11 @@ class TimeManagerProjectHandler(QObject):
     @classmethod
     def set_plugin_setting(cls, name, value):
         """Set temporary settings"""
-        QSettings().setValue("TimeManager/"+name, value)
+        QSettings().setValue("TimeManager/" + name, value)
 
     @classmethod
-    def plugin_setting(cls,name):
-        val = QSettings().value("TimeManager/"+name)
+    def plugin_setting(cls, name):
+        val = QSettings().value("TimeManager/" + name)
         if isinstance(val, QPyNullVariant):
             val = None
         return val
@@ -30,7 +36,7 @@ class TimeManagerProjectHandler(QObject):
     @classmethod
     def writeSettings(cls, settings):
         """write the list of settings to QgsProject instance"""
-        for (key, value) in settings.items():
+        for (key, value) in list(settings.items()):
             cls.writeSetting(key, value)
 
     @classmethod
@@ -38,7 +44,7 @@ class TimeManagerProjectHandler(QObject):
         """write plugin settings to QgsProject instance"""
         try:
             QgsProject.instance().writeEntry("TimeManager", attribute, value)
-        except:
+        except Exception:
             pass
 
     @classmethod
@@ -62,19 +68,19 @@ class TimeManagerProjectHandler(QObject):
             str: prj.readEntry,
             int: prj.readNumEntry,
             float: prj.readDoubleEntry,
-            long: prj.readDoubleEntry,
+            # int: prj.readDoubleEntry,
             bool: prj.readBoolEntry,
             list: prj.readListEntry,
         }
 
         settings = {}
-        for (setting_name, setting_type) in metasettings.items():
+        for (setting_name, setting_type) in list(metasettings.items()):
 
             try:
                 setting_value = cls.readSetting(type_to_read_function_mapping[setting_type], setting_name)
                 if setting_value is None:
                     raise Exception
                 settings[setting_name] = setting_value
-            except:
+            except Exception:
                 pass
         return settings

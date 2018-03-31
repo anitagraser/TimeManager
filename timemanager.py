@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-#=============================================================
-#===================   TimeManager    ========================
-#===================  a QGIS Plug-In  ========================
-#=============================================================
+# =============================================================
+# ===================   TimeManager    ========================
+# ===================  a QGIS Plug-In  ========================
+# =============================================================
 #
 # ***************************************************************************
 # *                                                                         *
@@ -14,24 +14,22 @@
 # *                                                                         *
 # ***************************************************************************
 
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
+
 import os
-from PyQt4.QtCore import QTranslator, QCoreApplication, qVersion, QSettings, QLocale
+from qgis.PyQt.QtCore import QTranslator, QCoreApplication, qVersion, QSettings, QLocale
 
 from qgis.core import qgsfunction, QgsExpression
 
-from timemanagercontrol import TimeManagerControl
-from tmlogging import info, warn, error, log_exceptions
+from .timemanagercontrol import TimeManagerControl
+from .tmlogging import info, warn, error
 
-import time_util
-import resources  # loads the icons
-import locale # for localization
-import conf # loads the configuration
+from . import time_util
 
 
-I18N_FOLDER = "i18n"
-
-
-class timemanager:
+class timemanager(object):
     """Plugin information"""
     name = "timemanager"
     longName = "TimeManager Plugin for QGIS >= 2.3"
@@ -51,7 +49,7 @@ class timemanager:
                     lang = QLocale.system().name().split("_")[0]
                 else:
                     lang = QSettings().value("locale/userLocale", "").split("_")[0]
-            except:
+            except Exception:
                 lang = "en"  # could not get locale, OSX may have this bug
             info("Plugin language loaded: {}".format(lang))
             self.changeI18n(lang)
@@ -70,28 +68,22 @@ class timemanager:
         Override the system locale  and then see if we can get a valid
         translation file for whatever locale is effectively being used.
         """
-        #os.environ["LANG"] = str(new_lang)
+        # os.environ["LANG"] = str(new_lang)
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-        translation_path = os.path.join(
-            root, self.name, I18N_FOLDER,
-            self.name+"_" + str(new_lang) + ".qm")
-        if os.path.exists(translation_path):
-            self.translator = QTranslator()
-            result = self.translator.load(translation_path)
-            if not result:
-                error(
-                    "Translation file {} for lang {} was not loaded properly,"
-                    + "falling back to English".format(translation_path, new_lang)
-                    )
-                return
-            if qVersion() > "4.3.3":
-                QCoreApplication.installTranslator(self.translator)
-            else:
-                self.translator = None
-                warn("Translation not supported for Qt <= {}".format(qVersion()))
+        translation_path = "TimeManager:i18n/{}_{}.qm".format(self.name, new_lang)
+        self.translator = QTranslator()
+        result = self.translator.load(translation_path)
+        if not result:
+            error(
+                "Translation file {} for lang {} was not loaded properly," +
+                "falling back to English".format(translation_path, new_lang)
+            )
+            return
+        if qVersion() > "4.3.3":
+            QCoreApplication.installTranslator(self.translator)
         else:
-            if new_lang != "en":
-                warn("Translation failed for lang {}, falling back to English".format(new_lang))
+            self.translator = None
+            warn("Translation not supported for Qt <= {}".format(qVersion()))
 
     def unload(self):
         """Unload the plugin"""
@@ -101,18 +93,18 @@ class timemanager:
         QgsExpression.unregisterFunction("$animation_time_frame_size")
         QgsExpression.unregisterFunction("animation_time_frame_size")
         QgsExpression.unregisterFunction("$animation_time_frame_type")
-        QgsExpression.unregisterFunction("animation_time_frame_type")   
+        QgsExpression.unregisterFunction("animation_time_frame_type")
         QgsExpression.unregisterFunction("$animation_start_datetime")
-        QgsExpression.unregisterFunction("animation_start_datetime")       
+        QgsExpression.unregisterFunction("animation_start_datetime")
         QgsExpression.unregisterFunction("$animation_end_datetime")
-        QgsExpression.unregisterFunction("animation_end_datetime")       
+        QgsExpression.unregisterFunction("animation_end_datetime")
 
     @qgsfunction(0, "TimeManager")
     def animation_datetime(values, feature, parent):
         """Current animation time"""
         return time_util.datetime_to_str(control.getTimeLayerManager().getCurrentTimePosition(),
                                          time_util.DEFAULT_FORMAT)
-        
+
     @qgsfunction(0, "TimeManager")
     def animation_time_frame_size(values, feature, parent):
         """Animation time frame size"""
@@ -128,9 +120,9 @@ class timemanager:
         """Earliest time stamp"""
         return time_util.datetime_to_str(control.getTimeLayerManager().getProjectTimeExtents()[0],
                                          time_util.DEFAULT_FORMAT)
-        
+
     @qgsfunction(0, "TimeManager")
     def animation_end_datetime(values, feature, parent):
         """Last time stamp"""
         return time_util.datetime_to_str(control.getTimeLayerManager().getProjectTimeExtents()[1],
-                                         time_util.DEFAULT_FORMAT)        
+                                         time_util.DEFAULT_FORMAT)

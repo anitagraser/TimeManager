@@ -1,12 +1,16 @@
-from PyQt4 import QtCore
+from __future__ import print_function
+from builtins import map
+from builtins import range
+from qgis.PyQt import QtCore
 import qgis
 import os
 from time import sleep
 from datetime import datetime, timedelta
 import tempfile
 
-from PyQt4.QtCore import QSettings
-from qgis._core import QgsApplication, QgsVectorLayer, QgsMapLayerRegistry, QgsProject
+from qgis.PyQt.QtCore import QSettings
+from qgis._core import QgsApplication, QgsVectorLayer, QgsProject
+from .qgis_utils import getLayers, addLayer
 
 
 try:
@@ -56,13 +60,14 @@ def get_all_items(combobox):
 
 
 def get_all_layer_names():
-    return QgsMapLayerRegistry.instance().mapLayers().keys()
+    return getLayers().keys()
 
 
 def get_index_of(combobox, text):
     """Get the index of a specifix text in a QtComboBox"""
     all = get_all_items(combobox)
-    print all
+    # fix_print_with_import
+    print(all)
     return all.index(text)
 
 
@@ -88,12 +93,12 @@ def getArchaelogicalLayer():
 
 
 def load_layer_to_qgis(layer):
-    QgsMapLayerRegistry.instance().addMapLayer(layer)
+    addLayer(layer)
     sleep(0.2)
 
 
 def remove_layer_from_qgis(id):
-    QgsMapLayerRegistry.instance().removeMapLayer(id)
+    removeLayer(id)
     sleep(0.1)
 
 
@@ -173,8 +178,10 @@ gui = ctrl.getGui()
 tlm = ctrl.getTimeLayerManager()
 assert (tlm.isEnabled())
 
-## senario 0 -> disable timemanager, see that saving project works normally, reenable
-print "Start scenario 1"
+## senario 0 -> disable timemanager, see that saving project works normally, reenable# fix_print_with_import
+
+# fix_print_with_import
+print("Start scenario 1")
 new_project()
 clickOnOff(gui)
 assert (not tlm.isEnabled())
@@ -185,8 +192,10 @@ clickOnOff(gui)
 assert (tlm.isEnabled())
 
 
-## senario 1 -> simple back and forth within a layer, writing settings, adding 2nd layer
-print "Start scenario 2"
+## senario 1 -> simple back and forth within a layer, writing settings, adding 2nd layer# fix_print_with_import
+
+# fix_print_with_import
+print("Start scenario 2")
 new_project()
 load_layer_to_qgis(getTweetsLayer())
 addUnmanagedLayerToTm(gui, "T1965")
@@ -231,8 +240,10 @@ assert (extents[0].year == 1965 and extents[1].year == 1965)
 
 
 
-## senario 3
-print "Start scenario 3"
+## senario 3# fix_print_with_import
+
+# fix_print_with_import
+print("Start scenario 3")
 new_project()
 set_time_frame_type(gui, "seconds")
 load_layer_to_qgis(getTimeSpansLayer())
@@ -253,15 +264,17 @@ save_project_to_file(tmp_file)
 new_project()
 load_project(tmp_file)
 assert (len(get_all_layer_names()) == 3)
+# fix_print_with_import
 
-print "Start scenario 4 (archaelogy)"
+# fix_print_with_import
+print("Start scenario 4 (archaelogy)")
 new_project()
 enableUseOfGlobalCrs()
 ctrl.setArchaeology(1)
 load_layer_to_qgis(getArchaelogicalLayer())
 addUnmanagedLayerToTm(gui, "year")
 assert (tlm.getCurrentTimePosition() == bcdate_util.BCDate(-20))
-map(lambda x: goForward(gui), range(19))
+list([goForward(gui) for x in list(range(19))])
 assert (iface.activeLayer().featureCount() == 2)
 goForward(gui)
 assert (tlm.getCurrentTimePosition() == bcdate_util.BCDate(1))

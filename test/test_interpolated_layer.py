@@ -1,9 +1,11 @@
+from __future__ import absolute_import
+from builtins import range
 import sip
 
 sip.setapi('QString', 2)  # strange things happen without this. Must import before PyQt imports
 # if using ipython: do this on bash before
 # export QT_API=pyqt
-from qgis.core import *
+from qgis.core import QgsVectorLayer
 
 import os
 from TimeManager.layer_settings import LayerSettings
@@ -11,7 +13,7 @@ import TimeManager.conf as conf
 from TimeManager.timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
 from mock import Mock
 import tempfile
-from test_functionality import TestWithQGISLauncher
+from .test_functionality import TestWithQGISLauncher
 
 TIMESTAMP = "timestamp"
 LON = "lon"

@@ -1,13 +1,16 @@
-from interpolator import *
-from queryinterpolator import *
+from __future__ import absolute_import
+from .interpolator import Interpolator, MemoryLoadInterpolator
+from .queryinterpolator import QueryInterpolator
+import numpy as np
 
 from ..tmlogging import warn
+from .. import qgis_utils as qgs
 
 
 class LinearPointInterpolator(Interpolator):
     def getGeometryFromFeature(self, feat):
         geom = feat.geometry()
-        if geom.type() != QGis.Point:
+        if not qgs.isPointGeometry(geom):
             warn("Ignoring 1 non-point geometry")
             return None
         coords = (geom.asPoint().x(), geom.asPoint().y())

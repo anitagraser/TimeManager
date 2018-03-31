@@ -1,13 +1,15 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import sip
 
 sip.setapi('QString', 2)  # strange things happen without this. Must import before PyQt imports
 # if using ipython: do this on bash before
 # export QT_API=pyqt
-from qgis.core import *
+from qgis.core import QgsVectorLayer
 
 from mock import Mock
 import unittest
-from test_functionality import TestForLayersWithOnePointPerSecond
+from .test_functionality import TestForLayersWithOnePointPerSecond
 import TimeManager.time_util as time_util
 from TimeManager.conf import FRAME_FILENAME_PREFIX
 import TimeManager.timevectorlayer as timevectorlayer
@@ -60,7 +62,6 @@ class TestDelimitedText(TestForLayersWithOnePointPerSecond):
         super(TestDelimitedText, self).tearDown()
         os.remove(self.file.name)
 
-
     def test_date_str(self):
         self._test_layer(self.layer, DATE_COL, time_util.DateTypes.DatesAsStrings,
                          DFT)
@@ -76,19 +77,19 @@ class TestDelimitedText(TestForLayersWithOnePointPerSecond):
         self.tlm.registerTimeLayer(timeLayer)
         tmpdir = tempfile.mkdtemp()
         self.tlm.setTimeFrameType("seconds")
-        start_time = time_util.str_to_datetime(timeLayer.getMinMaxValues()[0])
+        # start_time = time_util.str_to_datetime(timeLayer.getMinMaxValues()[0])
         end_time = time_util.str_to_datetime(timeLayer.getMinMaxValues()[1])
         self.ctrl.exportVideo(tmpdir, 100, False)
         screenshots_generated = glob.glob(os.path.join(tmpdir, FRAME_FILENAME_PREFIX + "*"))
         # import ipdb; ipdb.set_trace()
         last_fn = self.ctrl.generateFrameFilename(tmpdir, len(screenshots_generated) - 1,
-                                                    end_time)
+                                                  end_time)
         self.assertEquals(6, len(screenshots_generated))
         self.assertIn(last_fn, screenshots_generated)
-        print screenshots_generated
+        # fix_print_with_import
+        print(screenshots_generated)
         shutil.rmtree(tmpdir)
 
 
 if __name__ == "__main__":
     unittest.main()
-

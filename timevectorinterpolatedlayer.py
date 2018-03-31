@@ -1,28 +1,30 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from builtins import range
+
 __author__ = 'carolinux'
 
 import traceback
 
-from qgis.core import QgsVectorLayer, QGis, QgsMapLayerRegistry, QgsFeatureRequest, \
-    QgsPoint, QgsFeature, QgsGeometry
+from qgis.core import QgsVectorLayer, QgsFeatureRequest, QgsPoint, QgsFeature, QgsGeometry
 
-from timelayer import InvalidTimeLayerError
-from timevectorlayer import TimeVectorLayer
-from interpolation import interpolator_factory as ifactory
-from tmlogging import info
+from .timelayer import InvalidTimeLayerError
+from .timevectorlayer import TimeVectorLayer
+from .interpolation import interpolator_factory as ifactory
+from .tmlogging import info
 
-import time_util 
-import conf
-import qgis_utils as qgs
-
+from . import time_util
+from . import conf
+from . import qgis_utils as qgs
 
 
 # Ideas for extending
 # TODO: What about toTimeAttribute and interpolation? Right now it's ignored
 
 class TimeVectorInterpolatedLayer(TimeVectorLayer):
+
     def isInterpolationEnabled(self):
         return True
 
@@ -46,32 +48,33 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             info("Trying to create time interpolated layer with interpolation mode: {}".format(
                 settings.interpolationMode))
             try:
-                import numpy as np
-            except:
+                import numpy as np  # NOQA
+            except ImportError:
                 raise Exception("Need to have numpy installed")
 
-            if self.layer.geometryType() != QGis.Point:
+            if not qgs.isPointLayer(self.layer):
                 raise Exception("Want point geometry!")
+
             self.idAttribute = settings.idAttribute
             self.memLayer = self.getMemLayer()
 
             # adjust memLayer to have same crs and same color as original layer, only half transparent
             self.memLayer.setCrs(self.layer.crs())
-            # copy the layer style to memLayer 
+            # copy the layer style to memLayer
             renderer = self.layer.rendererV2()
             r2 = renderer.clone()
             self.memLayer.setRendererV2(r2)
-            #qgs.setLayerTransparency(self.memLayer, 0.5)
+            # qgs.setLayerTransparency(self.memLayer, 0.5)
             qgs.refreshSymbols(self.iface, self.memLayer)
 
-            QgsMapLayerRegistry.instance().addMapLayer(self.memLayer)
+            qgs.addLayer(self.mapLayer)
 
             provider = self.getProvider()
-            self.fromTimeAttributeIndex = provider.fieldNameIndex(self.fromTimeAttribute)
-            self.toTimeAttributeIndex = provider.fieldNameIndex(self.toTimeAttribute)
+            self.fromTimeAttributeIndex = provider.fields().indexFromName(self.fromTimeAttribute)
+            self.toTimeAttributeIndex = provider.fields().indexFromName(self.toTimeAttribute)
 
             if self.hasIdAttribute():
-                self.idAttributeIndex = provider.fieldNameIndex(self.idAttribute)
+                self.idAttributeIndex = provider.fields().indexFromName(self.idAttribute)
                 self.uniqueIdValues = set(provider.uniqueValues(self.idAttributeIndex))
             else:
                 self.uniqueIdValues = set([conf.DEFAULT_ID])
@@ -81,15 +84,15 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             self.fromInterpolator.load(self)
             self.n = 0
             info("Interpolated layer {} created successfully!".format(self.layer.name()))
-        except Exception, e:
+        except Exception as e:
             raise InvalidTimeLayerError("Traceback:" + traceback.format_exc(e))
 
     def __del__(self):
         info("Cleaning up interpolated layer {}".format(self.layer.name()))
-        QgsMapLayerRegistry.instance().removeMapLayer(self.memLayer.id())
+        qgs.removeLayer(self.memLayer.id())
         try:
             del self.memLayer
-        except:
+        except Exception:
             pass
 
     def getIdAttribute(self):
@@ -121,10 +124,10 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
 
     def _clearMemoryLayer(self):
         try:  # theoretically, the user could have already removed the layer from the UI
-            res = self.memLayer.dataProvider().deleteFeatures(range(self.n + 1))
+            res = self.memLayer.dataProvider().deleteFeatures(list(range(self.n + 1)))
             assert (res)
             self.memLayer.triggerRepaint()
-        except:
+        except Exception:
             pass
 
     def setTimeRestriction(self, timePosition, timeFrame):
@@ -133,21 +136,21 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
         start_epoch = time_util.datetime_to_epoch(self.getStartTime(timePosition, timeFrame))
         end_epoch = time_util.datetime_to_epoch(self.getEndTime(timePosition, timeFrame))
 
-        #info("setTimeRestriction Called {} times".format(self.n))
-        #info("size of layer at {}:{}".format(start_epoch,self.memLayer.featureCount(),))
+        # info("setTimeRestriction Called {} times".format(self.n))
+        # info("size of layer at {}:{}".format(start_epoch,self.memLayer.featureCount(),))
         geoms = self.getInterpolatedGeometries(start_epoch, end_epoch)
-        #Add the geometries as features
+        # Add the geometries as features
         self._clearMemoryLayer()
 
         features = []
         for i, geom in enumerate(geoms):
             feature = QgsFeature(id=start_epoch + i)
             feature.setGeometry(QgsGeometry.fromPoint(geom))
-            #feature.setAttributes([start_epoch+i])
+            # feature.setAttributes([start_epoch+i])
             features.append(feature)  # if no attributes, it will fail
             self.n = self.n + 1
 
-        #info("add {}features:".format(len(features)))
+        # info("add {}features:".format(len(features)))
         res = self.memLayer.dataProvider().addFeatures(features)
         assert (res)
         self.memLayer.triggerRepaint()

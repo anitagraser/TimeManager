@@ -1,0 +1,24 @@
+timemanagercontrol.py export-subst
+test export-ignore
+test/** export-ignore
+testdata export-ignore
+testdata/** export-ignore
+scripts export-ignore
+scripts/** export-ignore
+docs export-ignore
+docs/** export-ignore
+.coveragerc export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
+.travis.yml export-ignore
+CONTRIBUTING.md export-ignore
+GITHUB.md export-ignore
+README.md export-ignore
+i18n/*.ts export-ignore
+index.html export-ignore
+params.json export-ignore
+run_tests.sh json export-ignore
+scripts/*.sh export-ignore
+userguide.htm export-ignore
+VideoTutorial.md export-ignore
+Makefile export-ignore

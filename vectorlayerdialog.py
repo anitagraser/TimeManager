@@ -1,22 +1,22 @@
-#!/usr/bin/python
-# -*- coding: UTF-8 -*-
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+from builtins import object
 
 import abc
-from PyQt4 import uic
-from PyQt4.QtCore import QObject, SIGNAL, Qt
-from PyQt4.QtGui import QMessageBox, QApplication
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QObject, Qt, QCoreApplication
+from qgis.PyQt.QtWidgets import QMessageBox
 
-from qgis._core import QgsMapLayerRegistry
-from tmlogging import warn
+from .tmlogging import warn
 
-import qgis_utils as qgs
-import layer_settings
-import conf
+from . import qgis_utils as qgs
+from . import layer_settings
+from . import conf
+from future.utils import with_metaclass
 
 
-class AddLayerDialog:
-    __metaclass__ = abc.ABCMeta
-
+class AddLayerDialog(with_metaclass(abc.ABCMeta, object)):
     def __init__(self, iface, ui_path, out_table):
         self.iface = iface
         self.tempLayerIndexToId = {}
@@ -58,21 +58,21 @@ class AddLayerDialog:
         return self.dialog.comboBoxLayers.count()
 
     def populate(self, layerIds):
-        idlayers_it = QgsMapLayerRegistry.instance().mapLayers().iteritems()
-        selected_idlayers = filter(lambda idlayer: idlayer[0] in layerIds, idlayers_it)
+        idlayers_it = iter(list(qgs.getLayers().items()))
+        selected_idlayers = [idlayer for idlayer in idlayers_it if idlayer[0] in layerIds]
         self.populateFromLayers(selected_idlayers)
 
     def populateFromLayers(self, idlayers):
         """Populate layer combo box"""
         i = 0
         for (id, layer) in idlayers:
-            unicode_name = unicode(layer.name())
+            unicode_name = str(layer.name())
             self.addLayerToSelect(unicode_name)
             self.tempLayerIndexToId[i] = id
             i += 1
         if self.getLayerCount() == 0:
-            msg = 'All suitable project layers have already been added to TimeManager!'
-            QMessageBox.information(self.dialog, 'Error', msg)
+            msg = QCoreApplication.translate('TimeManager', 'All suitable project layers have already been added to TimeManager!')
+            QMessageBox.information(self.dialog, QCoreApplication.translate('TimeManager', 'Error'), msg)
             raise Exception(msg)
         # add the attributes of the first layer in the select for gui initialization
         self.addLayerAttributes(0)
@@ -100,6 +100,7 @@ class AddLayerDialog:
 
 
 class VectorLayerDialog(AddLayerDialog):
+
     def __init__(self, *args):
         super(VectorLayerDialog, self).__init__(*args)
 
@@ -129,9 +130,7 @@ class VectorLayerDialog(AddLayerDialog):
 
     def addConnections(self):
         super(VectorLayerDialog, self).addConnections()
-        QObject.connect(self.dialog.comboBoxInterpolation,
-                        SIGNAL("currentIndexChanged(const QString &)"),
-                        self.maybeEnableIDBox)
+        self.dialog.comboBoxInterpolation.currentIndexChanged.connect(self.maybeEnableIDBox)
         self.dialog.exportEmptyCheckbox.setChecked(Qt.Unchecked)
 
     def show(self):
@@ -144,7 +143,7 @@ class VectorLayerDialog(AddLayerDialog):
         # todo: plugin layers, e.g. from QuickMapServices should also be excluded
         try:
             self.populate(allVectorIds - idsToIgnore - unsupportedVectorIds)
-        except Exception, e:
+        except Exception as e:
             warn(e)
             return
         # finalize and show dialog
@@ -152,7 +151,7 @@ class VectorLayerDialog(AddLayerDialog):
         self.dialog.show()
 
     def maybeEnableIDBox(self, interpolation_mode):
-        if interpolation_mode != '' and conf.INTERPOLATION_MODES[interpolation_mode]:
+        if interpolation_mode > 0 #conf.INTERPOLATION_MODES.get(interpolation_mode, False):
             self.dialog.comboBoxID.setEnabled(True)
             self.dialog.labelID1.setEnabled(True)
             self.dialog.labelID2.setEnabled(True)
@@ -166,5 +165,5 @@ class VectorLayerDialog(AddLayerDialog):
     def addInterpolationModes(self, comboBox):
         comboBox.clear()
         comboBox.addItem(conf.NO_INTERPOLATION)
-        for mode in conf.INTERPOLATION_MODE_TO_CLASS.keys():
+        for mode in list(conf.INTERPOLATION_MODE_TO_CLASS.keys()):
             comboBox.addItem(mode)

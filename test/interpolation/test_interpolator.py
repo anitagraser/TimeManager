@@ -60,7 +60,7 @@ class TestLinearInterpolatorWithMemoryBuilder(unittest.TestCase):
 
     def test_values_outside_border_return_None(self):
         for id in [1, 5, 6]:
-            values_for_id = map(lambda (i, v, g): v, filter(lambda (i, v, g): i == id, tuples))
+            values_for_id = [i_v_g2[1] for i_v_g2 in [i_v_g for i_v_g in tuples if i_v_g[0] == id]]
             maxval = max(values_for_id)
             minval = min(values_for_id)
             last_before_min = self.lin.get_Tvalue_before(id, minval - 1)
@@ -72,7 +72,7 @@ class TestLinearInterpolatorWithMemoryBuilder(unittest.TestCase):
 
     def test_values_at_border_return_border(self):
         for id in [1, 5, 6]:
-            values_for_id = map(lambda (i, v, g): v, filter(lambda (i, v, g): i == id, tuples))
+            values_for_id = [i_v_g3[1] for i_v_g3 in [i_v_g1 for i_v_g1 in tuples if i_v_g1[0] == id]]
             maxval = max(values_for_id)
             minval = min(values_for_id)
             last_before_min = self.lin.get_Tvalue_before(id, minval)

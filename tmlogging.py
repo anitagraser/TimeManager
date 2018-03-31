@@ -5,15 +5,26 @@
 Logging utilities to log messages in QGIS with
 a separate tab just for Time Manager
 """
+from __future__ import absolute_import
+from builtins import str
 
 __author__ = 'carolinux'
 
-from qgis._core import QgsMessageLog
+from qgis.core import QgsMessageLog
 
-import conf
+from . import conf
+
+try:
+    from qgis.core import Qgis
+except ImportError:
+    from qgis.core import QGis as Qgis
+
 
 def info(msg):  # pragma: no cover
-    QgsMessageLog.logMessage(str(msg), conf.LOG_TAG, QgsMessageLog.INFO)
+    if hasattr(Qgis, "Info"):
+        QgsMessageLog.logMessage(str(msg), conf.LOG_TAG, Qgis.Info)
+    else:
+        QgsMessageLog.logMessage(str(msg), conf.LOG_TAG, QgsMessageLog.INFO)
 
 
 def warn(msg):  # pragma: no cover
@@ -21,14 +32,17 @@ def warn(msg):  # pragma: no cover
 
 
 def error(msg):  # pragma: no cover
-    QgsMessageLog.logMessage(str(msg), conf.LOG_TAG, QgsMessageLog.CRITICAL)
+    if hasattr(Qgis, "Critical"):
+        QgsMessageLog.logMessage(str(msg), conf.LOG_TAG, Qgis.Critical)
+    else:
+        QgsMessageLog.logMessage(str(msg), conf.LOG_TAG, QgsMessageLog.CRITICAL)
 
 
 def log_exceptions(func):  # pragma: no cover
     def log_after(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except Exception, e:
+        except Exception as e:
             error("Exception in function {}:{}".format(str(func), str(e)))
             return
 
@@ -41,7 +55,7 @@ def debug_on_exceptions(func):  # pragma: no cover
     def debug_after(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except Exception, e:
+        except Exception as e:
             from PyQt4.QtCore import pyqtRemoveInputHook
 
             pyqtRemoveInputHook()

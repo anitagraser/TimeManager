@@ -1,16 +1,15 @@
+from __future__ import absolute_import
 import sip
 
 sip.setapi('QString', 2)  # strange things happen without this. Must import before PyQt imports
 # if using ipython: do this on bash before
 # export QT_API=pyqt
-from qgis.core import *
+from qgis.core import QgsDataSourceURI, QgsVectorLayer
 
-from datetime import datetime, timedelta
+from datetime import datetime
 import unittest
-from test_functionality import TestForLayersWithOnePointPerSecond
+from .test_functionality import TestForLayersWithOnePointPerSecond
 import TimeManager.time_util as time_util
-import TimeManager.timevectorlayer as timevectorlayer
-import TimeManager.timelayer as timelayer
 import TimeManager.qgis_utils as qgis_utils
 
 from nose.tools import raises
@@ -81,9 +80,8 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
             cls.conn.cursor().execute(TZ_STATEMENT)
             cls.conn.cursor().execute(SQL_STATEMENT)
             cls.conn.commit()
-        except Exception, e:
-            raise Exception(e)
-
+        except Exception as e:
+            raise Exception(str(e))
 
     @classmethod
     def tearDownClass(cls):
@@ -125,7 +123,7 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
         #                 CUSTOM_FORMAT_DMY)
 
     def test_date(self): # postgresql timestamp format
-        self._test_layer(self.layer, DATE_COL, 
+        self._test_layer(self.layer, DATE_COL,
                          time_util.DateTypes.DatesAsQDateTimes,
                          time_util.OGR_DATETIME_FORMAT)
         self.assertNotIn("character", self.layer.subsetString()) # assert that it uses the optimized format

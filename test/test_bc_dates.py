@@ -1,3 +1,4 @@
+from __future__ import print_function
 __author__ = 'carolinux'
 
 import unittest
@@ -73,7 +74,8 @@ class TestBCDates(unittest.TestCase):
 
     def test_bc_date_conversions_epoch(self):
         for datestr in self.bc_dates:
-            print datestr
+            # fix_print_with_import
+            print(datestr)
             dt = time_util.str_to_datetime(datestr)
             epoch = time_util.datetime_to_epoch(dt)
             dt2 = time_util.epoch_to_datetime(epoch)

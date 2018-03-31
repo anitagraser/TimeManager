@@ -1,3 +1,5 @@
+from future import standard_library
+standard_library.install_aliases()
 # -*- coding: utf-8 -*-
 
 from datetime import timedelta
@@ -20,8 +22,8 @@ class WMSTRasterLayer(TimeRasterLayer):
         self.originalUri = self.layer.dataProvider().dataSourceUri()
         try:
             self.getTimeExtents()
-        except NotATimeAttributeError, e:
-            raise InvalidTimeLayerError(e)
+        except NotATimeAttributeError as e:
+            raise InvalidTimeLayerError(str(e))
 
     def _get_wmts_layer_name():
         return self.layer.subLayers(0)
@@ -30,9 +32,9 @@ class WMSTRasterLayer(TimeRasterLayer):
         # TODO get url from original uri
         url = "http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r-t.cgi?&SERVICE=WMS&REQUEST=GetCapabilities"
         # TODO get extents from the xml somehow
-        import urllib2
+        import urllib.request, urllib.error, urllib.parse
 
-        raw_xml = urllib2.urlopen(url).read()
+        raw_xml = urllib.request.urlopen(url).read()
         name = self._get_wmts_layer_name()
         return None, None
 

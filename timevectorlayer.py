@@ -4,19 +4,20 @@ Created on Thu Mar 22 17:28:19 2012
 
 @author: Anita
 """
+from __future__ import absolute_import
+from builtins import str
 
 import traceback
 from datetime import timedelta
-from PyQt4 import QtCore
-#from PyQt4.QtGui import QMessageBox
+from qgis.PyQt.QtCore import QCoreApplication, QDate, QDateTime
 
-from timelayer import TimeLayer, InvalidTimeLayerError
-from tmlogging import info, warn, error, log_exceptions
+from .timelayer import TimeLayer, InvalidTimeLayerError
+from .tmlogging import info, warn, error
 
-import conf
-import time_util
-import layer_settings 
-import query_builder
+from . import conf
+from . import time_util
+from . import layer_settings
+from . import query_builder
 
 POSTGRES_TYPE = 'PostgreSQL database with PostGIS extension'
 DELIMITED_TEXT_TYPE = 'Delimited text file'
@@ -33,6 +34,7 @@ def isNull(val):
 
 
 class TimeVectorLayer(TimeLayer):
+
     def __init__(self, settings, iface=None):
         TimeLayer.__init__(self, settings.layer, settings.isEnabled)
 
@@ -42,14 +44,18 @@ class TimeVectorLayer(TimeLayer):
             self.minValue, self.maxValue = None, None
             self.fromTimeAttribute = settings.startTimeAttribute
             self.toTimeAttribute = settings.endTimeAttribute if settings.endTimeAttribute != "" \
-                                                             else self.fromTimeAttribute
+                else self.fromTimeAttribute
             self.accumulate = settings.accumulate
+            self.resetsss = settings.resetSubsetString
             self.originalSubsetString = settings.subsetStr
             self.currSubsetString = self.originalSubsetString
-            self.setSubsetString(self.originalSubsetString)
+            if self.resetsss:
+                self.setSubsetString("")
+            else:
+                self.setSubsetString(self.originalSubsetString)
             self.geometriesCount = settings.geometriesCount
             self.type = time_util.DateTypes.determine_type(self.getRawMinValue())
-            if self.type not in time_util.DateTypes.QDateTypes:  
+            if self.type not in time_util.DateTypes.QDateTypes:
                 # call to throw an exception early if no format can be found
                 self.findValidValues(self.fromTimeAttribute, settings.timeFormat)
                 if self.fromTimeAttribute != self.toTimeAttribute:
@@ -61,19 +67,31 @@ class TimeVectorLayer(TimeLayer):
                 tf2 = self.determine_format(self.getRawMaxValue(), settings.timeFormat)
                 if self.type != type2 or self.timeFormat != tf2:
                     raise InvalidTimeLayerError(
-                        "Invalid time layer: To and From attributes must have "
-                        "exact same format")
+                        QCoreApplication.translate(
+                            'TimeManager',
+                            "Invalid time layer: To and From attributes must have "
+                            "exact same format"
+                        )
+                    )
 
             self.offset = int(settings.offset)
             assert (self.timeFormat != time_util.PENDING)
             extents = self.getTimeExtents()
             info("Layer extents" + str(extents))
-        except ValueError:
+            if self.resetsss:
+                self.setSubsetString(self.originalSubsetString)
+        except ValueError as e:
             # ValueErrors appear for virtual layers, see https://github.com/anitagraser/TimeManager/issues/219
-            raise InvalidTimeLayerError('This layer type is currently not supported.')
-        except Exception, e:
             error(traceback.format_exc(e))
-            raise InvalidTimeLayerError(e)
+            raise InvalidTimeLayerError(
+                QCoreApplication.translate(
+                    'TimeManager',
+                    'This layer type is currently not supported. Cause:{}'
+                ).format(str(e))
+            )
+        except Exception as e:
+            error(traceback.format_exc(e))
+            raise InvalidTimeLayerError(str(e))
 
     def getOriginalSubsetString(self):
         return self.originalSubsetString
@@ -103,13 +121,11 @@ class TimeVectorLayer(TimeLayer):
         Return the raw minimum value. May not be the expected minimum value semantically if we
         have dates that are saved as strings because of lexicographic comparisons
         """
-        fromTimeAttributeIndex = self.getProvider().fieldNameIndex(self.fromTimeAttribute)
+        fromTimeAttributeIndex = self.getProvider().fields().indexFromName(self.fromTimeAttribute)
         minValue = self.getProvider().minimumValue(fromTimeAttributeIndex)
-        # if we are unlucky and have some null data we need to sort through the values
-        if isNull(minValue):  
-            values = self.getProvider().uniqueValues(fromTimeAttributeIndex)
-            minValue = min(filter(lambda x: not isNull(x), values ))
-        # info("Min value:"+str(minValue)+str(isNull(minValue)))
+        if isNull(minValue):
+            values = [x for x in self.getProvider().uniqueValues(fromTimeAttributeIndex) if not isNull(x)]
+            minValue = min(values) if values else None
         return minValue
 
     def getRawMaxValue(self):
@@ -117,17 +133,17 @@ class TimeVectorLayer(TimeLayer):
         Return the raw maximum value. May not be the expected minimum value semantically if we
         have dates that are saved as strings because of lexicographic comparisons
         """
-        toTimeAttributeIndex = self.getProvider().fieldNameIndex(self.toTimeAttribute)
+        toTimeAttributeIndex = self.getProvider().fields().indexFromName(self.toTimeAttribute)
         maxValue = self.getProvider().maximumValue(toTimeAttributeIndex)
         if isNull(maxValue):
-            values = self.getProvider().uniqueValues(toTimeAttributeIndex)
-            maxValue = max(filter(lambda x: not isNull(x), values ))
+            values = [x for x in self.getProvider().uniqueValues(toTimeAttributeIndex) if not isNull(x)]
+            maxValue = max(values) if values else None
         return maxValue
 
     def getUniques(self, fieldName):
         """Return unique values in given field"""
         provider = self.getProvider()
-        idx = provider.fieldNameIndex(fieldName)
+        idx = provider.fields().indexFromName(fieldName)
         return provider.uniqueValues(idx)
 
     def getMinMaxValues(self):
@@ -137,7 +153,7 @@ class TimeVectorLayer(TimeLayer):
             if self.getDateType() == time_util.DateTypes.IntegerTimestamps:
                 self.minValue = self.getRawMinValue()
                 self.maxValue = self.getRawMaxValue()
-            else: # strings or qdate(time) values
+            else:  # strings or qdate(time) values
                 # need to find min max by looking at all the unique values
                 # because QGIS doesn't get sorting right
                 uniques = self.getUniques(self.fromTimeAttribute)
@@ -149,16 +165,20 @@ class TimeVectorLayer(TimeLayer):
                             dt = time_util.timeval_to_datetime(val, fmt)
                             res.append(dt)
                             # info("{} converted to {}".format(val, dt))
-                        except Exception, e:
-                            warn("Unparseable value {} in layer {} ignored. Cause {}".format(val,self.layer.name(),e))
-                            pass
+                        except Exception as e:
+                            error(traceback.format_exc(e))
+                            warn(QCoreApplication.translate('TimeManager', "Unparseable value {0} in layer {1} ignored. Cause {2}").format(val, self.layer.name(), e))
                     return res
 
                 unique_vals = vals_to_dt(uniques, fmt)
                 if len(unique_vals) == 0:
-                    raise Exception("Could not parse any dates while trying to get time extents." +
-                                    "None of the values (for example {}) matches the format {}"
-                                    .format(uniques[-1], fmt))
+                    raise Exception(
+                        QCoreApplication.translate(
+                            'TimeManager',
+                            "Could not parse any dates while trying to get time extents."
+                            "None of the values (for example {0}) matches the format {1}"
+                        ).format(uniques[-1], fmt)
+                    )
                 minValue = time_util.datetime_to_str(min(unique_vals), fmt)
                 if self.fromTimeAttribute == self.toTimeAttribute:
                     maxValue = time_util.datetime_to_str(max(unique_vals), fmt)
@@ -167,7 +187,7 @@ class TimeVectorLayer(TimeLayer):
                     unique_vals = vals_to_dt(unique_vals, fmt)
                     maxValue = time_util.datetime_to_str(max(unique_vals), fmt)
 
-                if type(minValue) in [QtCore.QDate, QtCore.QDateTime]:
+                if type(minValue) in [QDate, QDateTime]:
                     minValue = time_util.datetime_to_str(time_util.QDateTime_to_datetime(minValue), fmt)
                     maxValue = time_util.datetime_to_str(time_util.QDateTime_to_datetime(maxValue), fmt)
                 self.minValue = minValue
@@ -199,6 +219,9 @@ class TimeVectorLayer(TimeLayer):
     def accumulateFeatures(self):
         return self.accumulate
 
+    def resetSubsetString(self):
+        return self.resetsss
+
     def findValidValues(self, fieldName, fmt):
         uniques = self.getUniques(fieldName)
         at_least_one_valid = False
@@ -208,7 +231,8 @@ class TimeVectorLayer(TimeLayer):
                 time_util.str_to_datetime(v, fmt)
                 at_least_one_valid = True
                 break
-            except Exception, e:
+            except Exception as e:
+                error(traceback.format_exc(e))
                 last_exc = e
                 continue
         if not at_least_one_valid:
@@ -231,9 +255,9 @@ class TimeVectorLayer(TimeLayer):
         # OGR
         if dateType in time_util.DateTypes.QDateTypes:
             idioms_to_try = [query_builder.QueryIdioms.OGR]
-        # Postgres 
+        # Postgres
         # use optimized query format for postgres + (timestamp|date) columns
-        if self.layer.dataProvider().storageType()==POSTGRES_TYPE and dateType in time_util.DateTypes.QDateTypes:
+        if self.layer.dataProvider().storageType() == POSTGRES_TYPE and dateType in time_util.DateTypes.QDateTypes:
             idioms_to_try = [query_builder.QueryIdioms.SQL]
 
         tried = []
@@ -242,22 +266,23 @@ class TimeVectorLayer(TimeLayer):
             subsetString = query_builder.build_query(
                 startTime, endTime, self.fromTimeAttribute, self.toTimeAttribute, date_type=dateType,
                 date_format=self.getTimeFormat(), query_idiom=idiom, acc=self.accumulateFeatures()
-                )
+            )
             try:
                 self.setSubsetString(subsetString)
             except SubstringException:
+                error(traceback.format_exc(e))
                 tried.append(subsetString)
                 # try the other one
                 # not sure if trying several idioms could make the screen flash
                 continue
-            # info("Subsetstring:"+subsetString)
             return
 
         raise SubstringException(
             "Could not update subset string for layer {}. Tried: {}".format(self.layer.name(), tried))
 
     def setSubsetString(self, subsetString):
-        if self.originalSubsetString != '':
+        # info("setSubsetString:{}".format(subsetString))
+        if self.originalSubsetString != '' and not self.resetsss:
             subsetString = "{} AND {}".format(self.originalSubsetString, subsetString)
         success = self.layer.setSubsetString(subsetString)
         if not success:
@@ -279,10 +304,14 @@ class TimeVectorLayer(TimeLayer):
     def getSaveString(self):
         """Get string to save in project file"""
         settings = layer_settings.getSettingsFromLayer(self)
-        res = conf.SAVE_DELIMITER.join([settings.layerId, settings.subsetStr,
-                                   settings.startTimeAttribute, settings.endTimeAttribute,
-                                   str(settings.isEnabled), settings.timeFormat,
-                                   str(settings.offset), settings.idAttribute,
-                                   str(settings.interpolationEnabled), settings.interpolationMode,
-                                   str(settings.geometriesCount), str(settings.accumulate)])
+        res = conf.SAVE_DELIMITER.join([
+            settings.layerId, settings.subsetStr,
+            settings.startTimeAttribute, settings.endTimeAttribute,
+            str(settings.isEnabled), settings.timeFormat,
+            str(settings.offset), settings.idAttribute,
+            str(settings.interpolationEnabled), settings.interpolationMode,
+            str(settings.geometriesCount),
+            str(settings.accumulate),
+            str(settings.resetSubsetString)
+        ])
         return res
