@@ -7,7 +7,10 @@ qgisMinimumVersion=3.0
 qgisMaximumVersion=4.0
 author=Anita Graser, Karolina Alexiou (aka carolinux)
 email=anitagraser@gmx.at, carolinegr@gmail.com
-changelog=3.0 Port to QGIS 3
+changelog=3.0.1
+    - Fixed #250: issue restoring plugin settings
+    3.0 
+    - Port to QGIS 3
     2.5
     - Fixed #245: updated help.htm
     - Fixed #240: now hiding unmanageable WFS layers
