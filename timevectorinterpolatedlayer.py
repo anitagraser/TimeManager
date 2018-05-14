@@ -73,9 +73,20 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             self.fromTimeAttributeIndex = provider.fields().indexFromName(self.fromTimeAttribute)
             self.toTimeAttributeIndex = provider.fields().indexFromName(self.toTimeAttribute)
 
+            info("ID Attriute set to `{}`".format(self.idAttribute))
+
             if self.hasIdAttribute():
                 self.idAttributeIndex = provider.fields().indexFromName(self.idAttribute)
                 self.uniqueIdValues = set(provider.uniqueValues(self.idAttributeIndex))
+
+                # Add the field used for interpolation to the new layer
+                attributeField = provider.fields().field(self.idAttributeIndex)
+                res = self.memLayer.dataProvider().addAttributes([attributeField])
+                assert (res)
+                self.memLayer.updateFields()
+
+                info("Added the attribute {}".format(self.idAttributeIndex))
+
             else:
                 self.uniqueIdValues = set([conf.DEFAULT_ID])
 
@@ -106,8 +117,8 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
         idsInFrame = set()
         features = self.layer.getFeatures(QgsFeatureRequest())
         for feat in features:
-            id = conf.DEFAULT_ID if not self.hasIdAttribute() else feat[self.idAttributeIndex]
-            idsInFrame.add(id)
+            ident = conf.DEFAULT_ID if not self.hasIdAttribute() else feat[self.idAttributeIndex]
+            idsInFrame.add(ident)
 
         idsNotInFrame = self.uniqueIdValues - idsInFrame
         if len(idsNotInFrame) == 0:
@@ -115,10 +126,10 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             return []
 
         pts = []
-        for id in idsNotInFrame:
-            pt = self.fromInterpolator.getInterpolatedValue(id, start_epoch, end_epoch)
+        for ident in idsNotInFrame:
+            pt = self.fromInterpolator.getInterpolatedValue(ident, start_epoch, end_epoch)
             if pt is not None:
-                pts.append(QgsPoint(*pt))
+                pts.append((ident, QgsPoint(*pt)))
         # 3. return  points list
         return pts
 
@@ -142,11 +153,16 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
         # Add the geometries as features
         self._clearMemoryLayer()
 
+        if self.hasIdAttribute():
+            idAttributeIndex = self.memLayer.dataProvider().fields().indexFromName(self.idAttribute)
+
         features = []
-        for i, geom in enumerate(geoms):
+        for i, (ident, geom) in enumerate(geoms):
             feature = QgsFeature(id=start_epoch + i)
+            if self.hasIdAttribute():
+                feature.initAttributes(1)
+                feature.setAttribute(idAttributeIndex, ident)
             feature.setGeometry(QgsGeometry.fromQPointF(geom.toQPointF()))
-            # feature.setAttributes([start_epoch+i])
             features.append(feature)  # if no attributes, it will fail
             self.n = self.n + 1
 
