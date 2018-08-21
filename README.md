@@ -24,6 +24,9 @@ Time Manager filters your datasets and displays only features with timestamps in
 * %Y-%m-%d %H:%M:%S
 * %Y-%m-%d %H:%M
 * %Y-%m-%dT%H:%M:%S
+* %Y-%m-%dT%H:%M:%SZ
+* %Y-%m-%dT%H:%M
+* %Y-%m-%dT%H:%MZ
 * %Y-%m-%d
 * %Y/%m/%d %H:%M:%S.%f
 * %Y/%m/%d %H:%M:%S
@@ -35,6 +38,7 @@ Time Manager filters your datasets and displays only features with timestamps in
 * %Y.%m.%d %H:%M:%S
 * %Y.%m.%d %H:%M
 * %Y.%m.%d
+* %Y%m%d%H%M%SED
 
 Other formats can be added by appending to the YMD_SUPPORTED_FORMATS  list in `time_util.py` a format that puts the day, the month and the year in this order. Variants that put the month or date first will be then generated automatically. We currently do not support formats that would put the minutes or seconds before the hour. Please note that the %f directive is not supported in all operating systems, because of underlying library limitations.
 
