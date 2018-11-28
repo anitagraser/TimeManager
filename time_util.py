@@ -245,17 +245,13 @@ def epoch_to_datetime(seconds_from_epoch):
 
 
 def datetime_to_str(dt, fmt):
-    """ strftime has a bug for years<1900, so fixing it as well as we can """
     if is_archaelogical():
         return str(dt)
     if "%" not in fmt:
         raise Exception(
             "{} does not look like a time format for val {} of type {}".format(fmt, dt, type(dt)))
-    if dt.year >= 1900:
-        return datetime.strftime(dt, fmt)
-    else:
-        return _fixed_strftime(dt, fmt)
-
+    return datetime.strftime(dt, fmt)
+    
 
 def epoch_to_str(seconds_from_epoch, fmt):
     return datetime_to_str(epoch_to_datetime(seconds_from_epoch), fmt)
@@ -289,35 +285,6 @@ def _findall(text, substr):
         sites.append(j)
         i = j + 1
     return sites
-
-
-def _fixed_strftime(dt, fmt):
-    illegal_formatting = _illegal_formatting.search(fmt)
-    if illegal_formatting:
-        raise TypeError(
-            "strftime of dates before 1900 does not handle" + illegal_formatting.group(0))
-    year = dt.year
-    # For every non-leap year century, advance by
-    # 6 years to get into the 28-year repeat cycle
-    delta = 2000 - year
-    off = 6 * (delta // 100 + delta // 400)
-    year = year + off
-    # Move to around the year 2000
-    year = year + ((2000 - year) // 28) * 28
-    timetuple = dt.timetuple()
-    s1 = time.strftime(fmt, (year,) + timetuple[1:])
-    sites1 = _findall(s1, str(year))
-    s2 = time.strftime(fmt, (year + 28,) + timetuple[1:])
-    sites2 = _findall(s2, str(year + 28))
-    sites = []
-    for site in sites1:
-        if site in sites2:
-            sites.append(site)
-    s = s1
-    syear = "%04d" % (dt.year,)
-    for site in sites:
-        s = s[:site] + syear + s[site + 4:]
-    return s
 
 
 def get_format_of_timeval(datetimeValue):
