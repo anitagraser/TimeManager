@@ -1,53 +1,16 @@
 language: python
-dist: trusty
-sudo: true
 
 python:
-        - "3.5"
+      - 3.5
+
+services:
+      - docker
 
 addons:
-  postgresql: "9.5"
   apt:
-    packages:
-      - postgresql-9.5-postgis-2.3
-      - pyqt5-dev-tools
+      packages:
+        - pyqt5-dev-tools
 
 
-before_install:
-        - sudo apt-get -qq -y update
-        - psql -c 'create database mydb;' -U postgres
-        - psql -U postgres -c "create extension postgis"
-
-install:
-        - sudo rm -rf /etc/apt/sources.list.d/*gis*list # work around for qgis/postgis package problems on travis
-        - echo "deb http://qgis.org/debian $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list
-        - echo "deb-src http://qgis.org/debian $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list
-        - gpg --keyserver keyserver.ubuntu.com --recv-key 073D307A618E5811
-        - gpg --export --armor 073D307A618E5811 | sudo apt-key add -
-        - sudo apt-get update
-        - sudo apt-get install qgis --force-yes
-        - sudo apt-get install python-qgis
-        - sudo apt-get install vnc4server # to mock an X Server
-        - pip install pep8==1.4.6
-        - pip install mock
-        - pip install nose
-        - pip install coverage
-        - pip install coveralls
-        - pip install psycopg2
-
-before_script:
-        - echo -e "p4ssw0rd\np4ssw0rd\n" | vncserver -geometry 1024x768 :99
-        - export DISPLAY=:99.0
-        - psql -U postgres  mydb -c "create extension postgis"
-        - psql -U postgres -c "ALTER USER postgres WITH PASSWORD 'postgres'"; 
-        - export QGIS_PREFIX_PATH=/usr
-        - export PYTHONPATH=${QGIS_PREFIX_PATH}/share/qgis/python/:${QGIS_PREFIX_PATH}/share/qgis/python/plugins:`pwd`/qfieldsync:${PYTHONPATH}
-        - echo "PYTHONPATH:" ${PYTHONPATH}
-        - export LD_LIBRARY_PATH=${QGIS_PREFIX_PATH}/lib
-        
 script:
-        - bash run_tests.sh # this runs tests with coverage
-        #- sh pep8.sh # run pep8 on the python code
-
-after_success:
-    coveralls
+    -  docker-compose -f docker/docker-compose.travis.yml run qgis bash docker/run_tests.sh
