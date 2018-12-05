@@ -11,6 +11,8 @@ addons:
       packages:
         - pyqt5-dev-tools
 
+env:
+    - QGIS_TEST_VERSION="latest"
 
 script:
     -  docker-compose -f docker/docker-compose.travis.yml run qgis bash docker/run_tests.sh
