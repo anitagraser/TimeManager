@@ -1,0 +1,6 @@
+pep8==1.4.6
+mock
+nose
+coverage
+coveralls
+psycopg2
