@@ -3,16 +3,15 @@ dist: trusty
 sudo: true
 
 python:
-        - "3"
+        - "3.5"
 
 addons:
   postgresql: "9.5"
   apt:
     packages:
       - postgresql-9.5-postgis-2.3
+      - pyqt5-dev-tools
 
-virtualenv:
-      system_site_packages: true
 
 before_install:
         - sudo apt-get -qq -y update
@@ -26,7 +25,6 @@ install:
         - gpg --keyserver keyserver.ubuntu.com --recv-key 073D307A618E5811
         - gpg --export --armor 073D307A618E5811 | sudo apt-key add -
         - sudo apt-get update
-        - sudo apt-get install python-qt4 pyqt4-dev-tools
         - sudo apt-get install qgis --force-yes
         - sudo apt-get install python-qgis
         - sudo apt-get install vnc4server # to mock an X Server
