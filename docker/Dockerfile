@@ -9,4 +9,7 @@ RUN apt-get update \
 
 ENV LANG=C.UTF-8
 
+COPY ./docker/dev-requirements.txt /tmp/
+RUN pip3 install -r /tmp/dev-requirements.txt
+
 WORKDIR /
