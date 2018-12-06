@@ -4,7 +4,7 @@ import sip
 sip.setapi('QString', 2)  # strange things happen without this. Must import before PyQt imports
 # if using ipython: do this on bash before
 # export QT_API=pyqt
-from qgis.core import QgsDataSourceURI, QgsVectorLayer
+from qgis.core import QgsDataSourceUri, QgsVectorLayer
 
 from datetime import datetime
 import unittest
@@ -16,7 +16,7 @@ from nose.tools import raises
 
 import psycopg2
 
-DBNAME = "mydb"
+DBNAME = "gis"
 TABLE = "pts"
 
 GEOMETRY_COL = "geom"
@@ -75,8 +75,8 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
     def setUpClass(cls):
         super(TestPostgreSQL, cls).setUpClass()
         try:
-            cls.conn = psycopg2.connect("dbname='mydb' user='postgres' host='localhost' "
-                                        "password='postgres'")
+            cls.conn = psycopg2.connect("dbname='gis' user='docker' host='postgres' "
+                                        "password='docker'")
             cls.conn.cursor().execute(TZ_STATEMENT)
             cls.conn.cursor().execute(SQL_STATEMENT)
             cls.conn.commit()
@@ -94,7 +94,7 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
 
     def setUp(self):
         super(TestPostgreSQL, self).setUp()
-        uri = QgsDataSourceURI()
+        uri = QgsDataSourceUri()
         uri.setConnection('localhost', '5432', DBNAME, "postgres", "postgres")
         uri.setDataSource('public', TABLE, GEOMETRY_COL, '')
         self.layer = QgsVectorLayer(uri.uri(), TABLE, 'postgres')

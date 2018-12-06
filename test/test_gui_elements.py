@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from unittest import skip
 
 from mock import Mock
-from qgis.PyQt.QtWidgets import QApplication
+from qgis.PyQt.QtWidgets import QApplication, QWidget
 from qgis.PyQt.QtCore import QDateTime, QTranslator
 
 import TimeManager.timemanagerguicontrol as guicontrol
@@ -121,9 +121,9 @@ class testGuiControl(unittest.TestCase):
         self.assertEqual(gui.dock.horizontalTimeSlider.value(), time_offset.total_seconds())
 
 
-class TestApp(QtGui.QWidget):
+class TestApp(QWidget):
     def __init__(self):
-        QtGui.QWidget.__init__(self)
+        QWidget.__init__(self)
         iface = Mock()
         model = Mock()
         self.gui = guicontrol.TimeManagerGuiControl(iface, model)

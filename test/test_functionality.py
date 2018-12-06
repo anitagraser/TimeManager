@@ -107,7 +107,8 @@ class TestWithQGISLauncher(unittest.TestCase):
 
         prefix = os_util.get_possible_prefix_path() if PREFIX_PATH is None else PREFIX_PATH
 
-        self.qgs = QgsApplication(sys.argv, False)
+        args = [arg.encode('utf-8') for arg in sys.argv]
+        self.qgs = QgsApplication(args, False)
         self.qgs.setPrefixPath(prefix, True)
         self.qgs.initQgis()
 

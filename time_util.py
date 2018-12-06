@@ -5,8 +5,6 @@ from __future__ import absolute_import
 from builtins import str
 from builtins import range
 from builtins import object
-from builtins import unicode
-from builtins import basestring
 
 __author__ = "Karolina Alexiou"
 __email__ = "karolina.alexiou@teralytics.ch"
@@ -205,7 +203,7 @@ def timeval_to_epoch(val, fmt):
         except Exception:
             if type(val) in [QDate, QDateTime]:
                 val = QDateTime_to_datetime(val)
-            if type(val) in [unicode, basestring, str]:
+            if type(val) == str:
                 val = str_to_datetime(val, fmt)
             return datetime_to_epoch(val)
 
