@@ -333,7 +333,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
 
     def getArchaelogicalLayer(self):
         testfile_dir = testcfg.TEST_DATA_DIR
-        fn = os.path.join(testfile_dir, "archaelogical2.txt")
+        fn = os.path.abspath(os.path.join(testfile_dir, "archaelogical2.txt"))
         uri = "file:///{}?&delimiter=,&xField={}&yField={}&spatialIndex=no&subsetIndex=no&watchFile=no" \
               "".format(fn, "lon", "lat")
         layer = QgsVectorLayer(uri, "ancient_points", 'delimitedtext')
