@@ -149,7 +149,7 @@ class VectorLayerDialog(AddLayerDialog):
         self.dialog.show()
 
     def maybeEnableIDBox(self, interpolation_mode):
-        if interpolation_mode > 0: #conf.INTERPOLATION_MODES.get(interpolation_mode, False):
+        if conf.INTERPOLATION_MODES.get(interpolation_mode, False) == True:
             self.dialog.comboBoxID.setEnabled(True)
             self.dialog.labelID1.setEnabled(True)
             self.dialog.labelID2.setEnabled(True)
