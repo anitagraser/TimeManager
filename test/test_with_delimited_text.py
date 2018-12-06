@@ -52,7 +52,7 @@ class TestDelimitedText(TestForLayersWithOnePointPerSecond):
             f.write(TEXT)
         # Very good info on creating layers programmatically from the official docs
         # http://docs.qgis.org/testing/en/docs/pyqgis_developer_cookbook/loadlayer.html
-        uri = "{}?type=csv&xField={}&yField={}&spatialIndex=no&subsetIndex=no&watchFile=no" \
+        uri = "file:///{}?&delimiter=,&xField={}&yField={}&spatialIndex=no&subsetIndex=no&watchFile=no" \
               "".format(self.file.name, LON_COL, LAT_COL)
         self.layer = QgsVectorLayer(uri, "jumping_points", 'delimitedtext')
         self.assertTrue(self.layer.isValid())
