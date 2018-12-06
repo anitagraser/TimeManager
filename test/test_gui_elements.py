@@ -37,7 +37,7 @@ class testGuiControl(unittest.TestCase):
         settingsText = gui.dock.pushButtonOptions.text()
         self.assertEqual(settingsText, "Settings")
         for lang, expected_translation in zip(["de", "pl"], ["Einrichten", "Ustawienia"]):
-            path = os.path.join("i18n", "timemanager_{}.qm".format(lang))
+            path = os.path.join("TimeManager", "i18n", "timemanager_{}.qm".format(lang))
             translator = QTranslator()
             translator.load(path)
             translation = translator.translate(gui.dock.objectName(), settingsText)
@@ -80,16 +80,6 @@ class testGuiControl(unittest.TestCase):
         guicontrol.QgsMapLayerRegistry = Mock()
         gui.showOptionsDialog([], 100)
         self.assertEquals(gui.optionsDialog.spinBoxFrameLength.value(), 100)
-
-    def test_slider_changed(self):
-        gui = self.window.getGui()
-        signal_mock = Mock()
-        gui.signalSliderTimeChanged = signal_mock
-        pct = 0.1
-        gui.currentTimeChangedSlider(pct)
-        # assert that the signal was called with the correct datetime
-        signal_mock.emit.assert_called_with(pct * (conf.MAX_TIMESLIDER_DEFAULT -
-                                                   conf.MIN_TIMESLIDER_DEFAULT))
 
     def test_datetime_textbox_changed(self):
         gui = self.window.getGui()
