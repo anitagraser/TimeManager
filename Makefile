@@ -8,6 +8,10 @@ all:
 
 zip: $(PACKAGE)-$(VERSION).zip
 
+.PHONY: test
+test:
+	sh docker/run_tests_local.sh
+
 $(PACKAGE)-$(VERSION).zip:
 	git archive --format=zip --prefix=$(PACKAGE)/ HEAD >$(PACKAGE)-$(VERSION).zip
 

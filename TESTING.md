@@ -6,6 +6,8 @@ Before pushing your local commits to github, run the tests locally, from the top
 
 ```
 sh docker/run_tests_local.sh
+# or
+make test
 ```
 
 
