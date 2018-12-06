@@ -45,7 +45,7 @@ class TestInterpolatedLayer(TestWithQGISLauncher):
         self.file = tempfile.NamedTemporaryFile(mode="r", delete=False)
         with open(self.file.name, 'w') as f:
             f.write(MULTIPLE_POINTS)
-        uri = "{}?type=csv&xField={}&yField={}&spatialIndex=no&subsetIndex=no&watchFile=no" \
+        uri = "file:///{}?type=csv&xField={}&yField={}&spatialIndex=no&subsetIndex=no&watchFile=no" \
               "".format(self.file.name, LON, LAT)
         self.layer = QgsVectorLayer(uri, "crossing_points", 'delimitedtext')
         self.assertTrue(self.layer.isValid())
