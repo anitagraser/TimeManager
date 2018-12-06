@@ -31,9 +31,9 @@ class TestTimeUtil(unittest.TestCase):
         assert (dt == datetime.utcfromtimestamp(int(val)))
 
     def test_datetime_to_str_before_1900_works(self):
-        dtstr = "01/12/0100"
+        dtstr = "01/12/100"
         fmt = "%d/%m/%Y"
-        dt = datetime.strptime(dtstr, fmt)
+        dt = datetime(100, 12, 1, 0, 0, 0)
         assert (time_util.datetime_to_str(dt, fmt) == dtstr)
 
     def test_str_with_microseconds_returns_float(self):
