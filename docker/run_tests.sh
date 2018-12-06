@@ -1,6 +1,6 @@
 #!/bin/bash
-cd /usr/src/
-find -name '*.pyc' -delete
-nosetests --cover-package=TimeManager 
+cd /usr
+cp -r src TimeManager
+xvfb-run nosetests TimeManager --cover-package=TimeManager 
 rc=$?
 exit $rc
