@@ -95,7 +95,7 @@ class TestPostgreSQL(TestForLayersWithOnePointPerSecond):
     def setUp(self):
         super(TestPostgreSQL, self).setUp()
         uri = QgsDataSourceUri()
-        uri.setConnection('localhost', '5432', DBNAME, "postgres", "postgres")
+        uri.setConnection('postgres', '5432', 'gis', 'docker', 'docker')
         uri.setDataSource('public', TABLE, GEOMETRY_COL, '')
         self.layer = QgsVectorLayer(uri.uri(), TABLE, 'postgres')
         self.assertTrue(self.layer.isValid())
