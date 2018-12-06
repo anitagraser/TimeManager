@@ -257,10 +257,10 @@ def epoch_to_str(seconds_from_epoch, fmt):
 
 def datetime_to_epoch(dt):
     """ convert a datetime to seconds after (or possibly before) 1970-1-1 """
-    if not isinstance(dt, datetime):
-        raise TypeError("unexpected value '{}'".format(repr(dt)))
     if is_archaelogical():
         return bcdate_util.bcdate_to_epoch(dt)
+    if not isinstance(dt, datetime):
+        raise TypeError("unexpected value '{}'".format(repr(dt)))
     res = ((dt - datetime(1970, 1, 1)).total_seconds())
     return _cast_to_int_or_float(res)
 

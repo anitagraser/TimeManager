@@ -218,7 +218,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.ctrl.guiControl.getLabelBgColor.return_value = "#ffffff"
         self.ctrl.guiControl.getLabelPlacement.return_value = "SE"
         self.ctrl.writeSettings()
-        QgsProject.instance().write(QtCore.QFileInfo(test_file))
+        QgsProject.instance().write(test_file)
 
         # change settings
         self.tlm.stepForward()
@@ -227,7 +227,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         self.tlm.setTimeFrameType('minutes')
         self.ctrl.setLoopAnimation(False)
         # restore previous settings
-        QgsProject.instance().read(QtCore.QFileInfo(test_file))
+        QgsProject.instance().read(test_file)
         self.ctrl.readSettings()
         # check that the settings were restored properly
         self.assertEquals(self.tlm.isEnabled(), True)
@@ -246,9 +246,9 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
         if os.path.exists(test_file):
             os.remove(test_file)
         self.ctrl.writeSettings(None)
-        QgsProject.instance().write(QtCore.QFileInfo(test_file))
+        QgsProject.instance().write(test_file)
         # restore previous settings
-        QgsProject.instance().read(QtCore.QFileInfo(test_file))
+        QgsProject.instance().read(test_file)
         self.ctrl.readSettings()
         # check that the settings were restored properly
         self.assertEquals(self.tlm.isEnabled(), False)
@@ -334,7 +334,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
     def getArchaelogicalLayer(self):
         testfile_dir = testcfg.TEST_DATA_DIR
         fn = os.path.join(testfile_dir, "archaelogical2.txt")
-        uri = "{}?type=csv&xField={}&yField={}&spatialIndex=no&subsetIndex=no&watchFile=no" \
+        uri = "file:///{}?&delimiter=,&xField={}&yField={}&spatialIndex=no&subsetIndex=no&watchFile=no" \
               "".format(fn, "lon", "lat")
         layer = QgsVectorLayer(uri, "ancient_points", 'delimitedtext')
         return layer
@@ -342,6 +342,7 @@ class testTimeManagerWithoutGui(TestWithQGISLauncher):
     def test_archaeological_range_queries(self):
         try:
             layer = self.getArchaelogicalLayer()
+            self.assertTrue(layer.isValid())
             self.ctrl.setArchaeology(1)
             assert (time_util.is_archaelogical())
             settings = ls.LayerSettings()

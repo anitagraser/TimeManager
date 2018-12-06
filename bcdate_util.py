@@ -198,7 +198,7 @@ def epoch_to_bcdate(seconds_from_epoch):
         return BCDate(dt.year, dt.month, dt.day)
     else:
         seconds_bc = abs(seconds_from_epoch - YEAR_ONE_EPOCH)
-        years_bc = seconds_bc / SECONDS_IN_YEAR
+        years_bc = seconds_bc // SECONDS_IN_YEAR
         years_bc += 1  # for year 0
         return BCDate.from_str(str(years_bc).zfill(getGlobalDigitSetting()) + " BC")
 
