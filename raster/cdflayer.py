@@ -75,6 +75,7 @@ class CDFRasterLayer(TimeRasterLayer):
 
     @classmethod
     def extract_epoch_units(cls, bandName):
+        bandName = bandName.replace(': time', ' / time')
         pattern = "\s*\d+\s*\/\s*[^0-9]*(\d+)\s*[(](.+)[)]"
         matches = re.findall(pattern, bandName)[0]
         return int(matches[0]), matches[1]
