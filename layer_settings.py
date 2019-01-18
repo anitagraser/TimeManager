@@ -181,5 +181,8 @@ def getSettingsFromLayer(layer):
         result.idAttribute = ""
     result.geometriesCount = layer.geometriesCountForExport()
     result.accumulate = layer.accumulateFeatures()
-    result.resetSubsetString = layer.resetSubsetString()
+    try:
+        result.resetSubsetString = layer.resetSubsetString() # fails for raster layers
+    except:
+        pass
     return result
