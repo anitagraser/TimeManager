@@ -73,7 +73,6 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             self.fromTimeAttributeIndex = provider.fields().indexFromName(self.fromTimeAttribute)
             self.toTimeAttributeIndex = provider.fields().indexFromName(self.toTimeAttribute)
 
-            info("ID Attriute set to `{}`".format(self.idAttribute))
 
             if self.hasIdAttribute():
                 self.idAttributeIndex = provider.fields().indexFromName(self.idAttribute)
@@ -82,10 +81,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
                 # Add the field used for interpolation to the new layer
                 attributeField = provider.fields().field(self.idAttributeIndex)
                 res = self.memLayer.dataProvider().addAttributes([attributeField])
-                assert (res)
                 self.memLayer.updateFields()
-
-                info("Added the attribute {}".format(self.idAttributeIndex))
 
             else:
                 self.uniqueIdValues = set([conf.DEFAULT_ID])
