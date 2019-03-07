@@ -75,16 +75,16 @@ class CDFRasterLayer(TimeRasterLayer):
 
     @classmethod
     def extract_epoch_units(cls, bandName):
-        bandName = bandName.replace(': time', ' / time')
-        pattern = "\s*\d+\s*\/\s*[^0-9]*(\d+)\s*[(](.+)[)]"
+        # Band name expected to be like: 'Band 1: time=20116800 (minutes since 1970-01-01 00:00:00)'
+        pattern = "time=(\d+)\s*[(](.+)[)]"
         matches = re.findall(pattern, bandName)[0]
         return int(matches[0]), matches[1]
 
     @classmethod
     def extract_netcdf_time_fallback(cls, bandName):
         """Fallback when netcdftime module isn't installed"""
-        epoch,_ = cls.extract_epoch_units(bandName)
-        if "minute" in bandName.lower():
+        epoch, units = cls.extract_epoch_units(bandName)
+        if "minutes" in units or "minutes" in bandName:
             epoch = epoch * 60  # the number is originally in minutes, so need to multiply by 60
         return time_util.epoch_to_datetime(epoch)
 
