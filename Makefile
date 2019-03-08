@@ -1,9 +1,6 @@
 PACKAGE = $(shell sed -ne "s/^name=//p" metadata.txt | tr '[:upper:]' '[:lower:]')
 VERSION = $(shell sed -ne "s/^version=//p" metadata.txt)
 
-TS_FILES = $(wildcard *.py)
-UI_FILES = $(wildcard *.ui)
-
 all:
 
 zip: $(PACKAGE)-$(VERSION).zip
