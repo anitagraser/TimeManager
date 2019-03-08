@@ -9,10 +9,10 @@ from builtins import str
 
 from datetime import timedelta
 
-from .timelayer import TimeLayer, InvalidTimeLayerError, NotATimeAttributeError
+from timemanager.timelayer import TimeLayer, InvalidTimeLayerError, NotATimeAttributeError
 
-from utils import time_util
-from . import conf
+from timemanager.utils import time_util
+from timemanager import conf
 
 
 class TimeRasterLayer(TimeLayer):

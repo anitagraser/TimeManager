@@ -9,11 +9,11 @@ from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 from qgis.PyQt.QtCore import QObject, pyqtSignal
 
-from .timelayer import NotATimeAttributeError
-from utils.tmlogging import log_exceptions
+from timemanager.timelayer import NotATimeAttributeError
+from timemanager.utils.tmlogging import log_exceptions
 
-from . import conf
-from utils import qgis_utils as qgs, time_util
+from timemanager import conf
+from timemanager.utils import qgis_utils as qgs, time_util
 
 
 class TimeLayerManager(QObject):

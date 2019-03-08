@@ -16,17 +16,18 @@ try:
 except ImportError:
     pass
 
-from .timemanagerguicontrol import TimeManagerGuiControl, MAX_TIME_LENGTH_SECONDS_SLIDER
-from .timelayerfactory import TimeLayerFactory
-# from timevectorlayer import TimeVectorLayer
-from .timelayermanager import TimeLayerManager
-from .timemanagerprojecthandler import TimeManagerProjectHandler
-from .animation import animate
-from utils.tmlogging import info, warn, error, log_exceptions
+from timemanager.utils.tmlogging import info, warn, error, log_exceptions
 
-from utils import bcdate_util, time_util
-from . import conf
-from . import layer_settings
+from timemanager.utils import bcdate_util, time_util
+
+
+from timemanager.timemanagerguicontrol import TimeManagerGuiControl, MAX_TIME_LENGTH_SECONDS_SLIDER
+from timemanager.timelayerfactory import TimeLayerFactory
+from timemanager.timelayermanager import TimeLayerManager
+from timemanager.timemanagerprojecthandler import TimeManagerProjectHandler
+from timemanager.animation import animate
+
+from timemanager import conf, layer_settings
 
 
 class TimeManagerControl(QObject):

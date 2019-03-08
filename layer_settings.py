@@ -15,9 +15,9 @@ layer, the addLayerOptions gui, the widget table and the save string
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QTableWidgetItem
 
-from . import conf
-from utils import time_util
-from utils.qgis_utils import getLayerFromId
+from timemanager import conf
+from timemanager.utils import time_util
+from timemanager.utils.qgis_utils import getLayerFromId
 
 
 def textToBool(text):

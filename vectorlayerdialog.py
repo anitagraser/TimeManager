@@ -8,11 +8,10 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, QCoreApplication
 from qgis.PyQt.QtWidgets import QMessageBox, QApplication
 
-from utils.tmlogging import warn
+from timemanager.utils.tmlogging import warn
 
-from utils import qgis_utils as qgs
-from . import layer_settings
-from . import conf
+from timemanager.utils import qgis_utils as qgs
+from timemanager import layer_settings, conf
 from future.utils import with_metaclass
 
 

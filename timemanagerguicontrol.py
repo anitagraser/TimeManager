@@ -15,15 +15,15 @@ from qgis.PyQt.QtCore import QObject, QDate, QDateTime, pyqtSignal, Qt, QTimer, 
 from qgis.PyQt.QtWidgets import QDialog, QFileDialog, QShortcut, QAction, QLineEdit, QMessageBox
 from qgis.PyQt.QtGui import QKeySequence, QFont, QColor, QIcon, QTextDocument, QAbstractTextDocumentLayout
 
-from utils import qgis_utils as qgs, bcdate_util, time_util
 
-from .vectorlayerdialog import VectorLayerDialog  # , AddLayerDialog
-from .rasterlayerdialog import RasterLayerDialog
-from .timemanagerprojecthandler import TimeManagerProjectHandler
-from utils.tmlogging import warn  # , info
+from timemanager.utils import qgis_utils as qgs, bcdate_util, time_util
 
-from . import conf
-from . import layer_settings
+from timemanager.vectorlayerdialog import VectorLayerDialog  # , AddLayerDialog
+from timemanager.rasterlayerdialog import RasterLayerDialog
+from timemanager.timemanagerprojecthandler import TimeManagerProjectHandler
+from timemanager.utils.tmlogging import warn  # , info
+
+from timemanager import conf, layer_settings
 
 """
 The QTSlider only supports integers as the min and max, therefore the maximum maximum value

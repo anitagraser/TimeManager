@@ -1,6 +1,7 @@
 #!/bin/bash
 cd /usr
 cp -r src TimeManager
-xvfb-run nosetests TimeManager -s --cover-package=TimeManager 
+mv TimeManager timemanager
+xvfb-run nosetests timemanager -s --cover-package=TimeManager
 rc=$?
 exit $rc

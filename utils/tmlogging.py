@@ -12,7 +12,7 @@ __author__ = 'carolinux'
 
 from qgis.core import QgsMessageLog
 
-import conf
+from timemanager import conf
 
 try:
     from qgis.core import Qgis

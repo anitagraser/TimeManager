@@ -7,13 +7,12 @@ import re
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QMessageBox
 
-from .vectorlayerdialog import AddLayerDialog
-from .raster.cdflayer import CDFRasterLayer
-from utils.tmlogging import info, warn
+from timemanager.vectorlayerdialog import AddLayerDialog
+from timemanager.raster.cdflayer import CDFRasterLayer
+from timemanager.utils.tmlogging import info, warn
 
-from . import conf
-from utils import qgis_utils as qgs
-from . import layer_settings
+from timemanager import conf, layer_settings
+from timemanager.utils import qgis_utils as qgs
 
 
 class RasterLayerDialog(AddLayerDialog):

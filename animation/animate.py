@@ -4,9 +4,9 @@ import subprocess
 import os
 import glob
 
-from utils.tmlogging import info, error
-from utils.os_util import get_os, WINDOWS
-from ..conf import FRAME_FILENAME_PREFIX, FRAME_EXTENSION
+from timemanager.utils.tmlogging import info, error
+from timemanager.utils.os_util import get_os, WINDOWS
+from timemanager.conf import FRAME_FILENAME_PREFIX, FRAME_EXTENSION
 
 
 IMAGEMAGICK = "convert"

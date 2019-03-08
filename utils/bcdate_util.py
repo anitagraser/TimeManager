@@ -12,10 +12,10 @@ __email__ = "karolina.alexiou@teralytics.ch"
 import re
 from datetime import datetime, timedelta
 
-from utils.tmlogging import warn
+from timemanager.utils.tmlogging import warn
 
-from conf import DEFAULT_DIGITS
-from timemanagerprojecthandler import TimeManagerProjectHandler
+from timemanager.conf import DEFAULT_DIGITS
+from timemanager.timemanagerprojecthandler import TimeManagerProjectHandler
 
 
 _DIGITS = DEFAULT_DIGITS  # default digits for archaeology mode

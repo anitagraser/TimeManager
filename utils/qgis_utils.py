@@ -17,7 +17,7 @@ try:
 except ImportError:
     from qgis.core import Qgis, QgsWkbTypes
 
-from utils.tmlogging import warn
+from timemanager.utils.tmlogging import warn
 
 
 def getAllJoinIdsOfLayer(layer):

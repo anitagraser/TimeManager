@@ -6,10 +6,10 @@ import re
 
 from  qgis._core import QgsSingleBandPseudoColorRenderer
 
-from utils import time_util
-from ..timerasterlayer import TimeRasterLayer
-from ..timelayer import TimeLayer, NotATimeAttributeError
-from utils.tmlogging import warn
+from timemanager.utils import time_util
+from timemanager.timerasterlayer import TimeRasterLayer
+from timemanager.timelayer import TimeLayer, NotATimeAttributeError
+from timemanager.utils.tmlogging import warn
 
 
 DEFAULT_CALENDAR="proleptic_gregorian"

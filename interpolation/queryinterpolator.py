@@ -1,9 +1,9 @@
 from __future__ import absolute_import
 from qgis.core import QgsExpression, QgsFeatureRequest
 
-from utils import qgis_utils as qgs, time_util as time_util
-from utils.tmlogging import warn
-from .interpolator import Interpolator
+from timemanager.utils import qgis_utils as qgs, time_util as time_util
+from timemanager.utils.tmlogging import warn
+from timemanager.interpolation.interpolator import Interpolator
 
 
 try:

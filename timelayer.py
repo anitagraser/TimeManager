@@ -8,8 +8,8 @@ from qgis.PyQt.QtCore import QCoreApplication
 
 import abc
 
-from . import conf
-from utils import time_util
+from timemanager import conf
+from timemanager.utils import time_util
 from future.utils import with_metaclass
 
 

@@ -14,9 +14,9 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from qgis.PyQt.QtCore import QDate, QDateTime
 
-from utils import bcdate_util
-from conf import DEFAULT_DIGITS
-from timemanagerprojecthandler import TimeManagerProjectHandler
+from timemanager.utils import bcdate_util
+from timemanager.conf import DEFAULT_DIGITS
+from timemanager.timemanagerprojecthandler import TimeManagerProjectHandler
 
 OGR_DATE_FORMAT = "%Y/%m/%d"
 OGR_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"

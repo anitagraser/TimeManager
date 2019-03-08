@@ -22,13 +22,13 @@ from qgis.PyQt.QtCore import QTranslator, QCoreApplication, qVersion, QSettings,
 
 from qgis.core import qgsfunction, QgsExpression
 
-from .timemanagercontrol import TimeManagerControl
-from utils.tmlogging import info, warn, error
+from timemanager.timemanagercontrol import TimeManagerControl
+from timemanager.utils.tmlogging import info, warn, error
 
-from utils import time_util
+from timemanager.utils import time_util
 
 
-class timemanager(object):
+class timemanager_obj(object):
     """Plugin information"""
     name = "timemanager"
     longName = "TimeManager Plugin for QGIS >= 2.3"
