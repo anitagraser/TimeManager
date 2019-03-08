@@ -9,7 +9,7 @@ from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 from qgis.PyQt.QtCore import QObject, pyqtSignal
 
-from timemanager.timelayer import NotATimeAttributeError
+from timemanager.layers.timelayer import NotATimeAttributeError
 from timemanager.utils.tmlogging import log_exceptions
 
 from timemanager import conf

@@ -23,7 +23,8 @@ from timemanager.rasterlayerdialog import RasterLayerDialog
 from timemanager.timemanagerprojecthandler import TimeManagerProjectHandler
 from timemanager.utils.tmlogging import warn  # , info
 
-from timemanager import conf, layer_settings
+from timemanager import conf
+from timemanager.layers import layer_settings
 
 """
 The QTSlider only supports integers as the min and max, therefore the maximum maximum value

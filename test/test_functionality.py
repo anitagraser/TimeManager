@@ -17,13 +17,13 @@ from datetime import timedelta
 from qgis.PyQt import QtCore
 import timemanager.timemanagercontrol as timemanagercontrol
 from timemanager.conf import FRAME_FILENAME_PREFIX
-import timemanager.timevectorlayer as timevectorlayer
-from timemanager.timelayermanager import TimeLayerManager
+import timemanager.layers.timevectorlayer as timevectorlayer
+from timemanager.layers.timelayermanager import TimeLayerManager
 from . import testcfg
 import timemanager.utils.time_util as time_util
 import timemanager.utils.bcdate_util as bcdate_util
 import timemanager.utils.os_util as os_util
-import timemanager.layer_settings as ls
+import timemanager.layers.layer_settings as ls
 
 from abc import ABCMeta, abstractmethod
 import tempfile

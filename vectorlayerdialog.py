@@ -11,7 +11,8 @@ from qgis.PyQt.QtWidgets import QMessageBox, QApplication
 from timemanager.utils.tmlogging import warn
 
 from timemanager.utils import qgis_utils as qgs
-from timemanager import layer_settings, conf
+from timemanager import conf
+from timemanager.layers import layer_settings
 from future.utils import with_metaclass
 
 

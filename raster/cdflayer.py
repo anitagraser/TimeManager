@@ -7,8 +7,8 @@ import re
 from  qgis._core import QgsSingleBandPseudoColorRenderer
 
 from timemanager.utils import time_util
-from timemanager.timerasterlayer import TimeRasterLayer
-from timemanager.timelayer import TimeLayer, NotATimeAttributeError
+from timemanager.layers.timerasterlayer import TimeRasterLayer
+from timemanager.layers.timelayer import TimeLayer, NotATimeAttributeError
 from timemanager.utils.tmlogging import warn
 
 

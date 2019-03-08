@@ -12,8 +12,8 @@ import unittest
 from .test_functionality import TestForLayersWithOnePointPerSecond
 import timemanager.utils.time_util as time_util
 from timemanager.conf import FRAME_FILENAME_PREFIX
-import timemanager.timevectorlayer as timevectorlayer
-import timemanager.layer_settings as ls
+import timemanager.layers.timevectorlayer as timevectorlayer
+import timemanager.layers.layer_settings as ls
 
 import os
 import tempfile

@@ -8,9 +8,9 @@ __author__ = 'carolinux'
 
 from qgis.core import QgsVectorLayer, QgsRasterLayer
 
-from timemanager.timevectorlayer import TimeVectorLayer
-from timemanager.timerasterlayer import TimeRasterLayer
-from timemanager.timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
+from timemanager.layers.timevectorlayer import TimeVectorLayer
+from timemanager.layers.timerasterlayer import TimeRasterLayer
+from timemanager.layers.timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
 from timemanager.raster.cdflayer import CDFRasterLayer
 from timemanager.raster.wmstlayer import WMSTRasterLayer
 

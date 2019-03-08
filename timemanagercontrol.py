@@ -22,12 +22,13 @@ from timemanager.utils import bcdate_util, time_util
 
 
 from timemanager.timemanagerguicontrol import TimeManagerGuiControl, MAX_TIME_LENGTH_SECONDS_SLIDER
-from timemanager.timelayerfactory import TimeLayerFactory
-from timemanager.timelayermanager import TimeLayerManager
+from timemanager.layers.timelayerfactory import TimeLayerFactory
+from timemanager.layers.timelayermanager import TimeLayerManager
 from timemanager.timemanagerprojecthandler import TimeManagerProjectHandler
 from timemanager.animation import animate
 
-from timemanager import conf, layer_settings
+from timemanager import conf
+from timemanager.layers import layer_settings
 
 
 class TimeManagerControl(QObject):

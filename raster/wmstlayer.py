@@ -5,8 +5,8 @@ standard_library.install_aliases()
 from datetime import timedelta
 
 from timemanager.utils import time_util
-from timemanager.timerasterlayer import TimeRasterLayer
-from timemanager.timelayer import TimeLayer, NotATimeAttributeError
+from timemanager.layers.timerasterlayer import TimeRasterLayer
+from timemanager.layers.timelayer import TimeLayer, NotATimeAttributeError
 
 
 class WMSTRasterLayer(TimeRasterLayer):

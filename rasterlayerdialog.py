@@ -11,7 +11,8 @@ from timemanager.vectorlayerdialog import AddLayerDialog
 from timemanager.raster.cdflayer import CDFRasterLayer
 from timemanager.utils.tmlogging import info, warn
 
-from timemanager import conf, layer_settings
+from timemanager import conf
+from timemanager.layers import layer_settings
 from timemanager.utils import qgis_utils as qgs
 
 

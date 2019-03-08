@@ -9,7 +9,7 @@ from builtins import str
 
 from datetime import timedelta
 
-from timemanager.timelayer import TimeLayer, InvalidTimeLayerError, NotATimeAttributeError
+from timemanager.layers.timelayer import TimeLayer, InvalidTimeLayerError, NotATimeAttributeError
 
 from timemanager.utils import time_util
 from timemanager import conf

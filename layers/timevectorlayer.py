@@ -11,11 +11,12 @@ import traceback
 from datetime import timedelta
 from qgis.PyQt.QtCore import QCoreApplication, QDate, QDateTime
 
-from timemanager.timelayer import TimeLayer, InvalidTimeLayerError
+from timemanager.layers.timelayer import TimeLayer, InvalidTimeLayerError
 from timemanager.utils.tmlogging import info, warn, error
 
-from timemanager import conf, layer_settings, query_builder
+from timemanager import conf, query_builder
 from timemanager.utils import time_util
+from timemanager.layers import layer_settings
 
 POSTGRES_TYPE = 'PostgreSQL database with PostGIS extension'
 DELIMITED_TEXT_TYPE = 'Delimited text file'

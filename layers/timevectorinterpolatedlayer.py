@@ -10,8 +10,8 @@ import traceback
 
 from qgis.core import QgsVectorLayer, QgsFeatureRequest, QgsPoint, QgsFeature, QgsGeometry
 
-from timemanager.timelayer import InvalidTimeLayerError
-from timemanager.timevectorlayer import TimeVectorLayer
+from timemanager.layers.timelayer import InvalidTimeLayerError
+from timemanager.layers.timevectorlayer import TimeVectorLayer
 from timemanager.interpolation import interpolator_factory as ifactory
 from timemanager.utils.tmlogging import info
 
