@@ -3,11 +3,11 @@ import unittest
 
 from mock import Mock
 
-from TimeManager.timerasterlayer import TimeRasterLayer
-from TimeManager.timevectorlayer import TimeVectorLayer
-from TimeManager.query_builder import INT_FORMAT, STRING_FORMAT
-from TimeManager.utils.time_util import DEFAULT_FORMAT, UTC, datetime_to_epoch
-import TimeManager.layer_settings as ls
+from timemanager.timerasterlayer import TimeRasterLayer
+from timemanager.timevectorlayer import TimeVectorLayer
+from timemanager.query_builder import INT_FORMAT, STRING_FORMAT
+from timemanager.utils.time_util import DEFAULT_FORMAT, UTC, datetime_to_epoch
+import timemanager.layer_settings as ls
 
 
 __author__ = "Karolina Alexiou"

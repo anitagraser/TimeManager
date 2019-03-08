@@ -11,11 +11,11 @@ from mock import Mock
 from qgis.PyQt.QtWidgets import QApplication, QWidget
 from qgis.PyQt.QtCore import QDateTime, QTranslator
 
-import TimeManager.timemanagerguicontrol as guicontrol
-import TimeManager.rasterlayerdialog as rl
-import TimeManager.vectorlayerdialog as vl
-import TimeManager.utils.time_util as time_util
-import TimeManager.conf as conf
+import timemanager.timemanagerguicontrol as guicontrol
+import timemanager.rasterlayerdialog as rl
+import timemanager.vectorlayerdialog as vl
+import timemanager.utils.time_util as time_util
+import timemanager.conf as conf
 from . import testcfg
 
 
@@ -37,7 +37,7 @@ class testGuiControl(unittest.TestCase):
         settingsText = gui.dock.pushButtonOptions.text()
         self.assertEqual(settingsText, "Settings")
         for lang, expected_translation in zip(["de", "pl"], ["Einrichten", "Ustawienia"]):
-            path = os.path.join("TimeManager", "i18n", "timemanager_{}.qm".format(lang))
+            path = os.path.join("timemanager", "i18n", "timemanager_{}.qm".format(lang))
             translator = QTranslator()
             translator.load(path)
             translation = translator.translate(gui.dock.objectName(), settingsText)

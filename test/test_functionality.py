@@ -15,15 +15,15 @@ import os
 from mock import Mock
 from datetime import timedelta
 from qgis.PyQt import QtCore
-import TimeManager.timemanagercontrol as timemanagercontrol
-from TimeManager.conf import FRAME_FILENAME_PREFIX
-import TimeManager.timevectorlayer as timevectorlayer
-from TimeManager.timelayermanager import TimeLayerManager
+import timemanager.timemanagercontrol as timemanagercontrol
+from timemanager.conf import FRAME_FILENAME_PREFIX
+import timemanager.timevectorlayer as timevectorlayer
+from timemanager.timelayermanager import TimeLayerManager
 from . import testcfg
-import TimeManager.utils.time_util as time_util
-import TimeManager.utils.bcdate_util as bcdate_util
-import TimeManager.utils.os_util as os_util
-import TimeManager.layer_settings as ls
+import timemanager.utils.time_util as time_util
+import timemanager.utils.bcdate_util as bcdate_util
+import timemanager.utils.os_util as os_util
+import timemanager.layer_settings as ls
 
 from abc import ABCMeta, abstractmethod
 import tempfile
@@ -40,7 +40,7 @@ PREFIX_PATH = None  # replace with path in case of problems
 
 
 class RiggedTimeManagerControl(timemanagercontrol.TimeManagerControl):
-    """A subclass of TimeManagerControl which makes testing easier (with the downside of not
+    """A subclass of timemanagerControl which makes testing easier (with the downside of not
     testing some signal behavior)"""
 
     def saveCurrentMap(self, fileName):
@@ -158,7 +158,7 @@ class TestForLayersWithOnePointPerSecond(with_metaclass(ABCMeta, TestWithQGISLau
         self.assertEquals(layer.featureCount(), 2)
 
 
-class testTimeManagerWithoutGui(TestWithQGISLauncher):
+class testtimemanagerWithoutGui(TestWithQGISLauncher):
     def registerTweetsTimeLayer(self, fromAttr="T", toAttr="T"):
         self.layer = QgsVectorLayer(os.path.join(testcfg.TEST_DATA_DIR, 'tweets.shp'), 'tweets',
                                     'ogr')

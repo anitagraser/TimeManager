@@ -8,9 +8,9 @@ sip.setapi('QString', 2)  # strange things happen without this. Must import befo
 from qgis.core import QgsVectorLayer
 
 import os
-from TimeManager.layer_settings import LayerSettings
-import TimeManager.conf as conf
-from TimeManager.timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
+from timemanager.layer_settings import LayerSettings
+import timemanager.conf as conf
+from timemanager.timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
 from mock import Mock
 import tempfile
 from .test_functionality import TestWithQGISLauncher

@@ -19,10 +19,10 @@ try:
     from timemanager import layer_settings as ls
     from timemanager import bcdate_util as bcdate_util
 except:
-    from TimeManager.test import testcfg as testcfg  # Mac0S needs the capitalized name
-    import TimeManager.conf as conf
-    from TimeManager import layer_settings as ls
-    from TimeManager import bcdate_util as bcdate_util
+    from timemanager.test import testcfg as testcfg  # Mac0S needs the capitalized name
+    import timemanager.conf as conf
+    from timemanager import layer_settings as ls
+    from timemanager import bcdate_util as bcdate_util
 
 __author__ = 'carolinux'
 
@@ -172,7 +172,7 @@ def set_time_frame_type(gui, typ):
 try:
     ctrl = qgis.utils.plugins['timemanager'].getController()
 except:
-    ctrl = qgis.utils.plugins['TimeManager'].getController()  # MacOS needs the capitalized name
+    ctrl = qgis.utils.plugins['timemanager'].getController()  # MacOS needs the capitalized name
 
 gui = ctrl.getGui()
 tlm = ctrl.getTimeLayerManager()
@@ -217,7 +217,7 @@ tmp_file = get_temp_file()
 save_project_to_file(tmp_file.name)
 with open(tmp_file.name) as f:
     text = f.read()
-assert ("TimeManager" in text)
+assert ("timemanager" in text)
 assert ("active" in text)
 assert ("currentMapTimePosition" in text)
 #os.remove(tmp_file.name)

@@ -3,8 +3,8 @@ __author__ = 'carolinux'
 from datetime import datetime
 import unittest
 
-import TimeManager.query_builder as qb
-import TimeManager.utils.time_util as time_util
+import timemanager.query_builder as qb
+import timemanager.utils.time_util as time_util
 
 
 __author__ = "Karolina Alexiou"

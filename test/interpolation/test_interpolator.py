@@ -2,7 +2,7 @@ import unittest
 
 from mock import Mock
 
-from TimeManager.interpolation import linearpointinterpolator as lpi
+from timemanager.interpolation import linearpointinterpolator as lpi
 
 
 __author__ = "Karolina Alexiou"

@@ -5,9 +5,9 @@ import unittest
 
 from dateutil.relativedelta import relativedelta
 
-import TimeManager.utils.time_util as time_util
-import TimeManager.utils.bcdate_util as bcdate_util
-import TimeManager.conf as conf
+import timemanager.utils.time_util as time_util
+import timemanager.utils.bcdate_util as bcdate_util
+import timemanager.conf as conf
 
 
 __author__ = "Karolina Alexiou"

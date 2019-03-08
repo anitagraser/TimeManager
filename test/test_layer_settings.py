@@ -2,7 +2,7 @@ __author__ = 'carolinux'
 
 import unittest
 
-from TimeManager import layer_settings
+from timemanager import layer_settings
 
 
 INTERP_SAVESTRING = "timespans20150228135607432;;ARRIVAL;ARRIVAL;True;%Y-%m-%d %H:%M:%S;0;;True"

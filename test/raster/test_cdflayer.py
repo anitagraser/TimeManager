@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 import unittest
 
-import TimeManager.raster.cdflayer as cdf
-import TimeManager.utils.time_util as time_util
+import timemanager.raster.cdflayer as cdf
+import timemanager.utils.time_util as time_util
 
 
 class TestCDFRasterLayer(unittest.TestCase):

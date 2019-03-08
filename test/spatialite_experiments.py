@@ -10,12 +10,12 @@ from pyspatialite import dbapi2 as db
 from datetime import datetime, timedelta
 import os
 import unittest
-from TimeManager.time_util import datetime_to_str, DEFAULT_FORMAT
+from timemanager.time_util import datetime_to_str, DEFAULT_FORMAT
 from .test_functionality import TestWithQGISLauncher
-import TimeManager.time_util as time_util
-import TimeManager.timevectorlayer as timevectorlayer
-from TimeManager.query_builder import STRINGCAST_FORMAT, INT_FORMAT, STRING_FORMAT
-from TimeManager.layer_settings import LayerSettings
+import timemanager.time_util as time_util
+import timemanager.timevectorlayer as timevectorlayer
+from timemanager.query_builder import STRINGCAST_FORMAT, INT_FORMAT, STRING_FORMAT
+from timemanager.layer_settings import LayerSettings
 from mock import Mock
 
 
