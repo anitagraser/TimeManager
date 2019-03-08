@@ -18,8 +18,8 @@ from qgis.PyQt.QtGui import QKeySequence, QFont, QColor, QIcon, QTextDocument, Q
 
 from timemanager.utils import qgis_utils as qgs, bcdate_util, time_util
 
-from timemanager.vectorlayerdialog import VectorLayerDialog  # , AddLayerDialog
-from timemanager.rasterlayerdialog import RasterLayerDialog
+from timemanager.dialogs.vectorlayerdialog import VectorLayerDialog  # , AddLayerDialog
+from timemanager.dialogs.rasterlayerdialog import RasterLayerDialog
 from timemanager.timemanagerprojecthandler import TimeManagerProjectHandler
 from timemanager.utils.tmlogging import warn  # , info
 

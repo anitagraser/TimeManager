@@ -7,7 +7,7 @@ import re
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QMessageBox
 
-from timemanager.vectorlayerdialog import AddLayerDialog
+from timemanager.dialogs.vectorlayerdialog import AddLayerDialog
 from timemanager.raster.cdflayer import CDFRasterLayer
 from timemanager.utils.tmlogging import info, warn
 
