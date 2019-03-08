@@ -58,7 +58,7 @@ The biggest tested dataset was a Spatialite table with indexed timestamps contai
 
 ## Animation
 
-Time Manager supports exporting image series based on the defined animation settings. Our goal for future versions is to include a tool that creates actual animations from these image series. Until then, external programs can be used for this last step. See VideoTutorial.md for instructions on how to create a video from the images.
+Time Manager supports exporting image series based on the defined animation settings. Our goal for future versions is to include a tool that creates actual animations from these image series. Until then, external programs can be used for this last step. See the [Video Tutorial](docs/VideoTutorial.md) for instructions on how to create a video from the images.
 
 ### Examples
 
