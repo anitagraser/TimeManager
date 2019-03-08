@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 from .tmlogging import warn
 
 from .conf import DEFAULT_DIGITS
+from .timemanagerprojecthandler import TimeManagerProjectHandler
 
 
 _DIGITS = DEFAULT_DIGITS  # default digits for archaeology mode
@@ -27,12 +28,7 @@ class CustomDate(object):
 
 
 def getGlobalDigitSetting():
-    return _DIGITS
-
-
-def setGlobalDigitSetting(digits):
-    global _DIGITS
-    _DIGITS = digits
+    return TimeManagerProjectHandler.plugin_setting('arch_digits', DEFAULT_DIGITS)
 
 
 class ZeroFormatException(Exception):

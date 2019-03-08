@@ -27,9 +27,8 @@ class TimeManagerProjectHandler(QObject):
         QSettings().setValue("TimeManager/" + name, value)
 
     @classmethod
-    def plugin_setting(cls, name):
-        if QSettings().value("TimeManager/" + name) is not None:
-            return QSettings().value("TimeManager/" + name)
+    def plugin_setting(cls, name, default=None):
+        return QSettings().value("TimeManager/" + name, default)
 
     @classmethod
     def writeSettings(cls, settings):

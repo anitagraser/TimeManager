@@ -16,6 +16,8 @@ from dateutil.relativedelta import relativedelta
 from qgis.PyQt.QtCore import QDate, QDateTime
 
 from . import bcdate_util
+from .conf import DEFAULT_DIGITS
+from .timemanagerprojecthandler import TimeManagerProjectHandler
 
 OGR_DATE_FORMAT = "%Y/%m/%d"
 OGR_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
@@ -38,28 +40,21 @@ NORMAL_MODE = "Normal Mode"
 ARCHAELOGY_MODE = "Archaeology Mode"
 DINOSAURS_MODE = "Paleontology Mode"
 
-_mode = NORMAL_MODE
-
 
 def setCurrentMode(new_mode):
-    global _mode
-    _mode = new_mode
-
-
-def getCurrentMode():
-    return _mode
+    TimeManagerProjectHandler.set_plugin_setting('mode', new_mode)
 
 
 def setArchDigits(digits):
-    bcdate_util.setGlobalDigitSetting(digits)
+    TimeManagerProjectHandler.set_plugin_setting('arch_digits', digits)
 
 
 def getArchDigits():
-    return bcdate_util.getGlobalDigitSetting()
+    return TimeManagerProjectHandler.plugin_setting('arch_digits', DEFAULT_DIGITS)
 
 
 def is_archaelogical():
-    return _mode == ARCHAELOGY_MODE
+    return TimeManagerProjectHandler.plugin_setting('mode') == ARCHAELOGY_MODE
 
 
 class UnsupportedFormatException(Exception):
