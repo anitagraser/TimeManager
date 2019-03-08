@@ -45,7 +45,7 @@ class testGuiControl(unittest.TestCase):
 
     def setUp(self):
         self.window = TestApp()
-        self.path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
+        self.path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'ui')
         self.vector = vl.VectorLayerDialog(Mock(), os.path.join(self.path,
                                                                 guicontrol.ADD_VECTOR_LAYER_WIDGET_FILE),
                                            Mock())

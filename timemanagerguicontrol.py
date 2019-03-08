@@ -43,6 +43,7 @@ ADD_RASTER_LAYER_WIDGET_FILE = "addRasterLayer.ui"
 ARCH_WIDGET_FILE = "arch.ui"
 OPTIONS_WIDGET_FILE = "options.ui"
 ANIMATION_WIDGET_FILE = "animate.ui"
+LABEL_OPTIONS_WIDGET_FILE = "label_options.ui"
 
 
 class TimestampLabelConfig(object):
@@ -96,7 +97,7 @@ class TimeManagerGuiControl(QObject):
         self.iface = iface
         self.model = model
         self.optionsDialog = None
-        self.path = os.path.dirname(os.path.abspath(__file__))
+        self.path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ui')
 
         # load the form
         self.dock = uic.loadUi(os.path.join(self.path, DOCK_WIDGET_FILE))
@@ -237,7 +238,7 @@ class TimeManagerGuiControl(QObject):
         options = self.labelOptions
         self.dialog = QDialog()
 
-        lo = uic.loadUiType(os.path.join(self.path, 'label_options.ui'))[0]
+        lo = uic.loadUiType(os.path.join(self.path, LABEL_OPTIONS_WIDGET_FILE))[0]
         self.labelOptionsDialog = lo()
         self.labelOptionsDialog.setupUi(self.dialog)
 
