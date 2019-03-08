@@ -4,7 +4,7 @@ from datetime import datetime
 import unittest
 
 import TimeManager.query_builder as qb
-import TimeManager.time_util as time_util
+import TimeManager.utils.time_util as time_util
 
 
 __author__ = "Karolina Alexiou"

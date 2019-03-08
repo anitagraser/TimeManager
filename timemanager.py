@@ -15,7 +15,6 @@
 # ***************************************************************************
 
 from __future__ import absolute_import
-from builtins import str
 from builtins import object
 
 import os
@@ -24,9 +23,9 @@ from qgis.PyQt.QtCore import QTranslator, QCoreApplication, qVersion, QSettings,
 from qgis.core import qgsfunction, QgsExpression
 
 from .timemanagercontrol import TimeManagerControl
-from .tmlogging import info, warn, error
+from utils.tmlogging import info, warn, error
 
-from . import time_util
+from utils import time_util
 
 
 class timemanager(object):

@@ -9,8 +9,8 @@ from qgis.core import QgsDataSourceUri, QgsVectorLayer
 from datetime import datetime
 import unittest
 from .test_functionality import TestForLayersWithOnePointPerSecond
-import TimeManager.time_util as time_util
-import TimeManager.qgis_utils as qgis_utils
+import TimeManager.utils.time_util as time_util
+import TimeManager.utils.qgis_utils as qgis_utils
 
 from nose.tools import raises
 

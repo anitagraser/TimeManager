@@ -12,10 +12,10 @@ from datetime import timedelta
 from qgis.PyQt.QtCore import QCoreApplication, QDate, QDateTime
 
 from .timelayer import TimeLayer, InvalidTimeLayerError
-from .tmlogging import info, warn, error
+from utils.tmlogging import info, warn, error
 
 from . import conf
-from . import time_util
+from utils import time_util
 from . import layer_settings
 from . import query_builder
 

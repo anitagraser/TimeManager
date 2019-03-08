@@ -14,7 +14,7 @@ from qgis.PyQt.QtCore import QDateTime, QTranslator
 import TimeManager.timemanagerguicontrol as guicontrol
 import TimeManager.rasterlayerdialog as rl
 import TimeManager.vectorlayerdialog as vl
-import TimeManager.time_util as time_util
+import TimeManager.utils.time_util as time_util
 import TimeManager.conf as conf
 from . import testcfg
 

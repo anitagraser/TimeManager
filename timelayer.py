@@ -9,7 +9,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 import abc
 
 from . import conf
-from . import time_util
+from utils import time_util
 from future.utils import with_metaclass
 
 

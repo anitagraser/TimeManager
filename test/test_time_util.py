@@ -3,7 +3,7 @@ __author__ = 'carolinux'
 from datetime import datetime
 import unittest
 
-import TimeManager.time_util as time_util
+import TimeManager.utils.time_util as time_util
 
 
 __author__ = "Karolina Alexiou"

@@ -12,10 +12,10 @@ __email__ = "karolina.alexiou@teralytics.ch"
 import re
 from datetime import datetime, timedelta
 
-from .tmlogging import warn
+from utils.tmlogging import warn
 
-from .conf import DEFAULT_DIGITS
-from .timemanagerprojecthandler import TimeManagerProjectHandler
+from conf import DEFAULT_DIGITS
+from timemanagerprojecthandler import TimeManagerProjectHandler
 
 
 _DIGITS = DEFAULT_DIGITS  # default digits for archaeology mode
@@ -58,8 +58,6 @@ class BCDate(CustomDate):
         return self.y < 0
 
     def __cmp__(self, other):
-        if not isinstance(other, self.__class__):
-            return -1
         if self.__lt__(other):
             return -1
         if self.__eq__(other):
@@ -67,8 +65,6 @@ class BCDate(CustomDate):
         return 1
 
     def __lt__(self, other):
-        if not isinstance(other, self.__class__):
-            return True
         if (self.y < other.y or (self.y == other.y and self.m < other.m) or (
                 self.y == other.y and self.d == other.d and self.d < other.d)):
             return True
@@ -114,10 +110,7 @@ class BCDate(CustomDate):
                     "1".zfill(getGlobalDigitSetting())))
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.y == other.y and self.m == other.m and self.d == other.d
-        else:
-            return False
+        return self.y == other.y and self.m == other.m and self.d == other.d
 
     def _get_years_from_timedelta(self, td):
         try:

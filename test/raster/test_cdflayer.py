@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import unittest
 
 import TimeManager.raster.cdflayer as cdf
-import TimeManager.time_util as time_util
+import TimeManager.utils.time_util as time_util
 
 
 class TestCDFRasterLayer(unittest.TestCase):

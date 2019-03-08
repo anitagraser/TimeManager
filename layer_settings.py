@@ -16,8 +16,8 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QTableWidgetItem
 
 from . import conf
-from . import time_util
-from .qgis_utils import getLayerFromId
+from utils import time_util
+from utils.qgis_utils import getLayerFromId
 
 
 def textToBool(text):

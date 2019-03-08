@@ -13,11 +13,10 @@ from qgis.core import QgsVectorLayer, QgsFeatureRequest, QgsPoint, QgsFeature, Q
 from .timelayer import InvalidTimeLayerError
 from .timevectorlayer import TimeVectorLayer
 from .interpolation import interpolator_factory as ifactory
-from .tmlogging import info
+from utils.tmlogging import info
 
-from . import time_util
 from . import conf
-from . import qgis_utils as qgs
+from utils import qgis_utils as qgs, time_util
 
 
 # Ideas for extending

@@ -9,7 +9,7 @@ STRINGCAST_FORMAT = 'cast("{}" as character) {} \'{}\' AND cast("{}" as characte
 INT_FORMAT = "{} {} {} AND {} >= {} "
 STRING_FORMAT = "\"{}\" {} '{}' AND \"{}\" >= '{}' "
 
-from . import time_util
+from utils import time_util
 
 
 class QueryIdioms(object):

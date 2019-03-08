@@ -22,10 +22,9 @@ from .timelayerfactory import TimeLayerFactory
 from .timelayermanager import TimeLayerManager
 from .timemanagerprojecthandler import TimeManagerProjectHandler
 from .animation import animate
-from .tmlogging import info, warn, error, log_exceptions
+from utils.tmlogging import info, warn, error, log_exceptions
 
-from . import time_util
-from . import bcdate_util
+from utils import bcdate_util, time_util
 from . import conf
 from . import layer_settings
 

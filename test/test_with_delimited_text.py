@@ -10,7 +10,7 @@ from qgis.core import QgsVectorLayer
 from mock import Mock
 import unittest
 from .test_functionality import TestForLayersWithOnePointPerSecond
-import TimeManager.time_util as time_util
+import TimeManager.utils.time_util as time_util
 from TimeManager.conf import FRAME_FILENAME_PREFIX
 import TimeManager.timevectorlayer as timevectorlayer
 import TimeManager.layer_settings as ls

@@ -3,8 +3,8 @@ from .interpolator import Interpolator, MemoryLoadInterpolator
 from .queryinterpolator import QueryInterpolator
 import numpy as np
 
-from ..tmlogging import warn
-from .. import qgis_utils as qgs
+from utils.tmlogging import warn
+from utils import qgis_utils as qgs
 
 
 class LinearPointInterpolator(Interpolator):

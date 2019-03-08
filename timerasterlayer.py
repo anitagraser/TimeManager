@@ -11,7 +11,7 @@ from datetime import timedelta
 
 from .timelayer import TimeLayer, InvalidTimeLayerError, NotATimeAttributeError
 
-from . import time_util
+from utils import time_util
 from . import conf
 
 

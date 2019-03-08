@@ -15,15 +15,13 @@ from qgis.PyQt.QtCore import QObject, QDate, QDateTime, pyqtSignal, Qt, QTimer, 
 from qgis.PyQt.QtWidgets import QDialog, QFileDialog, QShortcut, QAction, QLineEdit, QMessageBox
 from qgis.PyQt.QtGui import QKeySequence, QFont, QColor, QIcon, QTextDocument, QAbstractTextDocumentLayout
 
-from . import qgis_utils as qgs
+from utils import qgis_utils as qgs, bcdate_util, time_util
 
 from .vectorlayerdialog import VectorLayerDialog  # , AddLayerDialog
 from .rasterlayerdialog import RasterLayerDialog
 from .timemanagerprojecthandler import TimeManagerProjectHandler
-from .tmlogging import warn  # , info
+from utils.tmlogging import warn  # , info
 
-from . import time_util
-from . import bcdate_util
 from . import conf
 from . import layer_settings
 

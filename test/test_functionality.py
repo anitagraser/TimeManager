@@ -20,9 +20,9 @@ from TimeManager.conf import FRAME_FILENAME_PREFIX
 import TimeManager.timevectorlayer as timevectorlayer
 from TimeManager.timelayermanager import TimeLayerManager
 from . import testcfg
-import TimeManager.time_util as time_util
-import TimeManager.bcdate_util as bcdate_util
-import TimeManager.os_util as os_util
+import TimeManager.utils.time_util as time_util
+import TimeManager.utils.bcdate_util as bcdate_util
+import TimeManager.utils.os_util as os_util
 import TimeManager.layer_settings as ls
 
 from abc import ABCMeta, abstractmethod

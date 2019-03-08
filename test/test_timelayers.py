@@ -6,7 +6,7 @@ from mock import Mock
 from TimeManager.timerasterlayer import TimeRasterLayer
 from TimeManager.timevectorlayer import TimeVectorLayer
 from TimeManager.query_builder import INT_FORMAT, STRING_FORMAT
-from TimeManager.time_util import DEFAULT_FORMAT, UTC, datetime_to_epoch
+from TimeManager.utils.time_util import DEFAULT_FORMAT, UTC, datetime_to_epoch
 import TimeManager.layer_settings as ls
 
 

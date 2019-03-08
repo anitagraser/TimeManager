@@ -5,12 +5,12 @@ from builtins import object
 
 import abc
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QObject, Qt, QCoreApplication
+from qgis.PyQt.QtCore import Qt, QCoreApplication
 from qgis.PyQt.QtWidgets import QMessageBox, QApplication
 
-from .tmlogging import warn
+from utils.tmlogging import warn
 
-from . import qgis_utils as qgs
+from utils import qgis_utils as qgs
 from . import layer_settings
 from . import conf
 from future.utils import with_metaclass

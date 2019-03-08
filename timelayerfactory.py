@@ -14,7 +14,7 @@ from .timevectorinterpolatedlayer import TimeVectorInterpolatedLayer
 from .raster.cdflayer import CDFRasterLayer
 from .raster.wmstlayer import WMSTRasterLayer
 
-from . import time_util
+from utils import time_util
 
 
 class TimeLayerFactory(object):

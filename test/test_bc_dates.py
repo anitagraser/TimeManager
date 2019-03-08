@@ -5,8 +5,8 @@ import unittest
 
 from dateutil.relativedelta import relativedelta
 
-import TimeManager.time_util as time_util
-import TimeManager.bcdate_util as bcdate_util
+import TimeManager.utils.time_util as time_util
+import TimeManager.utils.bcdate_util as bcdate_util
 import TimeManager.conf as conf
 
 
@@ -61,7 +61,7 @@ class TestBCDates(unittest.TestCase):
             new_date = dt + relativedelta(years=1)
             assert (new_date.y == dt.y + 1)
 
-    def test_ad(self):
+    def test_AD(self):
         val = "0001 AD"
         dt = time_util.timeval_to_datetime(val, None)
         assert (dt == bcdate_util.BCDate(1))

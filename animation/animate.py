@@ -4,8 +4,8 @@ import subprocess
 import os
 import glob
 
-from ..tmlogging import info, error
-from ..os_util import get_os, WINDOWS
+from utils.tmlogging import info, error
+from utils.os_util import get_os, WINDOWS
 from ..conf import FRAME_FILENAME_PREFIX, FRAME_EXTENSION
 
 

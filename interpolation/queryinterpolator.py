@@ -1,9 +1,8 @@
 from __future__ import absolute_import
 from qgis.core import QgsExpression, QgsFeatureRequest
 
-from .. import time_util as time_util
-from .. import qgis_utils as qgs
-from ..tmlogging import warn
+from utils import qgis_utils as qgs, time_util as time_util
+from utils.tmlogging import warn
 from .interpolator import Interpolator
 
 

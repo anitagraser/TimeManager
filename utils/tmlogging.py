@@ -12,7 +12,7 @@ __author__ = 'carolinux'
 
 from qgis.core import QgsMessageLog
 
-from . import conf
+import conf
 
 try:
     from qgis.core import Qgis

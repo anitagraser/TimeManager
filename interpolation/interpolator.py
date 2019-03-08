@@ -4,9 +4,9 @@ import abc
 from collections import defaultdict
 from qgis.core import QgsFeatureRequest
 
-from .. import time_util as time_util
+from utils import time_util as time_util
 from .. import conf as conf
-from ..tmlogging import warn
+from utils.tmlogging import warn
 from future.utils import with_metaclass
 
 

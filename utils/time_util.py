@@ -9,15 +9,14 @@ from builtins import object
 __author__ = "Karolina Alexiou"
 __email__ = "karolina.alexiou@teralytics.ch"
 
-import time
 import re  # for hacking strftime
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from qgis.PyQt.QtCore import QDate, QDateTime
 
-from . import bcdate_util
-from .conf import DEFAULT_DIGITS
-from .timemanagerprojecthandler import TimeManagerProjectHandler
+from utils import bcdate_util
+from conf import DEFAULT_DIGITS
+from timemanagerprojecthandler import TimeManagerProjectHandler
 
 OGR_DATE_FORMAT = "%Y/%m/%d"
 OGR_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
@@ -163,7 +162,7 @@ SUPPORTED_FORMATS = list(
 
 
 def is_date_object(val):
-    return isinstance(val, datetime) or isinstance(val, bcdate_util.BCDate)
+    return isinstance(val, datetime) or isinstance(val, bcdate_util.BCDate) or val.__class__.__name__ == 'BCDate'
 
 
 def updateUi(ui, val):

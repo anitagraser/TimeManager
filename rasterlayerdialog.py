@@ -9,10 +9,10 @@ from qgis.PyQt.QtWidgets import QMessageBox
 
 from .vectorlayerdialog import AddLayerDialog
 from .raster.cdflayer import CDFRasterLayer
-from .tmlogging import info, warn
+from utils.tmlogging import info, warn
 
 from . import conf
-from . import qgis_utils as qgs
+from utils import qgis_utils as qgs
 from . import layer_settings
 
 

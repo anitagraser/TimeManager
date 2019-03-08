@@ -5,16 +5,15 @@ from __future__ import absolute_import
 from builtins import str
 from builtins import range
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 from qgis.PyQt.QtCore import QObject, pyqtSignal
 
 from .timelayer import NotATimeAttributeError
-from .tmlogging import info, warn, error, log_exceptions
+from utils.tmlogging import log_exceptions
 
-from . import time_util
 from . import conf
-from . import qgis_utils as qgs
+from utils import qgis_utils as qgs, time_util
 
 
 class TimeLayerManager(QObject):
