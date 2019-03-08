@@ -9,6 +9,10 @@ zip: $(PACKAGE)-$(VERSION).zip
 test:
 	sh docker/run_tests_local.sh
 
+.PHONY: translations
+translations:
+	bash scripts/compile-strings.sh es de fr pl zh
+
 $(PACKAGE)-$(VERSION).zip:
 	git archive --format=zip --prefix=$(PACKAGE)/ HEAD >$(PACKAGE)-$(VERSION).zip
 
