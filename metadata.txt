@@ -10,7 +10,7 @@ email=anitagraser@gmx.at, carolinegr@gmail.com
 changelog=3.0.2
     - Fixed #265: Accumulate features fails to set filter on layers with milliseconds 
     3.0.1
-    - Fixed #250: issue restoring plugin settings
+    - Fixed #256: issue restoring plugin settings
     3.0 
     - Port to QGIS 3
     2.5
