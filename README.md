@@ -52,7 +52,7 @@ Use Ctrl+Space (or Command+Space) if you are using a Mac to focus on the time sl
 
 ## Supported Layer Types
 
-TimeManager has been tested with PostgreSQL layers, Spatialite layers, delimited text layers, and .shp shapefiles. If you find that a layer of the types mentioned above doesn't behave correctly, please file a bug. If you want us to support new formats, file a feature request.
+TimeManager has been tested with PostGIS layers, Spatialite layers, delimited text layers, and .shp shapefiles. If you find that a layer of the types mentioned above doesn't behave correctly, please file a bug. If you want us to support new formats, file a feature request.
 
 The biggest tested dataset was a Spatialite table with indexed timestamps containing approximately 400,000 points, covering a time span of 24 hours. Stepping through the data for example in 1-hour-sized steps works without problems.
 
@@ -95,9 +95,8 @@ Time Manager is available through QGIS Plugin Repository http://plugins.qgis.org
 
 ## Dependencies
 
-Time Manager 1.0 reqires **QGIS 2.0** with Python 2.7.
+Time Manager 3 requires **QGIS 3.0** with Python 3.
+
+Time Manager 1 reqires **QGIS 2.0** with Python 2.7.
 
 Other plugin dependencies: Python module dateutil (included e.g. in matplotlib available in OSGeo4W)
-
-If you are running an **older version of QGIS**, Time Manager versions <= 0.7 require QGIS 1.7 or 1.8 with Python 2.7.
-
