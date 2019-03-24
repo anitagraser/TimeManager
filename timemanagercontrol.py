@@ -69,7 +69,7 @@ class TimeManagerControl(QObject):
         self.getTimeLayerManager().deactivateTimeManagement()
         self.iface.unregisterMainWindowAction(self.actionShowSettings)
         self.guiControl.unload()
-
+        del self.guiControl # actually remove the gui panel
         self.iface.projectRead.disconnect(self.readSettings)
         self.iface.newProjectCreated.disconnect(self.restoreDefaults)
         self.iface.newProjectCreated.disconnect(self.disableAnimationExport)
