@@ -370,7 +370,7 @@ class TimeManagerGuiControl(QObject):
         self.signalTimeFrameType.emit(frameType)
 
     def currentTimeFrameSizeChanged(self, frameSize):
-        if frameSize < 1:  # time frame size = 0  is meaningless
+        if frameSize < 0:  # time frame size = 0 is used for wms-t layers
             self.dock.spinBoxTimeExtent.setValue(1)
             return
         self.signalTimeFrameSize.emit(frameSize)

@@ -84,27 +84,34 @@ class TimeLayerManager(QObject):
         self.timeLayerList = []
 
     def timeFrame(self):
-        """returns the current time frame as datetime.timedelta
-        or compatible dateutil.relativedelta.relativedelta object"""
+        """Returns the current time frame as datetime.timedelta
+        or compatible dateutil.relativedelta.relativedelta object.
+        But when self.timeFrameSize is 0 (that is not working with frames but with
+        moments (eg possible in some wms-t services) return the timeframe of
+        1 (one timeFrameType). That makes it possible to set the timeFrameSize
+        to zero but still go over the timerange in steps of 1 timeFrameType."""
+        timeFrameSize = self.timeFrameSize
+        if self.timeFrameSize == 0:
+            timeFrameSize = 1  # so we can still step in steps of 'timeFrameType'
         if self.timeFrameType == 'years':
-            return relativedelta(years=self.timeFrameSize)  # years are not supported by timedelta
+            return relativedelta(years=timeFrameSize)  # years are not supported by timedelta
         elif self.timeFrameType == 'months':
             return relativedelta(
                 months=self.timeFrameSize)  # months are not supported by timedelta
         elif self.timeFrameType == 'weeks':
-            return timedelta(weeks=self.timeFrameSize)
+            return timedelta(weeks=timeFrameSize)
         elif self.timeFrameType == 'days':
-            return timedelta(days=self.timeFrameSize)
+            return timedelta(days=timeFrameSize)
         elif self.timeFrameType == 'hours':
-            return timedelta(hours=self.timeFrameSize)
+            return timedelta(hours=timeFrameSize)
         elif self.timeFrameType == 'minutes':
-            return timedelta(minutes=self.timeFrameSize)
+            return timedelta(minutes=timeFrameSize)
         elif self.timeFrameType == 'seconds':
-            return timedelta(seconds=self.timeFrameSize)
+            return timedelta(seconds=timeFrameSize)
         elif self.timeFrameType == 'milliseconds':
-            return timedelta(milliseconds=self.timeFrameSize)
+            return timedelta(milliseconds=timeFrameSize)
         elif self.timeFrameType == 'microseconds':
-            return timedelta(microseconds=self.timeFrameSize)
+            return timedelta(microseconds=timeFrameSize)
 
     @log_exceptions
     def refreshTimeRestrictions(self):
@@ -113,7 +120,10 @@ class TimeLayerManager(QObject):
             return
         if self.isEnabled():
             for timeLayer in self.getTimeLayerList():
-                timeLayer.setTimeRestriction(self.getCurrentTimePosition(), self.timeFrame())
+                if self.timeFrameSize == 0:
+                    timeLayer.setTimeRestriction(self.getCurrentTimePosition(),  timedelta(0))
+                else:
+                    timeLayer.setTimeRestriction(self.getCurrentTimePosition(), self.timeFrame())
         else:
             for timeLayer in self.getTimeLayerList():
                 if not timeLayer.hasTimeRestriction():
