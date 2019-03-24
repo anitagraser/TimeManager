@@ -129,6 +129,7 @@ def generate_all_timezones(fmt):
 
 
 BASIC_SUPPORTED_FORMATS = [
+    "%Y-%m-%dT%H:%M:%S.%fZ",
     "%Y-%m-%d %H:%M:%S.%f",
     "%Y-%m-%d %H:%M:%S",
     "%Y-%m-%d %H:%M",
