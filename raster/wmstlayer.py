@@ -80,10 +80,24 @@ class WMSTRasterLayer(TimeRasterLayer):
 
 
         url = self.wmsUrl + self.addUrlMark() + 'service=wms&version=1.3.0&request=getCapabilities'
-        # TODO: remove urllib dependency, use QgsNetworkManager !
-        import urllib.request, urllib.parse
+
+        # for QGIS >= 3.6 check if QgsNetWorkManager has 'blockingGet' method
+        from qgis.core import QgsNetworkAccessManager
+        from qgis.PyQt.QtNetwork import QNetworkRequest
+        from qgis.PyQt.QtCore import QUrl
+        if hasattr(QgsNetworkAccessManager, 'blockingGet'):
+            response = QgsNetworkAccessManager.blockingGet(QNetworkRequest(QUrl(url)))
+            if response.error() > 0:
+                raise InvalidTimeLayerError(response.errorString())
+            raw_xml = response.content().data() # pff, content returns a QByteArray of which you have read the data to get an bytearray
+        else:
+            # urllib dependency, preferably to be removed
+            # OR implement a blockingGet and add it here...
+            # QgsNetworkManager had no blockingGet until 3.6
+            import urllib.request, urllib.parse
+            raw_xml = urllib.request.urlopen(url).read()
+
         import xml.etree.ElementTree as ET
-        raw_xml = urllib.request.urlopen(url).read()
         root = ET.fromstring(raw_xml.decode("utf-8"))
         #print(root.tag)
         for lyr in root.iter('{http://www.opengis.net/wms}Layer'):
