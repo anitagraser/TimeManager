@@ -49,7 +49,7 @@ def setArchDigits(digits):
 
 
 def getArchDigits():
-    return TimeManagerProjectHandler.plugin_setting('arch_digits', DEFAULT_DIGITS)
+    return int(TimeManagerProjectHandler.plugin_setting('arch_digits', DEFAULT_DIGITS))
 
 
 def is_archaelogical():
