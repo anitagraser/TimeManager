@@ -2,6 +2,8 @@ from future import standard_library
 standard_library.install_aliases()
 # -*- coding: utf-8 -*-
 
+from urllib import parse
+
 from datetime import timedelta
 
 from timemanager.utils import time_util
@@ -51,6 +53,9 @@ class WMSTRasterLayer(TimeRasterLayer):
     def _get_time_extents_from_capabilities(self):
 
         # A LOT OF different notations
+        # note that 1.3.0 and 1.1.1 have different capabilities formats
+        # for now: only 1.3.0 supported (which is the default QGIS is requesting nowadays)
+        # would be cool to also take the 'default' time into account as for certain services (eg the mesonet below) have short times spans
 
         # http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r-t.cgi?&service=WMS&version=1.3.0&request=getcapabilities
         # <Dimension name="time" units="ISO8601" default="2006-06-23T03:10:00Z" nearestValue="0">1995-01-01/2019-12-31/PT5M</Dimension>
@@ -77,9 +82,26 @@ class WMSTRasterLayer(TimeRasterLayer):
         # <Dimension name="time" units="ISO8601"/><Extent name="time" default="2018-09-26T01:00:00Z">2018-09-25T13:10:00.000Z/2018-09-26T01:00:00.000Z/PT1S</Extent>
         # List
         # <Dimension name="time" units="ISO8601"/><Extent name="time" default="2018-09-26T01:00:00Z">2018-09-25T13:10:00.000Z,2018-09-25T13:20:00.000Z,2018-09-25T13:30:00.000Z,2018-09-25T13:40:00.000Z,2018-09-25T13:50:00.000Z,2018-09-25T14:00:00.000Z,2018-09-25T14:10:00.000Z,2018-09-25T14:20:00.000Z,2018-09-25T14:30:00.000Z,2018-09-25T14:40:00.000Z,2018-09-25T14:50:00.000Z,2018-09-25T15:00:00.000Z,2018-09-25T15:10:00.000Z,2018-09-25T15:20:00.000Z,2018-09-25T15:30:00.000Z,2018-09-25T15:40:00.000Z,2018-09-25T15:50:00.000Z,2018-09-25T16:00:00.000Z,2018-09-25T16:10:00.000Z,2018-09-25T16:20:00.000Z,2018-09-25T16:30:00.000Z,2018-09-25T16:40:00.000Z,2018-09-25T16:50:00.000Z,2018-09-25T17:00:00.000Z,2018-09-25T17:10:00.000Z,2018-09-25T17:20:00.000Z,2018-09-25T17:30:00.000Z,2018-09-25T17:40:00.000Z,2018-09-25T17:50:00.000Z,2018-09-25T18:00:00.000Z,2018-09-25T18:10:00.000Z,2018-09-25T18:20:00.000Z,2018-09-25T18:30:00.000Z,2018-09-25T18:40:00.000Z,2018-09-25T18:50:00.000Z,2018-09-25T19:00:00.000Z,2018-09-25T19:10:00.000Z,2018-09-25T19:20:00.000Z,2018-09-25T19:30:00.000Z,2018-09-25T19:40:00.000Z,2018-09-25T19:50:00.000Z,2018-09-25T20:00:00.000Z,2018-09-25T20:10:00.000Z,2018-09-25T20:20:00.000Z,2018-09-25T20:30:00.000Z,2018-09-25T20:40:00.000Z,2018-09-25T20:50:00.000Z,2018-09-25T21:00:00.000Z,2018-09-25T21:10:00.000Z,2018-09-25T21:20:00.000Z,2018-09-25T21:30:00.000Z,2018-09-25T21:40:00.000Z,2018-09-25T21:50:00.000Z,2018-09-25T22:00:00.000Z,2018-09-25T22:10:00.000Z,2018-09-25T22:20:00.000Z,2018-09-25T22:30:00.000Z,2018-09-25T22:40:00.000Z,2018-09-25T22:50:00.000Z,2018-09-25T23:00:00.000Z,2018-09-25T23:10:00.000Z,2018-09-25T23:20:00.000Z,2018-09-25T23:30:00.000Z,2018-09-25T23:40:00.000Z,2018-09-25T23:50:00.000Z,2018-09-26T00:00:00.000Z,2018-09-26T00:10:00.000Z,2018-09-26T00:20:00.000Z,2018-09-26T00:30:00.000Z,2018-09-26T00:40:00.000Z,2018-09-26T00:50:00.000Z,2018-09-26T01:00:00.000Z</Extent>
+        #
+        # Mapserver 1.1.1 - http://ies-ows.jrc.ec.europa.eu/effis?service=WMS&request=getcapabilities&version=1.1.1
+        # Interval without resolution !
+        # <Dimension name="time" units="ISO8601"/>
+        # <Extent name="time" default="2017-05-01" nearestValue="0">2016-03-01/2020-12-31</Extent>
+        #
+        # Interval without resolution !
+        # Mapserver 1.3.0 - http://ies-ows.jrc.ec.europa.eu/effis?service=WMS&request=getcapabilities&version=1.3.0
+        # <Dimension name="time" units="ISO8601" default="2019-01-01" nearestValue="0">2018-01-01/2099-12-31</Dimension>
 
-
-        url = self.wmsUrl + self.addUrlMark() + 'service=wms&version=1.3.0&request=getCapabilities'
+        # mmm, version parameter CAN be part of the url, and we get a version problem then
+        # so let's default to 1.3.0 version if NOT in url
+        if 'VERSION' in self.wmsUrl.upper():
+            # use the version string from the url itself...
+            # probably the url is urlencoded/quoted like: 'http://ies-ows.jrc.ec.europa.eu/effis?version%3D1.3.0'
+            # so unquote it first
+            # also, addUrlMark returns a %26 instead of & so remove it here as it screws up the url
+            url = parse.unquote(self.wmsUrl) + '&service=wms&request=getCapabilities'
+        else:
+            url = self.wmsUrl + self.addUrlMark() + 'service=wms&version=1.3.0&request=getCapabilities'
 
         # for QGIS >= 3.6 check if QgsNetWorkManager has 'blockingGet' method
         from qgis.core import QgsNetworkAccessManager
@@ -91,11 +113,11 @@ class WMSTRasterLayer(TimeRasterLayer):
                 raise InvalidTimeLayerError(response.errorString())
             raw_xml = response.content().data() # pff, content returns a QByteArray of which you have read the data to get an bytearray
         else:
-            # urllib dependency, preferably to be removed
+            # urllib.request dependency, preferably to be removed
             # OR implement a blockingGet and add it here...
             # QgsNetworkManager had no blockingGet until 3.6
-            import urllib.request, urllib.parse
-            raw_xml = urllib.request.urlopen(url).read()
+            from urllib import request
+            raw_xml = request.urlopen(url).read()
 
         import xml.etree.ElementTree as ET
         root = ET.fromstring(raw_xml.decode("utf-8"))
@@ -123,8 +145,12 @@ class WMSTRasterLayer(TimeRasterLayer):
                             interval_start = dims.split(',')[0]
                             interval_end = dims.split(',')[-1]
                             # print(interval_start, interval_end, resolution)
+                        # Mapserver 1.1.1 notation: 2018-01-01/2099-12-31
+                        elif len(dims.split('/')) == 2:
+                            interval_start = dims.split('/')[0]
+                            interval_end = dims.split('/')[-1]
                         elif (len(dims.split(',')) == 1 and len(dims.split('/')) == 1):
-                            # some services show dimension like
+                            # some services show dimension like ??
                             interval_start = dims
                             interval_end = dims
                         else:
