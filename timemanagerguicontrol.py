@@ -345,9 +345,9 @@ class TimeManagerGuiControl(QObject):
 
     def playClicked(self):
         if self.dock.pushButtonPlay.isChecked():
-            self.dock.pushButtonPlay.setIcon(QIcon("TimeManager:images/pause.png"))
+            self.dock.pushButtonPlay.setIcon(QIcon("TimeManager:ui/images/pause.png"))
         else:
-            self.dock.pushButtonPlay.setIcon(QIcon("TimeManager:images/play.png"))
+            self.dock.pushButtonPlay.setIcon(QIcon("TimeManager:ui/images/play.png"))
         self.play.emit()
 
     def currentTimeChangedSlider(self):
