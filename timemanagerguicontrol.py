@@ -593,7 +593,7 @@ an offset of -1, the features will appear one second later than they would by de
         painter.setRenderHint(painter.Antialiasing, True)
         txt = QTextDocument()
         html = """<span style="background-color:%s; padding: 5px; font-size: %spx;">
-                    <font face="%s" color="%s">%s</font>
+                    <font face="%s" color="%s">&nbsp;%s</font>
                   </span> """\
                % (self.labelOptions.bgcolor, self.labelOptions.size, self.labelOptions.font,
                   self.labelOptions.color, labelString)
