@@ -48,7 +48,7 @@
    <item>
     <widget class="QRadioButton" name="radioVideo">
      <property name="text">
-      <string>Video (requires ffmpeg in path, Linux/OSX only)</string>
+      <string>Video (requires ffmpeg in path)</string>
      </property>
     </widget>
    </item>
