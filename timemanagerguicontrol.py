@@ -420,7 +420,7 @@ class TimeManagerGuiControl(QObject):
 
 <h1>Time Manager</h1>
 
-<p>Time Manager filters your layers and displays only layers and features that match the specified time frame. Time Manager supports vector layers and raster layers (including WMS-T).</p>
+<p>Time Manager filters your layers and displays only layers and features that match the specified time frame. Time Manager supports vector layers and raster layers (including WMS with TIME dimension).</p>
 
 <p>Timestamps have to be in one of the following formats:</p>
 
