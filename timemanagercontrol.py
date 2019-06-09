@@ -686,8 +686,8 @@ class TimeManagerControl(QObject):
 
     def createTimeLayerFromRow(self, row):
         """Create a TimeLayer from options set in the table row"""
+        settings = layer_settings.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
         try:
-            settings = layer_settings.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
             timeLayer = TimeLayerFactory.get_timelayer_class_from_settings(settings)(settings, self.iface)
         except Exception as e:
             layer_name = "unknown"
@@ -697,9 +697,9 @@ class TimeManagerControl(QObject):
                 pass
             error_msg = QCoreApplication.translate(
                 'TimeManager',
-                "An error occured while trying to add layer {0} to TimeManager. Cause: {1}"
+                "An error occurred while trying to add layer {0} to TimeManager. Cause: {1}"
             ).format(layer_name, str(e))
-            error(error_msg + traceback.format_exc(e))
+            #error(error_msg + traceback.format_exc(e))
             self.showMessage(error_msg)
             return None
         return timeLayer
