@@ -129,7 +129,7 @@ class VectorLayerDialog(AddLayerDialog):
 
     def addConnections(self):
         super(VectorLayerDialog, self).addConnections()
-        self.dialog.comboBoxInterpolation.currentIndexChanged.connect(self.maybeEnableIDBox)
+        self.dialog.comboBoxInterpolation.currentTextChanged.connect(self.maybeEnableIDBox)
         self.dialog.exportEmptyCheckbox.setChecked(Qt.Unchecked)
 
     def show(self):
@@ -150,8 +150,6 @@ class VectorLayerDialog(AddLayerDialog):
         self.dialog.show()
 
     def maybeEnableIDBox(self, interpolation_mode):
-        interpolation_mode = self.dialog.comboBoxInterpolation.currentText()
-        #info('Interpolation mode: {}'.format(interpolation_mode))
         if conf.INTERPOLATION_MODES.get(interpolation_mode, False) == True:
             self.dialog.comboBoxID.setEnabled(True)
             self.dialog.labelID1.setEnabled(True)
