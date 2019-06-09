@@ -37,33 +37,36 @@ class TimeVectorLayer(TimeLayer):
     def __init__(self, settings, iface=None):
         TimeLayer.__init__(self, settings.layer, settings.isEnabled)
 
-        try:
-            self.layer = settings.layer
-            self.iface = iface
-            self.minValue, self.maxValue = None, None
-            self.fromTimeAttribute = settings.startTimeAttribute
-            self.toTimeAttribute = settings.endTimeAttribute if settings.endTimeAttribute != "" \
-                else self.fromTimeAttribute
-            self.accumulate = settings.accumulate
-            self.resetsss = settings.resetSubsetString
-            self.originalSubsetString = settings.subsetStr
-            self.currSubsetString = self.originalSubsetString
-            if self.resetsss:
-                self.setSubsetString("")
-            else:
-                self.setSubsetString(self.originalSubsetString)
-            self.geometriesCount = settings.geometriesCount
+        self.layer = settings.layer
+        self.iface = iface
+        self.minValue, self.maxValue = None, None
+        self.fromTimeAttribute = settings.startTimeAttribute
+        self.toTimeAttribute = settings.endTimeAttribute if settings.endTimeAttribute != "" \
+            else self.fromTimeAttribute
+        self.accumulate = settings.accumulate
+        self.resetsss = settings.resetSubsetString
+        self.originalSubsetString = settings.subsetStr
+        self.currSubsetString = self.originalSubsetString
+        if self.resetsss:
+            self.setSubsetString("")
+        else:
+            self.setSubsetString(self.originalSubsetString)
+        self.geometriesCount = settings.geometriesCount
+
+        try:            
             self.type = time_util.DateTypes.determine_type(self.getRawMinValue())
+            info("Time type: {}".format(self.type))
             if self.type not in time_util.DateTypes.QDateTypes:
                 # call to throw an exception early if no format can be found
                 self.findValidValues(self.fromTimeAttribute, settings.timeFormat)
                 if self.fromTimeAttribute != self.toTimeAttribute:
                     self.findValidValues(self.toTimeAttribute, settings.timeFormat)
 
-            self.timeFormat = self.determine_format(self.getRawMinValue(), settings.timeFormat)
+            self.timeFormat = self.determine_format(self.getFromValue(), settings.timeFormat)
+            info("Time format: {}".format(self.timeFormat))
             if self.toTimeAttribute != self.fromTimeAttribute:
                 type2 = time_util.DateTypes.determine_type(self.getRawMaxValue())
-                tf2 = self.determine_format(self.getRawMaxValue(), settings.timeFormat)
+                tf2 = self.determine_format(self.getToValue(), settings.timeFormat)
                 if self.type != type2 or self.timeFormat != tf2:
                     raise InvalidTimeLayerError(
                         QCoreApplication.translate(
@@ -114,6 +117,18 @@ class TimeVectorLayer(TimeLayer):
     def getProvider(self):
         return self.layer  # the layer itself can be the provider,
         # which means that it can now about joined fields
+
+    def getFromValue(self):
+        for f in self.layer.getFeatures():
+            value = f[self.fromTimeAttribute]
+            if value != None:
+                return value
+
+    def getToValue(self):
+        for f in self.layer.getFeatures():
+            value = f[self.toTimeAttribute]
+            if value != None:
+                return value
 
     def getRawMinValue(self):
         """
