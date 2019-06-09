@@ -14,6 +14,7 @@ from timemanager.utils import qgis_utils as qgs
 from timemanager import conf
 from timemanager.layers import layer_settings
 from future.utils import with_metaclass
+from timemanager.utils.tmlogging import info
 
 
 class AddLayerDialog(with_metaclass(abc.ABCMeta, object)):
@@ -149,6 +150,8 @@ class VectorLayerDialog(AddLayerDialog):
         self.dialog.show()
 
     def maybeEnableIDBox(self, interpolation_mode):
+        interpolation_mode = self.dialog.comboBoxInterpolation.currentText()
+        #info('Interpolation mode: {}'.format(interpolation_mode))
         if conf.INTERPOLATION_MODES.get(interpolation_mode, False) == True:
             self.dialog.comboBoxID.setEnabled(True)
             self.dialog.labelID1.setEnabled(True)
