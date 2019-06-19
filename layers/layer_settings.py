@@ -95,7 +95,8 @@ def getSettingsFromAddVectorLayersUI(ui, layerIndexToId):
     result.interpolationEnabled = conf.INTERPOLATION_MODES[result.interpolationMode]
     result.idAttribute = ui.comboBoxID.currentText() if result.interpolationEnabled else None
     result.idAttribute = "" if result.idAttribute == conf.NO_ID_TEXT else result.idAttribute
-    result.geometriesCount = not ui.exportEmptyCheckbox.checkState() == Qt.Checked
+    #result.geometriesCount = not ui.exportEmptyCheckbox.checkState() == Qt.Checked
+    result.accumulate = ui.accumulateFeaturesCheckbox.checkState() == Qt.Checked
     result.resetSubsetString = ui.resetSubsetStringCheckbox.checkState() == Qt.Checked
     return result
 
@@ -130,6 +131,10 @@ def addSettingsToRow(settings, out_table):
             item.setText(value)
         else:
             item.setCheckState(Qt.Checked if value else Qt.Unchecked)
+        if i == 10: # geometriesCount implementation needs to be finished before this can be reenabled!
+            item.setFlags(Qt.ItemIsEnabled)
+            item.setFlags(Qt.ItemIsEditable)
+            item.setFlags(Qt.ItemIsSelectable)
         out_table.setItem(row, i, item)
 
 def getSettingsFromRow(table, rowNum):

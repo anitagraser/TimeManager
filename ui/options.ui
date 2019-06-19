@@ -86,7 +86,7 @@
        </column>
        <column>
         <property name="text">
-         <string>Ignore for detect empty</string>
+         <string>Ignore in empty layer detection</string>
         </property>
        </column>
        <column>

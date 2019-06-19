@@ -130,7 +130,7 @@ class VectorLayerDialog(AddLayerDialog):
     def addConnections(self):
         super(VectorLayerDialog, self).addConnections()
         self.dialog.comboBoxInterpolation.currentTextChanged.connect(self.maybeEnableIDBox)
-        self.dialog.exportEmptyCheckbox.setChecked(Qt.Unchecked)
+        #self.dialog.exportEmptyCheckbox.setChecked(Qt.Unchecked)
 
     def show(self):
         """Update GUI elements and show the dialog"""

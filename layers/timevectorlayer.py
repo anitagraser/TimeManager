@@ -227,7 +227,7 @@ class TimeVectorLayer(TimeLayer):
     def getEndTime(self, timePosition, timeFrame):
         return timePosition + timeFrame + timedelta(seconds=self.offset)
 
-    def getGeometriesCountForExport(self):
+    def geometriesCountForExport(self):
         return self.geometriesCount
 
     def accumulateFeatures(self):
