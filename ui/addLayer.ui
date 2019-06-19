@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>352</width>
-    <height>273</height>
+    <height>296</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -149,6 +149,13 @@
         </spacer>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="exportEmptyCheckbox">
+       <property name="text">
+        <string>Ignore this layer when checking if scene is empty</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QCheckBox" name="accumulateFeaturesCheckbox">
