@@ -567,7 +567,7 @@ an offset of -1, the features will appear one second later than they would by de
         """Turn pushButtonPlay off"""
         if self.dock.pushButtonPlay.isChecked():
             self.dock.pushButtonPlay.toggle()
-            self.dock.pushButtonPlay.setIcon(QIcon("TimeManager:images/play.png"))
+            self.dock.pushButtonPlay.setIcon(QIcon("TimeManager:ui/images/play.png"))
 
     def renderLabel(self, painter):
         """Render the current timestamp on the map canvas"""
