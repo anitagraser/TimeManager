@@ -11,15 +11,12 @@ Latest news will be published on Anita's blog: http://anitagraser.com/tag/time-m
 
 The aim of '''Time Manager plugin for QGIS''' is to provide comfortable browsing through temporal geodata. A dock widget provides a time slider and a configuration dialog for your layers to manage.
 
-## Newest features
-
-As of version 1.6.0 TimeManager provides support for linear interpolation between point geometries. Please try it out and give feedback.
-
 ## What Time Manager currently does
 
 Time Manager filters your datasets and displays only features with timestamps in the user specified time frame. Timestamps have to be in one of the following formats:
 
 * Integer timestamp in seconds after or before the epoch (1970-1-1) 
+* %Y-%m-%dT%H:%M:%S.%fZ
 * %Y-%m-%d %H:%M:%S.%f
 * %Y-%m-%d %H:%M:%S
 * %Y-%m-%d %H:%M
@@ -58,7 +55,7 @@ The biggest tested dataset was a Spatialite table with indexed timestamps contai
 
 ## Animation
 
-Time Manager supports exporting image series based on the defined animation settings. Our goal for future versions is to include a tool that creates actual animations from these image series. Until then, external programs can be used for this last step. See the [Video Tutorial](docs/VideoTutorial.md) for instructions on how to create a video from the images.
+Time Manager supports exporting image series and can create animations from these image series. Video export requires an installation of ffmpeg. 
 
 ### Examples
 
@@ -98,5 +95,3 @@ Time Manager is available through QGIS Plugin Repository http://plugins.qgis.org
 Time Manager 3 requires **QGIS 3.0** with Python 3.
 
 Time Manager 1 reqires **QGIS 2.0** with Python 2.7.
-
-Other plugin dependencies: Python module dateutil (included e.g. in matplotlib available in OSGeo4W)
