@@ -65,7 +65,15 @@ class WMSTRasterLayer(TimeRasterLayer):
         timeString = "TIME={}/{}".format(
             time_util.datetime_to_str(startTime, self.timeFormat),
             time_util.datetime_to_str(endTime, self.timeFormat))
-        dataUrl = self.IGNORE_PREFIX + self.originalUri + self.addUrlMark() + timeString
+
+        uriPos = self.originalUri.find("url=")
+        uriEnd = self.originalUri[uriPos:].find("&")
+        uriEnd = uriPos + uriEnd if uriEnd != -1 else len(self.originalUri)
+        replaceUri = self.originalUri[uriPos:uriEnd]
+        newUri = replaceUri + self.addUrlMark(replaceUri) + timeString
+        replacedOriginalUri = self.originalUri.replace(replaceUri, newUri)
+
+        dataUrl = self.IGNORE_PREFIX + replacedOriginalUri
         #print "original URL: " + self.originalUri
         #print "final URL: " + dataUrl
         self.layer.dataProvider().setDataSourceUri(dataUrl)
