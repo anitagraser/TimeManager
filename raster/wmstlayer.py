@@ -3,7 +3,6 @@ standard_library.install_aliases()
 # -*- coding: utf-8 -*-
 
 from datetime import timedelta
-from qgis.core import QgsMessageLog
 from timemanager.utils import time_util
 from timemanager.layers.timerasterlayer import TimeRasterLayer
 from timemanager.layers.timelayer import TimeLayer, NotATimeAttributeError
@@ -87,3 +86,5 @@ class WMSTRasterLayer(TimeRasterLayer):
         self.layer.dataProvider().setDataSourceUri(self.originalUri)
         self.layer.dataProvider().reloadData()
         self.layer.triggerRepaint()
+
+        
