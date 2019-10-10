@@ -3,7 +3,7 @@ standard_library.install_aliases()
 # -*- coding: utf-8 -*-
 
 from datetime import timedelta
-
+from qgis.core import QgsMessageLog
 from timemanager.utils import time_util
 from timemanager.layers.timerasterlayer import TimeRasterLayer
 from timemanager.layers.timelayer import TimeLayer, NotATimeAttributeError
@@ -45,9 +45,9 @@ class WMSTRasterLayer(TimeRasterLayer):
         endTime += timedelta(seconds=self.offset)
         return (startTime, endTime)
 
-    def addUrlMark(self):
-        if "?" in self.originalUri:
-            if self.originalUri.endswith('?'):
+    def addUrlMark(self, uri):
+        if "?" in uri:
+            if uri.endswith('?'):
                 # concatting a & behind ? is messing up QGIS wms parseUri: do NOT add anything behind it
                 return ""
             else:
@@ -65,7 +65,7 @@ class WMSTRasterLayer(TimeRasterLayer):
         timeString = "TIME={}/{}".format(
             time_util.datetime_to_str(startTime, self.timeFormat),
             time_util.datetime_to_str(endTime, self.timeFormat))
-
+            
         uriPos = self.originalUri.find("url=")
         uriEnd = self.originalUri[uriPos:].find("&")
         uriEnd = uriPos + uriEnd if uriEnd != -1 else len(self.originalUri)
@@ -76,6 +76,8 @@ class WMSTRasterLayer(TimeRasterLayer):
         dataUrl = self.IGNORE_PREFIX + replacedOriginalUri
         #print "original URL: " + self.originalUri
         #print "final URL: " + dataUrl
+        QgsMessageLog.logMessage("original URL: " + self.originalUri)
+        QgsMessageLog.logMessage("final URL: " + dataUrl)
         self.layer.dataProvider().setDataSourceUri(dataUrl)
         self.layer.dataProvider().reloadData()
 
@@ -85,4 +87,3 @@ class WMSTRasterLayer(TimeRasterLayer):
         self.layer.dataProvider().setDataSourceUri(self.originalUri)
         self.layer.dataProvider().reloadData()
         self.layer.triggerRepaint()
-
