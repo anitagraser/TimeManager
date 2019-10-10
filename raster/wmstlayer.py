@@ -76,8 +76,6 @@ class WMSTRasterLayer(TimeRasterLayer):
         dataUrl = self.IGNORE_PREFIX + replacedOriginalUri
         #print "original URL: " + self.originalUri
         #print "final URL: " + dataUrl
-        QgsMessageLog.logMessage("original URL: " + self.originalUri)
-        QgsMessageLog.logMessage("final URL: " + dataUrl)
         self.layer.dataProvider().setDataSourceUri(dataUrl)
         self.layer.dataProvider().reloadData()
 
