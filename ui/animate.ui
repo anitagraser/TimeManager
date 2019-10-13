@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>673</width>
-    <height>361</height>
+    <width>405</width>
+    <height>169</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLineEdit" name="lineEdit"/>
@@ -28,7 +28,7 @@
      </item>
     </layout>
    </item>
-   <item>
+   <item row="1" column="0">
     <widget class="QRadioButton" name="radioFramesOnly">
      <property name="text">
       <string>Frames only</string>
@@ -38,21 +38,14 @@
      </property>
     </widget>
    </item>
-   <item>
+   <item row="2" column="0">
     <widget class="QRadioButton" name="radioAnimatedGif">
      <property name="text">
       <string>Animated gif (requires ImageMagick in path, Linux/OSX only)</string>
      </property>
     </widget>
    </item>
-   <item>
-    <widget class="QRadioButton" name="radioVideo">
-     <property name="text">
-      <string>Video (requires ffmpeg in path)</string>
-     </property>
-    </widget>
-   </item>
-   <item>
+   <item row="3" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label_2">
@@ -83,7 +76,7 @@
      </item>
     </layout>
    </item>
-   <item>
+   <item row="4" column="0">
     <widget class="QCheckBox" name="clearCheckBox">
      <property name="enabled">
       <bool>true</bool>
@@ -96,7 +89,7 @@
      </property>
     </widget>
    </item>
-   <item>
+   <item row="5" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

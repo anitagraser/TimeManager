@@ -231,7 +231,7 @@ class TimeManagerGuiControl(QObject):
         TimeManagerProjectHandler.set_plugin_setting(conf.LAST_ANIMATION_PATH_TAG, path)
         delay_millis = self.animationDialog.spinBoxDelay.value()
         export_gif = self.animationDialog.radioAnimatedGif.isChecked()
-        export_video = self.animationDialog.radioVideo.isChecked()
+        export_video = False  # self.animationDialog.radioVideo.isChecked()
         do_clear = self.animationDialog.clearCheckBox.isChecked()
         self.signalExportVideo.emit(path, delay_millis, export_gif, export_video, do_clear)
 
