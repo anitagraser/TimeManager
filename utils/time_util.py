@@ -12,7 +12,7 @@ __email__ = "karolina.alexiou@teralytics.ch"
 import re  # for hacking strftime
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from qgis.PyQt.QtCore import QDate, QDateTime
+from qgis.PyQt.QtCore import QDate, QDateTime, QCoreApplication, QVariant
 
 from timemanager.utils import bcdate_util
 from timemanager.conf import DEFAULT_DIGITS
@@ -82,11 +82,12 @@ class DateTypes(object):
             int(val)
             return cls.IntegerTimestamps
         except Exception:
-            if type(val) is QDate:
-                return cls.DatesAsQDates
-            if type(val) is QDateTime:
-                return cls.DatesAsQDateTimes
-            return cls.DatesAsStrings
+            pass
+        if type(val) is QDate:
+            return cls.DatesAsQDates
+        if type(val) is QDateTime:
+            return cls.DatesAsQDateTimes
+        return cls.DatesAsStrings
 
     @classmethod
     def get_type_format(cls, typ):
@@ -190,12 +191,15 @@ def timeval_to_epoch(val, fmt):
     """Converts any string, number, datetime or Qdate or QDatetime to epoch"""
     if is_archaelogical():
         return bcdate_util.timeval_to_epoch(val)
+    if type(val) == QVariant:
+        if val.isNull():
+            raise NoneValueDetectedError()
     try:
         return int(val)
-    except Exception:
+    except ValueError:
         try:
             return float(val)
-        except Exception:
+        except ValueError:
             if type(val) in [QDate, QDateTime]:
                 val = QDateTime_to_datetime(val)
             if type(val) == str:
@@ -374,3 +378,14 @@ def get_frame_count(start, end, td):
 
 def is_archaeological_layer(layer):
     return layer.getTimeFormat() in [bcdate_util.BC_FORMAT]
+
+
+class NoneValueDetectedError(Exception):
+
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return QCoreApplication.translate('TimeManager', 'NoneValueDetectedError')
+        return repr(self.value)
+
