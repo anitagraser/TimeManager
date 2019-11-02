@@ -191,20 +191,34 @@ def timeval_to_epoch(val, fmt):
     """Converts any string, number, datetime or Qdate or QDatetime to epoch"""
     if is_archaelogical():
         return bcdate_util.timeval_to_epoch(val)
+
     if type(val) == QVariant:
         if val.isNull():
-            raise NoneValueDetectedError()
+            raise NoneValueDetectedException()
+
     try:
         return int(val)
-    except ValueError:
-        try:
-            return float(val)
-        except ValueError:
-            if type(val) in [QDate, QDateTime]:
-                val = QDateTime_to_datetime(val)
-            if type(val) == str:
-                val = str_to_datetime(val, fmt)
-            return datetime_to_epoch(val)
+    except Exception:
+        pass
+
+    try:
+        return float(val)
+    except Exception:
+        pass
+
+    try:
+        val = QDateTime_to_datetime(val)
+        return datetime_to_epoch(val)
+    except Exception:
+        pass
+
+    try:
+        val = str_to_datetime(val, fmt)
+        return datetime_to_epoch(val)
+    except Exception:
+        pass
+
+    raise CannotConvertTimeValueToEpochException(val, fmt)
 
 
 def timeval_to_datetime(val, fmt):
@@ -380,12 +394,21 @@ def is_archaeological_layer(layer):
     return layer.getTimeFormat() in [bcdate_util.BC_FORMAT]
 
 
-class NoneValueDetectedError(Exception):
+class NoneValueDetectedException(Exception):
 
     def __init__(self):
         pass
 
     def __str__(self):
-        return QCoreApplication.translate('TimeManager', 'NoneValueDetectedError')
-        return repr(self.value)
+        return QCoreApplication.translate('TimeManager', 'NoneValueDetectedException')
+
+
+class CannotConvertTimeValueToEpochException(Exception):
+
+    def __init__(self, val, frm):
+        self.val = val
+        self.frm = frm
+
+    def __str__(self):
+        return QCoreApplication.translate('TimeManager', 'CannotConvertTimeValueToEpochException: {} with format {}'.format(self.val, self.frm))
 

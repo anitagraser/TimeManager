@@ -665,7 +665,7 @@ class TimeManagerControl(QObject):
         for row in range(self.guiControl.optionsDialog.tableWidget.rowCount()):
             try:
                 layer = self.createTimeLayerFromRow(row)
-            except time_util.NoneValueDetectedError:
+            except time_util.NoneValueDetectedException:
                 error_msg = QCoreApplication.translate('TimeManager', "An error occurred while trying to add layer {0} to TimeManager because there are NULL values in the timestamp column.")
                 error(error_msg)
                 self.showMessage(error_msg)
@@ -684,12 +684,14 @@ class TimeManagerControl(QObject):
 
             self.timeLayerManager.refreshTimeRestrictions()
 
-    def createTimeLayerFromRow(self, row):
+    def createTimeLayerFromRow(self, row, show_detailed_error_messages=False):
         """Create a TimeLayer from options set in the table row"""
         settings = layer_settings.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
-        """
-        timeLayer = TimeLayerFactory.get_timelayer_class_from_settings(settings)(settings, self.iface)
-        """
+
+        if show_detailed_error_messages:
+            timeLayer = TimeLayerFactory.get_timelayer_class_from_settings(settings)(settings, self.iface)
+            return timeLayer
+
         try:
             timeLayer = TimeLayerFactory.get_timelayer_class_from_settings(settings)(settings, self.iface)
         except Exception as e:
@@ -707,7 +709,6 @@ class TimeManagerControl(QObject):
             return None
 
         return timeLayer
-
 
     def setActive(self, value):
         """De/activate TimeManager"""

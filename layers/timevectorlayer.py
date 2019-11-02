@@ -153,7 +153,7 @@ class TimeVectorLayer(TimeLayer):
         """Return unique values in given field"""
         provider = self.getProvider()
         idx = provider.fields().indexFromName(fieldName)
-        return provider.uniqueValues(idx)
+        return list(provider.uniqueValues(idx))
 
     def getMinMaxValues(self):
         """Return min and max value strings"""
@@ -174,7 +174,7 @@ class TimeVectorLayer(TimeLayer):
                             dt = time_util.timeval_to_datetime(val, fmt)
                             res.append(dt)
                             #info("{} converted to {}".format(val, dt))
-                        except time_util.NoneValueDetectedError as e:
+                        except time_util.NoneValueDetectedException as e:
                             pass
                             #error(e)
                             #warn(QCoreApplication.translate('TimeManager', "An error occurred while trying to add layer {0} to TimeManager because there are NULL values in the timestamp column."))
