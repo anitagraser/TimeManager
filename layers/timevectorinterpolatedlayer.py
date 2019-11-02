@@ -6,8 +6,6 @@ from builtins import range
 
 __author__ = 'carolinux'
 
-import traceback
-
 from qgis.core import QgsVectorLayer, QgsFeatureRequest, QgsPoint, QgsFeature, QgsGeometry
 
 from timemanager.layers.timelayer import InvalidTimeLayerError
@@ -84,7 +82,7 @@ class TimeVectorInterpolatedLayer(TimeVectorLayer):
             self.n = 0
             info("Interpolated layer {} created successfully!".format(self.layer.name()))
         except Exception as e:
-            raise InvalidTimeLayerError("Traceback:" + traceback.format_exc(e))
+            raise InvalidTimeLayerError(str(e))
 
     def __del__(self):
         info("Cleaning up interpolated layer {}".format(self.layer.name()))

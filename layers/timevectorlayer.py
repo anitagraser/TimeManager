@@ -7,7 +7,6 @@ Created on Thu Mar 22 17:28:19 2012
 from __future__ import absolute_import
 from builtins import str
 
-import traceback
 from datetime import timedelta
 from qgis.PyQt.QtCore import QCoreApplication, QDate, QDateTime
 
@@ -53,10 +52,16 @@ class TimeVectorLayer(TimeLayer):
             self.setSubsetString(self.originalSubsetString)
         self.geometriesCount = settings.geometriesCount
 
-        try:            
-            self.type = time_util.DateTypes.determine_type(self.getRawMinValue())
-            info("Time type: {}".format(self.type))
-            if self.type not in time_util.DateTypes.QDateTypes:
+        if self.layer.dataProvider().storageType() == 'Memory storage':
+            self.raiseInvalidLayerError("Invalid time layer: Memory layers are not supported")
+
+        raw_min_value = self.getRawMinValue()
+        info("Raw min value: {}".format(raw_min_value))
+        self.timestamp_type = time_util.DateTypes.determine_type(raw_min_value)
+        info("Time stamp type: {}".format(self.timestamp_type))
+
+        try:
+            if self.timestamp_type not in time_util.DateTypes.QDateTypes:
                 # call to throw an exception early if no format can be found
                 self.findValidValues(self.fromTimeAttribute, settings.timeFormat)
                 if self.fromTimeAttribute != self.toTimeAttribute:
@@ -64,17 +69,12 @@ class TimeVectorLayer(TimeLayer):
 
             self.timeFormat = self.determine_format(self.getFromValue(), settings.timeFormat)
             info("Time format: {}".format(self.timeFormat))
+
             if self.toTimeAttribute != self.fromTimeAttribute:
                 type2 = time_util.DateTypes.determine_type(self.getRawMaxValue())
                 tf2 = self.determine_format(self.getToValue(), settings.timeFormat)
-                if self.type != type2 or self.timeFormat != tf2:
-                    raise InvalidTimeLayerError(
-                        QCoreApplication.translate(
-                            'TimeManager',
-                            "Invalid time layer: To and From attributes must have "
-                            "exact same format"
-                        )
-                    )
+                if self.timestamp_type != type2 or self.timeFormat != tf2:
+                    self.raiseInvalidLayerError("Invalid time layer: To and From attributes must have exact same format")
 
             self.offset = int(settings.offset)
             assert (self.timeFormat != time_util.PENDING)
@@ -82,25 +82,20 @@ class TimeVectorLayer(TimeLayer):
             info("Layer extents" + str(extents))
             if self.resetsss:
                 self.setSubsetString(self.originalSubsetString)
-        except ValueError as e:
-            # ValueErrors appear for virtual layers, see https://github.com/anitagraser/TimeManager/issues/219
-            error(traceback.format_exc(e))
-            raise InvalidTimeLayerError(
-                QCoreApplication.translate(
-                    'TimeManager',
-                    'This layer type is currently not supported. Cause:{}'
-                ).format(str(e))
-            )
+
         except Exception as e:
-            error(traceback.format_exc(e))
+            error(e)
             raise InvalidTimeLayerError(str(e))
+
+    def raiseInvalidLayerError(self, message):
+        raise InvalidTimeLayerError(QCoreApplication.translate('TimeManager', message))
 
     def getOriginalSubsetString(self):
         return self.originalSubsetString
 
     def getDateType(self):
         """Return the type of dates this layer has stored"""
-        return self.type
+        return self.timestamp_type
 
     def getTimeAttributes(self):
         """Return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""
@@ -116,7 +111,7 @@ class TimeVectorLayer(TimeLayer):
 
     def getProvider(self):
         return self.layer  # the layer itself can be the provider,
-        # which means that it can now about joined fields
+        # which means that it can know about joined fields
 
     def getFromValue(self):
         for f in self.layer.getFeatures():
@@ -158,7 +153,7 @@ class TimeVectorLayer(TimeLayer):
         """Return unique values in given field"""
         provider = self.getProvider()
         idx = provider.fields().indexFromName(fieldName)
-        return provider.uniqueValues(idx)
+        return list(provider.uniqueValues(idx))
 
     def getMinMaxValues(self):
         """Return min and max value strings"""
@@ -168,9 +163,9 @@ class TimeVectorLayer(TimeLayer):
                 self.minValue = self.getRawMinValue()
                 self.maxValue = self.getRawMaxValue()
             else:  # strings or qdate(time) values
-                # need to find min max by looking at all the unique values
-                # because QGIS doesn't get sorting right
+                # need to find min max by looking at all the unique values because QGIS doesn't get sorting right
                 uniques = self.getUniques(self.fromTimeAttribute)
+                #info("Unique values: {}".format(uniques))
 
                 def vals_to_dt(vals, fmt):
                     res = []
@@ -178,17 +173,20 @@ class TimeVectorLayer(TimeLayer):
                         try:
                             dt = time_util.timeval_to_datetime(val, fmt)
                             res.append(dt)
-                            # info("{} converted to {}".format(val, dt))
+                            #info("{} converted to {}".format(val, dt))
+                        except time_util.NoneValueDetectedException as e:
+                            pass
+                            #error(e)
+                            #warn(QCoreApplication.translate('TimeManager', "An error occurred while trying to add layer {0} to TimeManager because there are NULL values in the timestamp column."))
                         except Exception as e:
-                            error(traceback.format_exc(e))
+                            error(e)
                             warn(QCoreApplication.translate('TimeManager', "Unparseable value {0} in layer {1} ignored. Cause {2}").format(val, self.layer.name(), e))
                     return res
 
                 unique_vals = vals_to_dt(uniques, fmt)
                 if len(unique_vals) == 0:
                     raise Exception(
-                        QCoreApplication.translate(
-                            'TimeManager',
+                        QCoreApplication.translate('TimeManager',
                             "Could not parse any dates while trying to get time extents."
                             "None of the values (for example {0}) matches the format {1}"
                         ).format(uniques[-1], fmt)
@@ -239,18 +237,18 @@ class TimeVectorLayer(TimeLayer):
     def findValidValues(self, fieldName, fmt):
         uniques = self.getUniques(fieldName)
         at_least_one_valid = False
-        last_exc = None
+        last_exception = None
         for v in uniques:
             try:
                 time_util.str_to_datetime(v, fmt)
                 at_least_one_valid = True
                 break
-            except Exception as e:
-                error(traceback.format_exc(e))
-                last_exc = e
+            except time_util.UnsupportedFormatException as e:
+                error(e)
+                last_exception = e
                 continue
         if not at_least_one_valid:
-            raise Exception(last_exc)
+            raise NoValidTimestampValuesException(last_exception)
 
     def hasSubsetStr(self):
         return True
@@ -284,7 +282,7 @@ class TimeVectorLayer(TimeLayer):
             try:
                 self.setSubsetString(subsetString)
             except SubstringException:
-                error(traceback.format_exc(e))
+                error(e)
                 tried.append(subsetString)
                 # try the other one
                 # not sure if trying several idioms could make the screen flash
@@ -329,3 +327,14 @@ class TimeVectorLayer(TimeLayer):
             str(settings.resetSubsetString)
         ])
         return res
+
+
+class NoValidTimestampValuesException(Exception):
+
+    def __init__(self, last_exception):
+        self.last_exception = last_exception
+
+    def __str__(self):
+        return QCoreApplication.translate('TimeManager', 'NoValidTimestampValuesException: {}'.format(self.last_exception))
+        return repr(self.value)
+

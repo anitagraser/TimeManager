@@ -4,7 +4,6 @@ from builtins import range
 
 import os
 import math
-import traceback
 from qgis.PyQt.QtCore import QObject, QCoreApplication, QTimer
 from qgis.PyQt.QtWidgets import QAction, QMessageBox
 from collections import OrderedDict
@@ -654,7 +653,7 @@ class TimeManagerControl(QObject):
                     error_msg = QCoreApplication.translate('TimeManager', "An error occured while trying to restore layer {} to TimeManager. {}").format(
                         layerId, str(e)
                     )
-                    error(error_msg + traceback.format_exc(e))
+                    error(error_msg + e)
                     self.showMessage(error_msg)
                     continue
 
@@ -665,28 +664,34 @@ class TimeManagerControl(QObject):
         self.getTimeLayerManager().clearTimeLayerList()
         for row in range(self.guiControl.optionsDialog.tableWidget.rowCount()):
             try:
-                # add layer from row information
                 layer = self.createTimeLayerFromRow(row)
-                if layer is None:
-                    continue
-                self.getTimeLayerManager().registerTimeLayer(layer)
-                # save animation options
-                animationFrameLength = self.guiControl.optionsDialog.spinBoxFrameLength.value()
-                playBackwards = self.guiControl.optionsDialog.checkBoxBackwards.isChecked()
-                loopAnimation = self.guiControl.optionsDialog.checkBoxLoop.isChecked()
-                self.setAnimationOptions(animationFrameLength, playBackwards, loopAnimation)
-                self.guiControl.exportEmpty = not self.guiControl.optionsDialog.checkBoxDontExportEmpty.isChecked()
-                self.guiControl.showLabel = self.guiControl.optionsDialog.checkBoxLabel.isChecked()
-                self.guiControl.refreshMapCanvas('saveOptions')
-                self.guiControl.dock.pushButtonExportVideo.setEnabled(True)
-            except Exception:
+            except time_util.NoneValueDetectedException:
+                error_msg = QCoreApplication.translate('TimeManager', "An error occurred while trying to add layer {0} to TimeManager because there are NULL values in the timestamp column.")
+                error(error_msg)
+                self.showMessage(error_msg)
+            if layer is None:
                 continue
+            self.getTimeLayerManager().registerTimeLayer(layer)
+            # save animation options
+            animationFrameLength = self.guiControl.optionsDialog.spinBoxFrameLength.value()
+            playBackwards = self.guiControl.optionsDialog.checkBoxBackwards.isChecked()
+            loopAnimation = self.guiControl.optionsDialog.checkBoxLoop.isChecked()
+            self.setAnimationOptions(animationFrameLength, playBackwards, loopAnimation)
+            self.guiControl.exportEmpty = not self.guiControl.optionsDialog.checkBoxDontExportEmpty.isChecked()
+            self.guiControl.showLabel = self.guiControl.optionsDialog.checkBoxLabel.isChecked()
+            self.guiControl.refreshMapCanvas('saveOptions')
+            self.guiControl.dock.pushButtonExportVideo.setEnabled(True)
 
             self.timeLayerManager.refreshTimeRestrictions()
 
-    def createTimeLayerFromRow(self, row):
+    def createTimeLayerFromRow(self, row, show_detailed_error_messages=False):
         """Create a TimeLayer from options set in the table row"""
         settings = layer_settings.getSettingsFromRow(self.guiControl.optionsDialog.tableWidget, row)
+
+        if show_detailed_error_messages:
+            timeLayer = TimeLayerFactory.get_timelayer_class_from_settings(settings)(settings, self.iface)
+            return timeLayer
+
         try:
             timeLayer = TimeLayerFactory.get_timelayer_class_from_settings(settings)(settings, self.iface)
         except Exception as e:
@@ -699,9 +704,10 @@ class TimeManagerControl(QObject):
                 'TimeManager',
                 "An error occurred while trying to add layer {0} to TimeManager. Cause: {1}"
             ).format(layer_name, str(e))
-            #error(error_msg + traceback.format_exc(e))
+            error(error_msg)
             self.showMessage(error_msg)
             return None
+
         return timeLayer
 
     def setActive(self, value):
