@@ -12,7 +12,7 @@ __email__ = "karolina.alexiou@teralytics.ch"
 import re  # for hacking strftime
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from qgis.PyQt.QtCore import QDate, QDateTime
+from qgis.PyQt.QtCore import QDate, QDateTime, QCoreApplication, QVariant
 
 from timemanager.utils import bcdate_util
 from timemanager.conf import DEFAULT_DIGITS
@@ -49,7 +49,7 @@ def setArchDigits(digits):
 
 
 def getArchDigits():
-    return TimeManagerProjectHandler.plugin_setting('arch_digits', DEFAULT_DIGITS)
+    return int(TimeManagerProjectHandler.plugin_setting('arch_digits', DEFAULT_DIGITS))
 
 
 def is_archaelogical():
@@ -82,11 +82,12 @@ class DateTypes(object):
             int(val)
             return cls.IntegerTimestamps
         except Exception:
-            if type(val) is QDate:
-                return cls.DatesAsQDates
-            if type(val) is QDateTime:
-                return cls.DatesAsQDateTimes
-            return cls.DatesAsStrings
+            pass
+        if type(val) is QDate:
+            return cls.DatesAsQDates
+        if type(val) is QDateTime:
+            return cls.DatesAsQDateTimes
+        return cls.DatesAsStrings
 
     @classmethod
     def get_type_format(cls, typ):
@@ -190,17 +191,34 @@ def timeval_to_epoch(val, fmt):
     """Converts any string, number, datetime or Qdate or QDatetime to epoch"""
     if is_archaelogical():
         return bcdate_util.timeval_to_epoch(val)
+
+    if type(val) == QVariant:
+        if val.isNull():
+            raise NoneValueDetectedException()
+
     try:
         return int(val)
     except Exception:
-        try:
-            return float(val)
-        except Exception:
-            if type(val) in [QDate, QDateTime]:
-                val = QDateTime_to_datetime(val)
-            if type(val) == str:
-                val = str_to_datetime(val, fmt)
-            return datetime_to_epoch(val)
+        pass
+
+    try:
+        return float(val)
+    except Exception:
+        pass
+
+    try:
+        val = QDateTime_to_datetime(val)
+        return datetime_to_epoch(val)
+    except Exception:
+        pass
+
+    try:
+        val = str_to_datetime(val, fmt)
+        return datetime_to_epoch(val)
+    except Exception:
+        pass
+
+    raise CannotConvertTimeValueToEpochException(val, fmt)
 
 
 def timeval_to_datetime(val, fmt):
@@ -374,3 +392,23 @@ def get_frame_count(start, end, td):
 
 def is_archaeological_layer(layer):
     return layer.getTimeFormat() in [bcdate_util.BC_FORMAT]
+
+
+class NoneValueDetectedException(Exception):
+
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return QCoreApplication.translate('TimeManager', 'NoneValueDetectedException')
+
+
+class CannotConvertTimeValueToEpochException(Exception):
+
+    def __init__(self, val, frm):
+        self.val = val
+        self.frm = frm
+
+    def __str__(self):
+        return QCoreApplication.translate('TimeManager', 'CannotConvertTimeValueToEpochException: {} with format {}'.format(self.val, self.frm))
+

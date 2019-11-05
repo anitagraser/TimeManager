@@ -26,8 +26,6 @@ def can_export_video():
 
 
 def is_in_path(exec_name):
-    if get_os() == WINDOWS:
-        return False
     try:
         ret = subprocess.check_call([exec_name, "-version"])
         return ret == 0
@@ -70,7 +68,14 @@ def make_video(out_folder, digits):
     # something like frame%03d.png as expected by ffmpeg
     frame_pattern = os.path.join(out_folder, "{}%0{}d.{}".format(FRAME_FILENAME_PREFIX, digits, FRAME_EXTENSION))
     # TODO: Make this configurable (when understanding how it works)
-    video_script = os.path.join(file_dir, "video.sh")
-    subprocess.check_call(["sh", video_script, frame_pattern, outfile])
+    if get_os() == WINDOWS:
+        video_script = os.path.join(file_dir, "video.bat")
+        subprocess.check_call([video_script, frame_pattern, outfile])
+    else:
+        video_script = os.path.join(file_dir, "video.sh")
+        subprocess.check_call(["sh", video_script, frame_pattern, outfile])
     info("Exported video to {}".format(outfile))
     return outfile
+
+
+

@@ -73,9 +73,6 @@ class TimeLayer(with_metaclass(abc.ABCMeta, object)):
         except AttributeError:
             return self.layer.getLayerID()
 
-    def geometriesCountForExport(self):
-        return True
-
     def isEnabled(self):
         """Whether timeManagement is enabled for this layer"""
         return self.timeEnabled

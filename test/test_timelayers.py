@@ -61,6 +61,7 @@ class TestLayers(unittest.TestCase):
         layer.minimumValue.return_value = "1970-01-01 00:01:00"
         layer.maximumValue.return_value = "1970-01-01 00:04:20"
         layer.uniqueValues.return_value = ["1970-01-01 00:04:20", "1970-01-01 00:01:00"]
+        layer.getFeatures.return_value = [{self.from_attr: "1970-01-01 00:01:00", self.to_attr: "1970-01-01 00:04:20"}]
         settings = ls.LayerSettings()
         settings.layer = layer
         settings.startTimeAttribute = self.from_attr
@@ -91,6 +92,7 @@ class TestLayers(unittest.TestCase):
         layer.minimumValue.return_value = 60
         layer.maximumValue.return_value = 260
         layer.uniqueValues.return_value = [60, 260]
+        layer.getFeatures.return_value = [{self.from_attr: 60, self.to_attr: 260}]
         settings = ls.LayerSettings()
         settings.layer = layer
         settings.startTimeAttribute = self.from_attr

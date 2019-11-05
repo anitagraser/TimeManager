@@ -231,7 +231,7 @@ class TimeManagerGuiControl(QObject):
         TimeManagerProjectHandler.set_plugin_setting(conf.LAST_ANIMATION_PATH_TAG, path)
         delay_millis = self.animationDialog.spinBoxDelay.value()
         export_gif = self.animationDialog.radioAnimatedGif.isChecked()
-        export_video = self.animationDialog.radioVideo.isChecked()
+        export_video = False  # self.animationDialog.radioVideo.isChecked()
         do_clear = self.animationDialog.clearCheckBox.isChecked()
         self.signalExportVideo.emit(path, delay_millis, export_gif, export_video, do_clear)
 
@@ -345,9 +345,9 @@ class TimeManagerGuiControl(QObject):
 
     def playClicked(self):
         if self.dock.pushButtonPlay.isChecked():
-            self.dock.pushButtonPlay.setIcon(QIcon("TimeManager:images/pause.png"))
+            self.dock.pushButtonPlay.setIcon(QIcon("TimeManager:ui/images/pause.png"))
         else:
-            self.dock.pushButtonPlay.setIcon(QIcon("TimeManager:images/play.png"))
+            self.dock.pushButtonPlay.setIcon(QIcon("TimeManager:ui/images/play.png"))
         self.play.emit()
 
     def currentTimeChangedSlider(self):
@@ -420,7 +420,7 @@ class TimeManagerGuiControl(QObject):
 
 <h1>Time Manager</h1>
 
-<p>Time Manager filters your layers and displays only layers and features that match the specified time frame. Time Manager supports vector layers and raster layers (including WMS-T).</p>
+<p>Time Manager filters your layers and displays only layers and features that match the specified time frame. Time Manager supports vector layers and raster layers (including WMS with TIME dimension).</p>
 
 <p>Timestamps have to be in one of the following formats:</p>
 
@@ -567,7 +567,7 @@ an offset of -1, the features will appear one second later than they would by de
         """Turn pushButtonPlay off"""
         if self.dock.pushButtonPlay.isChecked():
             self.dock.pushButtonPlay.toggle()
-            self.dock.pushButtonPlay.setIcon(QIcon("TimeManager:images/play.png"))
+            self.dock.pushButtonPlay.setIcon(QIcon("TimeManager:ui/images/play.png"))
 
     def renderLabel(self, painter):
         """Render the current timestamp on the map canvas"""
@@ -593,7 +593,7 @@ an offset of -1, the features will appear one second later than they would by de
         painter.setRenderHint(painter.Antialiasing, True)
         txt = QTextDocument()
         html = """<span style="background-color:%s; padding: 5px; font-size: %spx;">
-                    <font face="%s" color="%s">%s</font>
+                    <font face="%s" color="%s">&nbsp;%s</font>
                   </span> """\
                % (self.labelOptions.bgcolor, self.labelOptions.size, self.labelOptions.font,
                   self.labelOptions.color, labelString)

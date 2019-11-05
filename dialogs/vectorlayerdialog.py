@@ -14,6 +14,7 @@ from timemanager.utils import qgis_utils as qgs
 from timemanager import conf
 from timemanager.layers import layer_settings
 from future.utils import with_metaclass
+from timemanager.utils.tmlogging import info
 
 
 class AddLayerDialog(with_metaclass(abc.ABCMeta, object)):
@@ -128,8 +129,8 @@ class VectorLayerDialog(AddLayerDialog):
 
     def addConnections(self):
         super(VectorLayerDialog, self).addConnections()
-        self.dialog.comboBoxInterpolation.currentIndexChanged.connect(self.maybeEnableIDBox)
-        self.dialog.exportEmptyCheckbox.setChecked(Qt.Unchecked)
+        self.dialog.comboBoxInterpolation.currentTextChanged.connect(self.maybeEnableIDBox)
+        #self.dialog.exportEmptyCheckbox.setChecked(Qt.Unchecked)
 
     def show(self):
         """Update GUI elements and show the dialog"""

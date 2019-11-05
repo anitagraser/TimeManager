@@ -35,6 +35,12 @@ class TimeRasterLayer(TimeLayer):
 
     def accumulateFeatures(self):
         return False
+        
+    def geometriesCountForExport(self):
+        return True
+
+    def resetSubsetString(self):
+        return False       
 
     def getTimeAttributes(self):
         """return the tuple of timeAttributes (fromTimeAttribute,toTimeAttribute)"""
