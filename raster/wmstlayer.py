@@ -94,7 +94,8 @@ class WMSTRasterLayer(TimeRasterLayer):
 
         # mmm, version parameter CAN be part of the url, and we get a version problem then
         # so let's default to 1.3.0 version if NOT in url
-        if 'VERSION' in self.wmsUrl.upper():
+        # adding %3D ( '='-sign ) to better filter url's with 'map' in it
+        if 'VERSION%3D' in self.wmsUrl.upper() or 'MAP%3D' in self.wmsUrl.upper():
             # use the version string from the url itself...
             # probably the url is urlencoded/quoted like: 'http://ies-ows.jrc.ec.europa.eu/effis?version%3D1.3.0'
             # so unquote it first
@@ -177,7 +178,7 @@ class WMSTRasterLayer(TimeRasterLayer):
                 # concatting a & behind ? is messing up QGIS wms parseUri: do NOT add anything behind it
                 return ""
             else:
-                return "%26" # equals &
+                return "%26"  # equals &
         else:
             return "?"
 
