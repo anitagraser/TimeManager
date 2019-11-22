@@ -52,8 +52,8 @@ class TimeVectorLayer(TimeLayer):
             self.setSubsetString(self.originalSubsetString)
         self.geometriesCount = settings.geometriesCount
 
-        if self.layer.dataProvider().storageType() == 'Memory storage':
-            self.raiseInvalidLayerError("Invalid time layer: Memory layers are not supported")
+        #if self.layer.dataProvider().storageType() == 'Memory storage':
+        #    self.raiseInvalidLayerError("Invalid time layer: Memory layers are not supported")
 
         raw_min_value = self.getRawMinValue()
         info("Raw min value: {}".format(raw_min_value))
@@ -240,9 +240,11 @@ class TimeVectorLayer(TimeLayer):
         last_exception = None
         for v in uniques:
             try:
-                time_util.str_to_datetime(v, fmt)
-                at_least_one_valid = True
-                break
+                # trying out different string-time formats, BUT...
+                # if coming from MemoryLayer unique values are already QDateTimes
+                if type(v) in [QDate, QDateTime] or time_util.str_to_datetime(v, fmt):
+                    at_least_one_valid = True
+                    break
             except time_util.UnsupportedFormatException as e:
                 error(e)
                 last_exception = e
