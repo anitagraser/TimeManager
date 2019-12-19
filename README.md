@@ -45,7 +45,7 @@ Users of the plugin can define a start and (optionally) an end time field that d
 
 ## Shortcuts
 
-Use Ctrl+Space (or Command+Space) if you are using a Mac to focus on the time slider. The left and right arrows can then move the slider.
+Use Ctrl+Space (or Command+Space if you are using a Mac) to focus on the time slider. The left and right arrows can then move the slider.
 
 ## Supported Layer Types
 
