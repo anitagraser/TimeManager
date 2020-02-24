@@ -13,7 +13,7 @@ class TestCDFRasterLayer(unittest.TestCase):
     def test_date_extraction(self):
         epoch = 1393786800
         bandName = "Band 002 / time={} (seconds since 1970-01-01 00:00:00)".format(epoch)
-        self.assertEqual(cdf.CDFRasterLayer.extract_time_from_bandname(bandName),
+        self.assertEqual(cdf.CDFRasterLayer.extract_netcdf_time_fallback(bandName),
                          time_util.epoch_to_datetime(epoch))
 
 

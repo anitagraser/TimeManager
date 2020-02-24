@@ -11,7 +11,6 @@ from timemanager.layers.timerasterlayer import TimeRasterLayer
 from timemanager.layers.timelayer import TimeLayer, NotATimeAttributeError
 from timemanager.utils.tmlogging import warn
 
-
 DEFAULT_CALENDAR="proleptic_gregorian"
 
 class CDFRasterLayer(TimeRasterLayer):
@@ -55,23 +54,20 @@ class CDFRasterLayer(TimeRasterLayer):
         return not cls.is_multiband(layer) or isinstance(layer.renderer(),
                                                          QgsSingleBandPseudoColorRenderer)
 
-    @classmethod
-    def extract_time_from_bandname(cls, bandName, calendar=DEFAULT_CALENDAR):
+    def extract_netcdf_time(self):
         try:
-            from netcdftime import utime
-            return cls.extract_netcdf_time(bandName, calendar)
-        except:
-            warn("Could not import netcdftime. Using fallback computation")
-            return cls.extract_netcdf_time_fallback(bandName)
-
-    @classmethod
-    def extract_netcdf_time(cls, bandName, calendar):
-        """Convert netcdf time to datetime using appropriate library"""
-        from netcdftime import utime
-        epoch, units = cls.extract_epoch_units(bandName)
-        cdftime = utime(units, calendar)
-        timestamps = cdftime.num2date([epoch])
-        return timestamps[0]
+            from netCDF4 import num2date, Dataset
+            with Dataset(self.layer.source(), mode="r") as ds:
+                dt = num2date(ds.variables["time"][:],
+                              units=ds.variables["time"].units,
+                              calendar=ds.variables["time"].calendar)
+        except ModuleNotFoundError:
+            dt = []
+            p = self.layer.dataProvider()
+            cnt = p.bandCount()
+            for i in range(1, cnt + 1):
+                dt.append(self.extract_netcdf_time_fallback(p.generateBandName(i)))
+        return dt
 
     @classmethod
     def extract_epoch_units(cls, bandName):
@@ -87,7 +83,6 @@ class CDFRasterLayer(TimeRasterLayer):
         if "minutes" in units or "minutes" in bandName:
             epoch = epoch * 60  # the number is originally in minutes, so need to multiply by 60
         return time_util.epoch_to_datetime(epoch)
-
 
     @classmethod
     def get_first_band_between(cls, dts, start_dt, end_dt):
@@ -111,11 +106,7 @@ class CDFRasterLayer(TimeRasterLayer):
         return layer.dataProvider().bandCount() > 1
 
     def getTimeExtents(self):
-        p = self.layer.dataProvider()
-        cnt = p.bandCount()
-        for i in range(1, cnt + 1):
-            self.band_to_dt.append(self.extract_time_from_bandname(p.generateBandName(i), self.calendar))
-
+        self.band_to_dt = self.extract_netcdf_time()
         startTime = self.band_to_dt[0]
         endTime = self.band_to_dt[-1]
         # apply offset
@@ -132,8 +123,8 @@ class CDFRasterLayer(TimeRasterLayer):
         endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
         if not self.is_multiband(self.layer):
             # Note: opportunity to subclass here if logic becomes more complicated
-            layerStartTime = self.extract_time_from_bandname(
-                self.layer.dataProvider().generateBandName(1))
+            
+            layerStartTime = self.extract_netcdf_time()[0]
             self.hideOrShowLayer(startTime, endTime, layerStartTime, layerStartTime)
             return
         else:

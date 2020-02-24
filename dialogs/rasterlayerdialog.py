@@ -50,7 +50,6 @@ class RasterLayerDialog(AddLayerDialog):
     def haveNetCDF(self):
         try:
             import netCDF4  # NOQA
-            import netcdftime  # NOQA
             return True
         except Exception:
             return False
