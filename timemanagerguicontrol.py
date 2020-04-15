@@ -587,8 +587,9 @@ an offset of -1, the features will appear one second later than they would by de
                 flags |= flag
 
         # Get canvas dimensions
-        width = painter.device().width()
-        height = painter.device().height()
+        pixelRatio = painter.device().devicePixelRatio()
+        width = painter.device().width() / pixelRatio
+        height = painter.device().height() / pixelRatio
 
         painter.setRenderHint(painter.Antialiasing, True)
         txt = QTextDocument()
