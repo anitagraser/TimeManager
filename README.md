@@ -1,5 +1,12 @@
 # Time Manager [![Build Status](https://travis-ci.org/anitagraser/TimeManager.svg?branch=master)](https://travis-ci.org/anitagraser/TimeManager)
 
+
+**Please note that since temporal control has now been integrated into QGIS core, this plugin will not be maintained anymore.** 
+
+For more information see: https://anitagraser.com/2020/05/10/timemanager-is-dead-long-live-the-temporal-controller/
+
+-----------------------
+
 Time Manager is a plugin for QGIS by Anita Graser and [Karolina Alexiou](https://carolinux.github.io/)(aka carolinux)
 
 * project home and bug tracker: https://github.com/anitagraser/TimeManager
