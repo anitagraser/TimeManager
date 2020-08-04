@@ -31,7 +31,7 @@ from timemanager.utils import time_util
 class timemanager_obj(object):
     """Plugin information"""
     name = "timemanager"
-    longName = "TimeManager Plugin for QGIS >= 2.3"
+    longName = "TimeManager Plugin for QGIS"
     description = "Working with temporal vector data"
     author = "Anita Graser, Karolina Alexiou"
     pluginUrl = "https://github.com/anitagraser/TimeManager"
