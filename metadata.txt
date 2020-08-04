@@ -10,46 +10,9 @@ email=anitagraser@gmx.at, carolinegr@gmail.com
 changelog=3.5
     - Fixed #327 HiDPI labeling issues on Mac
     3.4
-    - Fixed #286: User-friendly error messages are 'eaten'
+    - Fixed #286: User-friendly error messages are eaten
     3.3
     - Removed video export due to #272, #314 and related issues
-    3.2.4
-    - Fixed #310: Missing play button
-    3.2.3
-    - Fixed #301: "Ignore this layer when checking if scene is empty" does not work
-    - Fixed #299: Failure to add timestamps in format %Y-%m-%dT%H:%M:%S.%fZ
-    3.2.2
-    - Fixed #298: Cannot chose ID attribute for interpolation
-    3.2.1
-    - Fixed #218: Wrong date format detected for Geopackage and SpatiaLite
-    - Fixed #286: Errors 'eaten' because of error in error(...)
-    3.2.0
-    - Add support for video export on Windows
-    3.1.1
-    - Fixed #291: Invisible play button
-    3.1.0
-    - Fixed packaging issues
-    - Cleaned up source 
-    3.0.2
-    - Fixed #265: Accumulate features fails to set filter on layers with milliseconds 
-    3.0.1
-    - Fixed #256: issue restoring plugin settings
-    3.0 
-    - Port to QGIS 3
-    2.5
-    - Fixed #245: updated help.htm
-    - Fixed #240: now hiding unmanageable WFS layers
-    - Fixed #220: issues with label size
-    - Fixed #194: now exposing additional functions: animation_time_frame_size, animation_time_frame_type, animation_start_datetime, animation_end_datetime
-    2.4.1
-    - Fixed #156: remaining issue with copying styles 
-    2.4
-    - Fixed #222: hide label if TimeManager is turned off
-    - Fixed #156: copy parent style to interpolation layer
-    - Fixed #109: save label settings in project
-    - Fixed window resizing issues in label options gui
-    - Fixed window resizing issues in video export gui
-    - Fixed HiDPI issues with arch gui
 tags=spatio-temporal,time,animation
 icon=icon.png
 experimental=False
