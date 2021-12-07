@@ -1,7 +1,7 @@
 from builtins import range
 # -*- coding: utf-8 -*-
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 import re
 
 from  qgis._core import QgsSingleBandPseudoColorRenderer
@@ -16,14 +16,14 @@ DEFAULT_CALENDAR="proleptic_gregorian"
 
 class CDFRasterLayer(TimeRasterLayer):
 
-    def get_calendar(self):
+    def get_dataset_time(self):
         try:
             from netCDF4 import Dataset
             nc = Dataset(self.get_filename(), mode='r')
             time = nc.variables["time"]
-            return time.calendar
+            return time
         except:
-            return DEFAULT_CALENDAR
+            return None
 
     def get_filename(self):
         uri = self.layer.dataProvider().dataSourceUri()
@@ -41,8 +41,11 @@ class CDFRasterLayer(TimeRasterLayer):
         self.timeFormat = time_util.NETCDF_BAND
         self.offset = int(settings.offset)
         self.band_to_dt = []
-        self.calendar = self.get_calendar()
+        self.dataset_time = self.get_dataset_time()
+        self.calendar = DEFAULT_CALENDAR
         try:
+            if self.dataset_time.calendar is not None:
+                self.calendar = self.dataset_time.calendar
             self.getTimeExtents()
         except NotATimeAttributeError as e:
             raise InvalidTimeLayerError(str(e))
@@ -50,7 +53,7 @@ class CDFRasterLayer(TimeRasterLayer):
     @classmethod
     def isSupportedRaster(cls, layer):
         # multiband layers need to have a particular renderer
-        # this has to do with qgis python bindings 
+        # this has to do with qgis python bindings
         # see https://github.com/qgis/QGIS/pull/2163
         return not cls.is_multiband(layer) or isinstance(layer.renderer(),
                                                          QgsSingleBandPseudoColorRenderer)
@@ -70,7 +73,7 @@ class CDFRasterLayer(TimeRasterLayer):
         from netcdftime import utime
         epoch, units = cls.extract_epoch_units(bandName)
         cdftime = utime(units, calendar)
-        timestamps = cdftime.num2date([epoch])
+        timestamps = num2date([epoch])
         return timestamps[0]
 
     @classmethod
@@ -88,13 +91,20 @@ class CDFRasterLayer(TimeRasterLayer):
             epoch = epoch * 60  # the number is originally in minutes, so need to multiply by 60
         return time_util.epoch_to_datetime(epoch)
 
+    @classmethod
+    def extract_netcdf_time_from_bandname_and_variable(cls, bandName, calendar, dataset_time):
+        time = dataset_time
+        units, start_date = time.Units.split(' since ') # ex: minutes since 1970-01-01 00:00:00 or 'days since 2002-01-01T00:00:00Z'
+        decimal_offset = float(bandName.split('=')[1])
+        this_date = time_util.date_offset_from_start(start_date, units, decimal_offset)
+        return this_date
 
     @classmethod
     def get_first_band_between(cls, dts, start_dt, end_dt):
         """Get the index of the band whose timestamp is greater or equal to
         the starttime, but smaller than the endtime. If no such band is present,
         use the previous band"""
-        # TODO find later a faster way which takes advantage of the sorting 
+        # TODO find later a faster way which takes advantage of the sorting
         # idx = np.searchsorted(self.band_to_dt, start_dt, side='right')
 
         for i, dt in enumerate(dts):
@@ -113,8 +123,14 @@ class CDFRasterLayer(TimeRasterLayer):
     def getTimeExtents(self):
         p = self.layer.dataProvider()
         cnt = p.bandCount()
-        for i in range(1, cnt + 1):
-            self.band_to_dt.append(self.extract_time_from_bandname(p.generateBandName(i), self.calendar))
+        try:
+            self.band_to_dt=[]
+            for i in range(1, cnt + 1):
+                self.band_to_dt.append(self.extract_time_from_bandname(p.generateBandName(i), self.calendar))
+        except:
+            self.band_to_dt = []
+            for i in range(1, cnt + 1):
+                self.band_to_dt.append(self.extract_netcdf_time_from_bandname_and_variable(p.generateBandName(i), self.calendar, self.dataset_time))
 
         startTime = self.band_to_dt[0]
         endTime = self.band_to_dt[-1]
