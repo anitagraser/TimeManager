@@ -262,7 +262,7 @@ def datetime_to_str(dt, fmt):
         raise Exception(
             "{} does not look like a time format for val {} of type {}".format(fmt, dt, type(dt)))
     return datetime.strftime(dt, fmt)
-    
+
 
 def epoch_to_str(seconds_from_epoch, fmt):
     return datetime_to_str(epoch_to_datetime(seconds_from_epoch), fmt)
@@ -363,6 +363,23 @@ def str_to_datetime(datetimeString, fmt=PENDING):
             createNiceMessage(datetimeString, specified_fmt, is_archaelogical(), e))
 
 
+def date_offset_from_start(start_time_string, units, decimal_offset):
+    start_dt = str_to_datetime(start_time_string)
+    if units == 'miliseconds':
+        current_dt = start_dt + timedelta(milliseconds=decimal_offset)
+    elif units == 'seconds':
+        current_dt = start_dt + timedelta(seconds=decimal_offset)
+    elif units == 'minutes':
+        current_dt = start_dt + timedelta(minutes=decimal_offset)
+    elif units == 'hours':
+        current_dt = start_dt + timedelta(hours=decimal_offset)
+    elif units == 'days':
+        current_dt = start_dt + timedelta(days=decimal_offset)
+    elif units == 'weeks':
+        current_dt = start_dt + timedelta(weeks=decimal_offset)
+    return current_dt
+
+
 def get_frame_count(start, end, td):
     if not is_archaelogical():
         try:
@@ -410,5 +427,6 @@ class CannotConvertTimeValueToEpochException(Exception):
         self.frm = frm
 
     def __str__(self):
-        return QCoreApplication.translate('TimeManager', 'CannotConvertTimeValueToEpochException: {} with format {}'.format(self.val, self.frm))
-
+        return QCoreApplication.translate('TimeManager',
+                                          'CannotConvertTimeValueToEpochException: {} with format {}'.format(self.val,
+                                                                                                             self.frm))
