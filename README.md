@@ -1,4 +1,7 @@
-# Time Manager [![Build Status](https://travis-ci.org/anitagraser/TimeManager.svg?branch=master)](https://travis-ci.org/anitagraser/TimeManager)
+# Time Manager 
+
+[![Project Status: Unsupported – The project has reached a stable, usable state but the author(s) have ceased all work on it. A new maintainer may be desired.](https://www.repostatus.org/badges/latest/unsupported.svg)](https://www.repostatus.org/#unsupported)
+[![Build Status](https://travis-ci.org/anitagraser/TimeManager.svg?branch=master)](https://travis-ci.org/anitagraser/TimeManager)
 
 
 **Please note that since temporal control has now been integrated into QGIS core, this plugin will not be maintained anymore.** 
