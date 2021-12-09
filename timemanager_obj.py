@@ -16,8 +16,8 @@
 
 from __future__ import absolute_import
 from builtins import object
-
 import os
+
 from qgis.PyQt.QtCore import QTranslator, QCoreApplication, qVersion, QSettings, QLocale
 
 from qgis.core import qgsfunction, QgsExpression

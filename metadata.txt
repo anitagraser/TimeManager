@@ -6,7 +6,7 @@ about=TimeManager adds time controls to QGIS. Using these time controls, you can
 qgisMinimumVersion=3.0
 qgisMaximumVersion=3.99
 author=Anita Graser, Karolina Alexiou (aka carolinux)
-email=anitagraser@gmx.at, carolinegr@gmail.com
+email=anitagraser@gmx.at, carolinegr@gmail.com, javadadabi@gmail.com
 changelog=3.6
     - hack/fix for http://hub.qgis.org/issues/14756 was changed to prevent the plugin from stopping while adding layers
     - Improved to be able to detect and display CSR_GRACE_GRACE-FO netcdf
@@ -14,5 +14,5 @@ tags=spatio-temporal,time,animation
 icon=icon.png
 experimental=False
 homepage=http://anitagraser.com/projects/time-manager/
-tracker=https://github.com/anitagraser/TimeManager/issues
-repository=https://github.com/anitagraser/TimeManager
+tracker=https://github.com/javadadabi/TimeManager/issues
+repository=https://github.com/javadadabi/TimeManager
