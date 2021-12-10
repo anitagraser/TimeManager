@@ -16,7 +16,9 @@
 
 from __future__ import absolute_import
 from builtins import object
-
+# uncomment two lines below if you want to remote debug plugin usin Pycharm IDE
+# import pydevd_pycharm
+# pydevd_pycharm.settrace('localhost', port=5100, stdoutToServer=True, stderrToServer=True)
 import os
 from qgis.PyQt.QtCore import QTranslator, QCoreApplication, qVersion, QSettings, QLocale
 
