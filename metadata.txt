@@ -14,5 +14,5 @@ tags=spatio-temporal,time,animation
 icon=icon.png
 experimental=False
 homepage=http://anitagraser.com/projects/time-manager/
-tracker=https://github.com/javadadabi/TimeManager/timemmanger/issues
-repository=https://github.com/javadadabi/TimeManager/timemmanger
+tracker=https://github.com/javadadabi/TimeManager/issues
+repository=https://github.com/javadadabi/TimeManager/tree/timemanager
