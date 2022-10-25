@@ -70,11 +70,15 @@ class CDFRasterLayer(TimeRasterLayer):
     @classmethod
     def extract_netcdf_time(cls, bandName, calendar):
         """Convert netcdf time to datetime using appropriate library"""
-        from netcdftime import utime
+        #from netcdftime import utime
+        import netCDF4
         epoch, units = cls.extract_epoch_units(bandName)
-        cdftime = utime(units, calendar)
-        timestamps = num2date([epoch])
-        return timestamps[0]
+        #cdftime = utime(units, calendar)
+        #timestamps = cdftime.num2date([epoch])
+        #return timestamps[0]
+        timestamp = netCDF4.num2date(epoch,units,calendar=calendar,only_use_cftime_datetimes=False)
+        timestamp = timestamp.replace(microsecond = 0)
+        return timestamp
 
     @classmethod
     def extract_epoch_units(cls, bandName):
