@@ -79,9 +79,9 @@ class CDFRasterLayer(TimeRasterLayer):
     @classmethod
     def extract_epoch_units(cls, bandName):
         # Band name expected to be like: 'Band 1: time=20116800 (minutes since 1970-01-01 00:00:00)'
-        pattern = "time=(\d+)\s*[(](.+)[)]"
+        pattern = "time=[+-]?(\d+\.?\d+?)\s*[(](.+)[)]"
         matches = re.findall(pattern, bandName)[0]
-        return int(matches[0]), matches[1]
+        return float(matches[0]), matches[1]
 
     @classmethod
     def extract_netcdf_time_fallback(cls, bandName):
