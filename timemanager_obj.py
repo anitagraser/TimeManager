@@ -35,7 +35,7 @@ class timemanager_obj(object):
     name = "timemanager"
     longName = "TimeManager Plugin for QGIS"
     description = "Working with temporal vector data"
-    author = "Anita Graser, Karolina Alexiou"
+    author = "Anita Graser, Karolina Alexiou, Seyed Javad Adabikhosh"
     pluginUrl = "https://github.com/anitagraser/TimeManager"
 
     def __init__(self, iface):
