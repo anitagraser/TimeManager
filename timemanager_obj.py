@@ -16,7 +16,9 @@
 
 from __future__ import absolute_import
 from builtins import object
-
+# uncomment two lines below if you want to remote debug plugin usin Pycharm IDE
+# import pydevd_pycharm
+# pydevd_pycharm.settrace('localhost', port=5100, stdoutToServer=True, stderrToServer=True)
 import os
 from qgis.PyQt.QtCore import QTranslator, QCoreApplication, qVersion, QSettings, QLocale
 
@@ -33,7 +35,7 @@ class timemanager_obj(object):
     name = "timemanager"
     longName = "TimeManager Plugin for QGIS"
     description = "Working with temporal vector data"
-    author = "Anita Graser, Karolina Alexiou"
+    author = "Anita Graser, Karolina Alexiou, Seyed Javad Adabikhosh"
     pluginUrl = "https://github.com/anitagraser/TimeManager"
 
     def __init__(self, iface):

@@ -4,31 +4,31 @@ from builtins import range
 from datetime import timedelta
 import re
 
-from  qgis._core import QgsSingleBandPseudoColorRenderer
+from qgis._core import QgsSingleBandPseudoColorRenderer
 
 from timemanager.utils import time_util
 from timemanager.layers.timerasterlayer import TimeRasterLayer
 from timemanager.layers.timelayer import TimeLayer, NotATimeAttributeError
 from timemanager.utils.tmlogging import warn
 
+DEFAULT_CALENDAR = "proleptic_gregorian"
 
-DEFAULT_CALENDAR="proleptic_gregorian"
 
 class CDFRasterLayer(TimeRasterLayer):
 
-    def get_calendar(self):
+    def get_dataset_time(self):
         try:
-            from netCDF4 import Dataset
+            from netCDF4 import Dataset, date2index
             nc = Dataset(self.get_filename(), mode='r')
             time = nc.variables["time"]
-            return time.calendar
+            return time
         except:
-            return DEFAULT_CALENDAR
+            return None
 
     def get_filename(self):
         uri = self.layer.dataProvider().dataSourceUri()
         if "NETCDF" in uri:
-        # something like u'NETCDF:"/home/carolinux/Downloads/ex_jak_velsurf_mag (1).nc":velsurf_mag'
+            # something like u'NETCDF:"/home/carolinux/Downloads/ex_jak_velsurf_mag (1).nc":velsurf_mag'
             return uri.split('"')[1]
         else:
             return uri
@@ -41,8 +41,11 @@ class CDFRasterLayer(TimeRasterLayer):
         self.timeFormat = time_util.NETCDF_BAND
         self.offset = int(settings.offset)
         self.band_to_dt = []
-        self.calendar = self.get_calendar()
+        self.dataset_time = self.get_dataset_time()
+        self.calendar = DEFAULT_CALENDAR
         try:
+            if self.dataset_time.calendar is not None:
+                self.calendar = self.dataset_time.calendar
             self.getTimeExtents()
         except NotATimeAttributeError as e:
             raise InvalidTimeLayerError(str(e))
@@ -88,14 +91,29 @@ class CDFRasterLayer(TimeRasterLayer):
             epoch = epoch * 60  # the number is originally in minutes, so need to multiply by 60
         return time_util.epoch_to_datetime(epoch)
 
+    @classmethod
+    def extract_netcdf_time_using_netcdf4_library(cls, bandnum, dataset_time):
+        time = dataset_time
+        try:
+            units, start_date = time.units.split(
+                ' since ')  # ex: minutes since 1970-01-01 00:00:00 or 'days since 2002-01-01T00:00:00Z'
+        except:
+            units, start_date = time.Units.split(
+                ' since ')  # Handle exception for NASA products(Units instead of units) Like:CSR_GRACE_GRACE-FO_RL06_Mascons_all-corrections_v02.nc
+        decimal_offset = float(time[bandnum])
+        this_date = time_util.date_offset_from_start(start_date, units, decimal_offset)
+        return this_date
 
     @classmethod
-    def get_first_band_between(cls, dts, start_dt, end_dt):
+    def get_first_band_between(cls, dts_time, dts, start_dt, end_dt):
         """Get the index of the band whose timestamp is greater or equal to
         the starttime, but smaller than the endtime. If no such band is present,
         use the previous band"""
         # TODO find later a faster way which takes advantage of the sorting 
         # idx = np.searchsorted(self.band_to_dt, start_dt, side='right')
+        # from netCDF4 import date2index
+        # idx = date2index(start_dt, dts_time, select='after')
+        # return idx
 
         for i, dt in enumerate(dts):
             if dt >= start_dt:
@@ -111,10 +129,20 @@ class CDFRasterLayer(TimeRasterLayer):
         return layer.dataProvider().bandCount() > 1
 
     def getTimeExtents(self):
+        # TODO
+        # More precise work and examples are needed
         p = self.layer.dataProvider()
         cnt = p.bandCount()
-        for i in range(1, cnt + 1):
-            self.band_to_dt.append(self.extract_time_from_bandname(p.generateBandName(i), self.calendar))
+        try:
+
+            self.band_to_dt = []
+            for i in range(0, cnt):
+                self.band_to_dt.append(
+                    self.extract_netcdf_time_using_netcdf4_library(i, self.dataset_time))
+        except:
+            self.band_to_dt = []
+            for i in range(1, cnt + 1):
+                self.band_to_dt.append(self.extract_time_from_bandname(p.generateBandName(i), self.calendar))
 
         startTime = self.band_to_dt[0]
         endTime = self.band_to_dt[-1]
@@ -132,12 +160,18 @@ class CDFRasterLayer(TimeRasterLayer):
         endTime = timePosition + timeFrame + timedelta(seconds=self.offset)
         if not self.is_multiband(self.layer):
             # Note: opportunity to subclass here if logic becomes more complicated
-            layerStartTime = self.extract_time_from_bandname(
-                self.layer.dataProvider().generateBandName(1))
+            try:
+                layerStartTime = self.extract_netcdf_time_using_netcdf4_library(1, self.dataset_time)
+            except:
+                layerStartTime = self.extract_time_from_bandname(
+                    self.layer.dataProvider().generateBandName(1))
             self.hideOrShowLayer(startTime, endTime, layerStartTime, layerStartTime)
             return
         else:
-            bandNo = self.get_first_band_between(self.band_to_dt, startTime, endTime)
+            # TODO
+            # More work is needed to handle decimal time units like 1236.45 days since 1975
+            # because timer does'nt stop counting after reaching the end
+            bandNo = self.get_first_band_between(self.dataset_time, self.band_to_dt, startTime, endTime)
             self.layer.renderer().setBand(bandNo)
 
     def deleteTimeRestriction(self):
