@@ -362,6 +362,22 @@ def str_to_datetime(datetimeString, fmt=PENDING):
         raise UnsupportedFormatException(
             createNiceMessage(datetimeString, specified_fmt, is_archaelogical(), e))
 
+def date_offset_from_start(start_time_string, units, decimal_offset):
+    start_dt = str_to_datetime(start_time_string)
+    if units == 'miliseconds':
+        dt = start_dt + timedelta(milliseconds=decimal_offset)
+    elif units == 'seconds':
+        dt = start_dt + timedelta(seconds=decimal_offset)
+    elif units == 'minutes':
+        dt = start_dt + timedelta(minutes=decimal_offset)
+    elif units == 'hours':
+        dt = start_dt + timedelta(hours=decimal_offset)
+    elif units == 'days':
+        dt = start_dt + timedelta(days=decimal_offset)
+    elif units == 'weeks':
+        dt = start_dt + timedelta(weeks=decimal_offset)
+    return dt
+
 
 def get_frame_count(start, end, td):
     if not is_archaelogical():

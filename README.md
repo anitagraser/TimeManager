@@ -1,21 +1,23 @@
 # Time Manager 
 
-[![Project Status: Unsupported – The project has reached a stable, usable state but the author(s) have ceased all work on it. A new maintainer may be desired.](https://www.repostatus.org/badges/latest/unsupported.svg)](https://www.repostatus.org/#unsupported)
-[![Build Status](https://travis-ci.org/anitagraser/TimeManager.svg?branch=master)](https://travis-ci.org/anitagraser/TimeManager)
+[![Project Status: supported – The project has reached a stable, usable state but the author(s) have ceased all work on it. A new maintainer may be desired.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#unsupported)
+[![Build Status](https://travis-ci.org/anitagraser/TimeManager.svg?branch=master)](https://github.com/javadadabi/TimeManager/tree/timemanager)
 
 
-**Please note that since temporal control has now been integrated into QGIS core, this plugin will not be maintained anymore.** 
+**Please note that although temporal control has been integrated into QGIS core, this plugin still has its capabilities and will be supported.** 
 
-For more information see: https://anitagraser.com/2020/05/10/timemanager-is-dead-long-live-the-temporal-controller/
+So, TimeManager plugin still is alive.
 
 -----------------------
 
-Time Manager is a plugin for QGIS by Anita Graser and [Karolina Alexiou](https://carolinux.github.io/)(aka carolinux)
+Time Manager is a plugin for QGIS by Anita Graser, [Karolina Alexiou](https://carolinux.github.io/)(aka carolinux)
+and [Seyed Javad Adabikhosh](https://github.com/javadadabi)
 
-* project home and bug tracker: https://github.com/anitagraser/TimeManager
+* project home: https://github.com/anitagraser/TimeManager
+* bug tracker: https://github.com/javadadabi/TimeManager/tree/timemanager  
 * plugin repository: http://plugins.qgis.org/plugins/timemanager/
 
-Latest news will be published on Anita's blog: http://anitagraser.com/tag/time-manager/
+<!---Latest news will be published on Anita's blog: http://anitagraser.com/tag/time-manager/-->
 
 ## What is the goal
 

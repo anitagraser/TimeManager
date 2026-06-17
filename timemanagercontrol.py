@@ -235,10 +235,11 @@ class TimeManagerControl(QObject):
         Untill this is fixed via some signal/action in the legend(tree), below is needed.
         :return:
         """
-        root = QgsProject.instance().layerTreeRoot()
-        model = self.iface.layerTreeView().model()
+        # root = QgsProject.instance().layerTreeRoot()
+        layertreeview = self.iface.layerTreeView()
         for l in self.getTimeLayerManager().getActiveVectors():
-            model.refreshLayerLegend(root.findLayer(l.getLayer().id()))
+            layerTreeView.refreshLayerSymbology(l.getLayer().id())
+            # model.refreshLayerLegend(root.findLayer(l.getLayer().id()))
 
     def disableAnimationExport(self):
         """Disable the animation export button"""
